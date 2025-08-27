@@ -1,4 +1,11 @@
 package com.equipo11.petcare.repository;
 
-public interface RegionRepository {
+import com.equipo11.petcare.model.address.Region;
+import jakarta.validation.constraints.NotBlank;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface RegionRepository extends JpaRepository<Region, Long> {
+    Optional<Region> findByNameAndCountry(String region, String country_id);
 }

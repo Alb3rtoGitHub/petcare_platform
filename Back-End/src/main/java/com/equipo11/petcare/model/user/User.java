@@ -1,10 +1,13 @@
-package com.equipo11.petcare.domain.user;
+package com.equipo11.petcare.model.user;
 
-import com.equipo11.petcare.domain.user.address.Address;
+import com.equipo11.petcare.model.address.Address;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,16 +39,24 @@ public class User {
     @Column(nullable = false)
     private LocalDate birthDate;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 
     @Column(nullable = false, length = 20)
     private String phoneNumber;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",
                 joinColumns = @JoinColumn(name = "user_id"),
                 inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
+
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
+
 }

@@ -1,0 +1,53 @@
+package com.equipo11.petcare.service;
+
+import com.equipo11.petcare.dto.AddressDTO;
+import com.equipo11.petcare.model.address.Address;
+import com.equipo11.petcare.model.address.City;
+import com.equipo11.petcare.model.address.Country;
+import com.equipo11.petcare.model.address.Region;
+import com.equipo11.petcare.repository.AddressRepository;
+import com.equipo11.petcare.repository.CityRepository;
+import com.equipo11.petcare.repository.CountryRepository;
+import com.equipo11.petcare.repository.RegionRepository;
+import org.springframework.stereotype.Service;
+
+@Service
+public class AddressServiceImpl implements AddressService{
+
+    private final CountryRepository countryRepo;
+    private final RegionRepository regionRepo;
+    private final CityRepository cityRepo;
+    private final AddressRepository addressRepo;
+
+    public AddressServiceImpl(CountryRepository countryRepo,
+                              RegionRepository regionRepo,
+                              CityRepository cityRepo,
+                              AddressRepository addressRepo) {
+        this.countryRepo = countryRepo;
+        this.regionRepo = regionRepo;
+        this.cityRepo = cityRepo;
+        this.addressRepo = addressRepo;
+    }
+
+    @Override
+    public Address resolveAddress(AddressDTO dto) {
+
+        Country country = countryRepo.findById(dto.countryCode())
+                .orElseThrow(() -> new IllegalArgumentException("País no encontrado"));
+
+        Region region = regionRepo.findByNameAndCountry(dto.region(), dto.countryCode())
+                .orElseThrow(() -> new IllegalArgumentException("Región no válida para el país"));
+
+        City city = cityRepo.findByNameAndRegion(dto.city(), region.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Ciudad no válida para la región"));
+
+        Address address = Address.builder()
+                .city(city)
+                .streetName(dto.streetName())
+                .streetNumber(dto.streetNumber())
+                .unit(dto.unit())
+                .build();
+
+        return addressRepo.save(address);
+    }
+}

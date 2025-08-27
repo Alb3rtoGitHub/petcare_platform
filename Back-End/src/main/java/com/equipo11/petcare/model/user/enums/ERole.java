@@ -1,4 +1,4 @@
-package com.equipo11.petcare.domain.user.enums;
+package com.equipo11.petcare.model.user.enums;
 
 public enum ERole {
     ROLE_ADMIN,

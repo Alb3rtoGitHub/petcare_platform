@@ -1,16 +1,18 @@
-package com.equipo11.petcare.model.user.address;
+package com.equipo11.petcare.model.address;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "cities")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class City {
 
     @Id
@@ -25,5 +27,5 @@ public class City {
     private Region region;
 
     @OneToMany(mappedBy = "city", fetch = FetchType.LAZY)
-    private Set<Address> addreses =new HashSet<>();
+    private Set<Address> addresses =new HashSet<>();
 }

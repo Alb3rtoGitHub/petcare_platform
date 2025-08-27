@@ -1,10 +1,9 @@
-package com.equipo11.petcare.model.user.address;
+package com.equipo11.petcare.model.address;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import lombok.*;
 
-@Email
+@Entity
 @Table(name = "address")
 @Getter
 @Setter

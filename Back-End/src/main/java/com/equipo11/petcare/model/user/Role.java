@@ -1,6 +1,6 @@
-package com.equipo11.petcare.domain.user;
+package com.equipo11.petcare.model.user;
 
-import com.equipo11.petcare.domain.user.enums.ERole;
+import com.equipo11.petcare.model.user.enums.ERole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
