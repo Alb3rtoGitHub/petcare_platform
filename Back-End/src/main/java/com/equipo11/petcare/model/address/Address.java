@@ -1,4 +1,4 @@
-package com.equipo11.petcare.domain.user.address;
+package com.equipo11.petcare.model.user.address;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
