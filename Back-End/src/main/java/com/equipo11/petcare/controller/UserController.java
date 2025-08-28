@@ -1,7 +1,7 @@
 package com.equipo11.petcare.controller;
 
 import com.equipo11.petcare.dto.RegisterRequest;
-import com.equipo11.petcare.service.UserServiceImpl;
+import com.equipo11.petcare.service.UserService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/user")
 public class UserController {
 
-    private final UserServiceImpl userService;
+    private final UserService userService;
 
-    public UserController(UserServiceImpl userService) {
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 

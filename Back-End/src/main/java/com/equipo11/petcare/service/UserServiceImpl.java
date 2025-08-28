@@ -8,7 +8,7 @@ import com.equipo11.petcare.model.user.User;
 import com.equipo11.petcare.model.user.enums.ERole;
 import com.equipo11.petcare.repository.RoleRepository;
 import com.equipo11.petcare.repository.UserRepository;
-import com.equipo11.petcare.security.jwt.JwtServiceImpl;
+import com.equipo11.petcare.security.jwt.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,15 +21,15 @@ public class UserServiceImpl implements UserService{
 
     private final UserRepository userRepo;
     private final RoleRepository roleRepo;
-    private final AddressServiceImpl addressService;
+    private final AddressService addressService;
     private final PasswordEncoder passwordEncoder;
-    private final JwtServiceImpl jwtService;
+    private final JwtService jwtService;
 
     public UserServiceImpl(UserRepository userRepo,
                            RoleRepository roleRepo,
-                           AddressServiceImpl addressService,
+                           AddressService addressService,
                            PasswordEncoder passwordEncoder,
-                           JwtServiceImpl jwtService) {
+                           JwtService jwtService) {
         this.userRepo = userRepo;
         this.roleRepo = roleRepo;
         this.addressService = addressService;

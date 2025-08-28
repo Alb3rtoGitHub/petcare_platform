@@ -4,7 +4,7 @@ import com.equipo11.petcare.dto.AuthResponse;
 import com.equipo11.petcare.dto.AuthRequest;
 import com.equipo11.petcare.model.user.User;
 import com.equipo11.petcare.repository.UserRepository;
-import com.equipo11.petcare.security.jwt.JwtServiceImpl;
+import com.equipo11.petcare.security.jwt.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -15,11 +15,11 @@ public class AuthServiceImpl implements AuthService{
 
     private final AuthenticationManager authManager;
     private final UserRepository userRepo;
-    private final JwtServiceImpl jwtService;
+    private final JwtService jwtService;
 
     public AuthServiceImpl(AuthenticationManager authManager,
                            UserRepository userRepo,
-                           JwtServiceImpl jwtService) {
+                           JwtService jwtService) {
         this.authManager = authManager;
         this.userRepo = userRepo;
         this.jwtService = jwtService;

@@ -3,8 +3,6 @@ package com.equipo11.petcare.model.user;
 import com.equipo11.petcare.model.address.Address;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
