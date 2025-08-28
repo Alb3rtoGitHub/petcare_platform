@@ -21,6 +21,13 @@ public record RegisterRequest(
         )
         String password,
 
+        @Positive(message = "El número de teléfono debe ser positivo")
+        @Pattern(
+                regexp = "\\+?\\d{6,15}",
+                message = "El teléfono debe tener entre 6 y 15 dígitos, opcional '+' inicial"
+        )
+        String phoneNumber,
+
         @NotBlank(message = "El nombre no puede estar vacío")
         String firstName,
 
@@ -35,6 +42,6 @@ public record RegisterRequest(
         @Valid
         AddressDTO address,
 
-        Set<ERole> roles
+        String  role
 ) {
 }

@@ -35,10 +35,10 @@ public class AddressServiceImpl implements AddressService{
         Country country = countryRepo.findById(dto.countryCode())
                 .orElseThrow(() -> new IllegalArgumentException("País no encontrado"));
 
-        Region region = regionRepo.findByNameAndCountry(dto.region(), dto.countryCode())
+        Region region = regionRepo.findByNameAndCountry(dto.region(), country)
                 .orElseThrow(() -> new IllegalArgumentException("Región no válida para el país"));
 
-        City city = cityRepo.findByNameAndRegion(dto.city(), region.getId())
+        City city = cityRepo.findByNameAndRegion(dto.city(), region)
                 .orElseThrow(() -> new IllegalArgumentException("Ciudad no válida para la región"));
 
         Address address = Address.builder()

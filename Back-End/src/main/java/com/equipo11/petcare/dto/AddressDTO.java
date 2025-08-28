@@ -2,7 +2,9 @@ package com.equipo11.petcare.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import lombok.Builder;
 
+@Builder
 public record AddressDTO (
         @NotBlank(message = "El nombre de la calle no puede estar vacío")
         String streetName,
