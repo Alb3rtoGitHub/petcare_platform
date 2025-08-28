@@ -6,7 +6,6 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.equipo11.petcare.model.user.User;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -26,8 +25,9 @@ public class JwtServiceImpl implements JwtService{
         return JWT.create()
                 .withIssuer("petcare")
                 .withSubject(user.getEmail())
-                .withClaim("role", user.getRoles().stream().
-                        toList().get(0).getName().name())
+                .withClaim("role", user.getRoles().stream()
+                .map(r -> r.getName().name())
+                .toList())
                 .withExpiresAt(generateExpirationTime())
                 .sign(getAlgorithm());
     }

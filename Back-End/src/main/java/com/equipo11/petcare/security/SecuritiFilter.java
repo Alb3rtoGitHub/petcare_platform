@@ -33,7 +33,7 @@ public class SecuritiFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String token = parseJwt(request);
-        if (token != null || jwtService.validateToken(token)) {
+        if (token != null && jwtService.validateToken(token)) {
             String userName = jwtService.getEmailFromToken(token);
             UserDetails userDetails = userDetailsService.loadUserByUsername(userName);
 

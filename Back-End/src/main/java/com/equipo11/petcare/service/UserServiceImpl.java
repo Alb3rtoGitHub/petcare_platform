@@ -66,6 +66,8 @@ public class UserServiceImpl implements UserService{
                 .createdAt(LocalDateTime.now())
                 .build();
 
+        userRepo.save(newUser);
+
         return new AuthResponse(jwtService.generateToken(newUser));
     }
 }
