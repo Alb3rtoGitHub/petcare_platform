@@ -1,4 +1,4 @@
-package com.equipo11.petcare.service;
+package com.equipo11.petcare.security;
 
 import com.equipo11.petcare.repository.UserRepository;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -11,11 +11,11 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 
 @Service
-public class CustomUserDetailsService implements UserDetailsService {
+public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final UserRepository userRepo;
 
-    public CustomUserDetailsService (UserRepository userRepo) {
+    public UserDetailsServiceImpl(UserRepository userRepo) {
         this.userRepo = userRepo;
     }
 
