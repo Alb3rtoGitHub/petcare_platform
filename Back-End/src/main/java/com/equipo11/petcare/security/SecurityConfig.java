@@ -1,5 +1,6 @@
 package com.equipo11.petcare.security;
 
+import com.equipo11.petcare.security.filter.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,11 +20,11 @@ public class SecurityConfig {
 
     private static final String API_V1 = "/api/v1";
 
-    private final SecurityFilter filter;
+    private final JwtAuthenticationFilter filter;
 
     private final UserDetailsService userDetailsService;
 
-    public SecurityConfig(SecurityFilter filter,
+    public SecurityConfig(JwtAuthenticationFilter filter,
                           UserDetailsService userDetailsService) {
         this.filter = filter;
         this.userDetailsService = userDetailsService;
@@ -40,7 +41,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authRequest ->
                         authRequest
-                                .requestMatchers(HttpMethod.POST, API_V1 + "/user/register").permitAll()
+                                .requestMatchers(HttpMethod.POST, API_V1 + "/auth/register").permitAll()
                                 .requestMatchers(HttpMethod.POST, API_V1 + "/auth").permitAll()
                                 .requestMatchers(HttpMethod.DELETE, API_V1 +"/auth").hasAuthority("ROLE_ADMIN")
                                 .anyRequest().authenticated())

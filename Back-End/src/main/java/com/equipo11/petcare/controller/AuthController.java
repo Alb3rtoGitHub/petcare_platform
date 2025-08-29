@@ -1,8 +1,10 @@
 package com.equipo11.petcare.controller;
 
-import com.equipo11.petcare.dto.AuthRequest;
-import com.equipo11.petcare.dto.AuthResponse;
+import com.equipo11.petcare.dto.AuthRequestDTO;
+import com.equipo11.petcare.dto.AuthResponseDTO;
+import com.equipo11.petcare.dto.RegisterRequestDTO;
 import com.equipo11.petcare.service.AuthService;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +21,17 @@ public class AuthController {
     }
 
     @PostMapping
-    public ResponseEntity<AuthResponse> loginUser(@Valid @RequestBody AuthRequest request) {
-        AuthResponse response = authService.authCredential(request);
+    public ResponseEntity<AuthResponseDTO> loginUser(@Valid @RequestBody AuthRequestDTO request) {
+        AuthResponseDTO response = authService.authCredential(request);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/register")
+    @Transactional
+    public ResponseEntity<AuthResponseDTO> registerUser(@Valid @RequestBody RegisterRequestDTO request) {
+        System.out.println("aca estamos-1");
+        AuthResponseDTO response = authService.registerUser(request);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @DeleteMapping

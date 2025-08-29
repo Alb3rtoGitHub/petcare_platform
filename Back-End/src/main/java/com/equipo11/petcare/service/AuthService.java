@@ -1,10 +1,13 @@
 package com.equipo11.petcare.service;
 
-import com.equipo11.petcare.dto.AuthResponse;
-import com.equipo11.petcare.dto.AuthRequest;
+import com.equipo11.petcare.dto.AuthResponseDTO;
+import com.equipo11.petcare.dto.AuthRequestDTO;
+import com.equipo11.petcare.dto.RegisterRequestDTO;
 
 public interface AuthService {
 
-    AuthResponse authCredential(AuthRequest request);
+    AuthResponseDTO authCredential(AuthRequestDTO request);
+
+    AuthResponseDTO registerUser(RegisterRequestDTO request);
 
 }

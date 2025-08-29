@@ -1,32 +1,53 @@
 package com.equipo11.petcare.service;
 
-import com.equipo11.petcare.dto.AuthResponse;
-import com.equipo11.petcare.dto.AuthRequest;
+import com.equipo11.petcare.dto.AuthResponseDTO;
+import com.equipo11.petcare.dto.AuthRequestDTO;
+import com.equipo11.petcare.dto.RegisterRequestDTO;
+import com.equipo11.petcare.model.address.Address;
+import com.equipo11.petcare.model.user.Owner;
+import com.equipo11.petcare.model.user.Role;
+import com.equipo11.petcare.model.user.Sitter;
 import com.equipo11.petcare.model.user.User;
+import com.equipo11.petcare.model.user.enums.ERole;
+import com.equipo11.petcare.repository.RoleRepository;
 import com.equipo11.petcare.repository.UserRepository;
-import com.equipo11.petcare.security.jwt.JwtService;
+import com.equipo11.petcare.security.jwt.TokenGenerator;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 public class AuthServiceImpl implements AuthService{
 
     private final AuthenticationManager authManager;
     private final UserRepository userRepo;
-    private final JwtService jwtService;
+    private final TokenGenerator tokenGenerator;
+    private final RoleRepository roleRepo;
+    private final AddressService addressService;
+    private final PasswordEncoder passwordEncoder;
 
     public AuthServiceImpl(AuthenticationManager authManager,
                            UserRepository userRepo,
-                           JwtService jwtService) {
+                           TokenGenerator tokenGenerator,
+                           RoleRepository roleRepo,
+                           AddressService addressService,
+                           PasswordEncoder passwordEncoder) {
         this.authManager = authManager;
         this.userRepo = userRepo;
-        this.jwtService = jwtService;
+        this.tokenGenerator = tokenGenerator;
+        this.roleRepo = roleRepo;
+        this.addressService = addressService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    public AuthResponse authCredential(AuthRequest request) {
+    public AuthResponseDTO authCredential(AuthRequestDTO request) {
         Authentication aut = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.email(),
@@ -34,6 +55,55 @@ public class AuthServiceImpl implements AuthService{
 
         User user = userRepo.findByEmail(request.email()).get();
 
-        return new AuthResponse(jwtService.generateToken(user));
+        return new AuthResponseDTO(tokenGenerator.generateToken(user));
+    }
+
+    @Override
+    public AuthResponseDTO registerUser(RegisterRequestDTO request) {
+        if (userRepo.findByEmail(request.email()).isPresent())
+            throw new IllegalArgumentException("Email ya está en uso!");
+        System.out.println("aca estamos");
+        Address address = addressService.resolveAddress(request.address());
+        User newUser;
+        Role role;
+        Set<Role> roles = new HashSet<>();
+        System.out.println("aca estamos2");
+        if (ERole.ROLE_OWNER.equals(request.role())){
+            role = roleRepo.findByName(ERole.ROLE_OWNER);
+            roles.add(role);
+            Owner user = Owner.builder()
+                    .email(request.email())
+                    .password(passwordEncoder.encode(request.password()))
+                    .firstName(request.firstName())
+                    .lastName(request.lastName())
+                    .birthDate(request.birthdate())
+                    .phoneNumber(request.phoneNumber())
+                    .address(address)
+                    .roles(roles)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            newUser = user;
+        } else if (ERole.ROLE_SITTER.equals(request.role())) {
+            role = roleRepo.findByName(ERole.ROLE_SITTER);
+            roles.add(role);
+            Sitter user = Sitter.builder()
+                    .email(request.email())
+                    .password(passwordEncoder.encode(request.password()))
+                    .firstName(request.firstName())
+                    .lastName(request.lastName())
+                    .birthDate(request.birthdate())
+                    .phoneNumber(request.phoneNumber())
+                    .address(address)
+                    .roles(roles)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            newUser = user;
+            System.out.println("aca estamos3");
+        } else
+            throw new IllegalArgumentException("Tipo de usuario no válido");
+
+
+        userRepo.save(newUser);
+        return new AuthResponseDTO(tokenGenerator.generateToken(newUser));
     }
 }

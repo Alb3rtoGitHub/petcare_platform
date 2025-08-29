@@ -7,7 +7,7 @@ import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
 
-public record RegisterRequest(
+public record RegisterRequestDTO(
         @NotBlank(message = "El correo no puede estar vació")
         @Email(message = "Formató no válido, ej:tucorreo@example.com")
         String email,
