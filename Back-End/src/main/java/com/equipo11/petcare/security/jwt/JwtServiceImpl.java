@@ -52,7 +52,7 @@ public class JwtServiceImpl implements JwtService{
     @Override
     public List<String> getRolesFromToken(String token) {
         DecodedJWT jwt =JWT.require(getAlgorithm()).build().verify(token);
-        return jwt.getClaim("roles").asList(String.class);
+        return jwt.getClaim("role").asList(String.class);
     }
 
     private Algorithm getAlgorithm() {

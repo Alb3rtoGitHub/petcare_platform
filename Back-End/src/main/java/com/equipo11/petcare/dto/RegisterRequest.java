@@ -6,7 +6,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
-import java.util.Set;
 
 public record RegisterRequest(
         @NotBlank(message = "El correo no puede estar vació")
@@ -42,6 +41,7 @@ public record RegisterRequest(
         @Valid
         AddressDTO address,
 
-        String  role
+        @NotNull
+        ERole role
 ) {
 }

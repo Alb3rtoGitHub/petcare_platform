@@ -3,7 +3,9 @@ package com.equipo11.petcare.service;
 import com.equipo11.petcare.dto.AuthResponse;
 import com.equipo11.petcare.dto.RegisterRequest;
 import com.equipo11.petcare.model.address.Address;
+import com.equipo11.petcare.model.user.Owner;
 import com.equipo11.petcare.model.user.Role;
+import com.equipo11.petcare.model.user.Sitter;
 import com.equipo11.petcare.model.user.User;
 import com.equipo11.petcare.model.user.enums.ERole;
 import com.equipo11.petcare.repository.RoleRepository;
@@ -38,36 +40,50 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public AuthResponse register(RegisterRequest request) {
+    public AuthResponse registerUser(RegisterRequest request) {
         if (userRepo.findByEmail(request.email()).isPresent())
             throw new IllegalArgumentException("Email ya está en uso!");
 
+        Address address = addressService.resolveAddress(request.address());
+        User newUser;
         Role role;
-        if (request.role().equals("ROLE_OWNER")){
+        Set<Role> roles = new HashSet<>();
+
+        if (ERole.ROLE_OWNER.equals(request.role())){
             role = roleRepo.findByName(ERole.ROLE_OWNER);
-        } else if (request.role().equals("ROLE_SITTER"))
+            roles.add(role);
+            Owner user = Owner.builder()
+                    .email(request.email())
+                    .password(passwordEncoder.encode(request.password()))
+                    .firstName(request.firstName())
+                    .lastName(request.lastName())
+                    .birthDate(request.birthdate())
+                    .phoneNumber(request.phoneNumber())
+                    .address(address)
+                    .roles(roles)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            newUser = user;
+        } else if (ERole.ROLE_SITTER.equals(request.role())) {
             role = roleRepo.findByName(ERole.ROLE_SITTER);
-        else
+            roles.add(role);
+            Sitter user = Sitter.builder()
+                    .email(request.email())
+                    .password(passwordEncoder.encode(request.password()))
+                    .firstName(request.firstName())
+                    .lastName(request.lastName())
+                    .birthDate(request.birthdate())
+                    .phoneNumber(request.phoneNumber())
+                    .address(address)
+                    .roles(roles)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            newUser = user;
+        } else
             throw new IllegalArgumentException("Tipo de usuario no válido");
 
-        Set<Role> roles = new HashSet<>();
-        roles.add(role);
-        Address address = addressService.resolveAddress(request.address());
-
-        User newUser = User.builder()
-                .email(request.email())
-                .password(passwordEncoder.encode(request.password()))
-                .firstName(request.firstName())
-                .lastName(request.lastName())
-                .birthDate(request.birthdate())
-                .phoneNumber(request.phoneNumber())
-                .address(address)
-                .roles(roles)
-                .createdAt(LocalDateTime.now())
-                .build();
 
         userRepo.save(newUser);
-
         return new AuthResponse(jwtService.generateToken(newUser));
     }
 }

@@ -17,6 +17,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 public class SecurityConfig {
 
+    private static final String API_V1 = "/api/v1";
+
     private final SecurityFilter filter;
 
     private final UserDetailsService userDetailsService;
@@ -38,9 +40,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authRequest ->
                         authRequest
-                                .requestMatchers(HttpMethod.POST, "/user/register").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/auth").permitAll()
-                                .requestMatchers(HttpMethod.DELETE, "/auth").hasAuthority("ROLE_ADMIN")
+                                .requestMatchers(HttpMethod.POST, API_V1 + "/user/register").permitAll()
+                                .requestMatchers(HttpMethod.POST, API_V1 + "/auth").permitAll()
+                                .requestMatchers(HttpMethod.DELETE, API_V1 +"/auth").hasAuthority("ROLE_ADMIN")
                                 .anyRequest().authenticated())
                 .sessionManagement(sessionManager ->
                         sessionManager

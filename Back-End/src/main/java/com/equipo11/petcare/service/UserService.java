@@ -5,5 +5,5 @@ import com.equipo11.petcare.dto.RegisterRequest;
 
 public interface UserService {
 
-    AuthResponse register(RegisterRequest request);
+    AuthResponse registerUser(RegisterRequest request);
 }
