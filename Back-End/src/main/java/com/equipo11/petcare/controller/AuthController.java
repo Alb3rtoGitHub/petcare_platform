@@ -29,7 +29,6 @@ public class AuthController {
     @PostMapping("/register")
     @Transactional
     public ResponseEntity<AuthResponseDTO> registerUser(@Valid @RequestBody RegisterRequestDTO request) {
-        System.out.println("aca estamos-1");
         AuthResponseDTO response = authService.registerUser(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }

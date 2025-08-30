@@ -62,12 +62,10 @@ public class AuthServiceImpl implements AuthService{
     public AuthResponseDTO registerUser(RegisterRequestDTO request) {
         if (userRepo.findByEmail(request.email()).isPresent())
             throw new IllegalArgumentException("Email ya está en uso!");
-        System.out.println("aca estamos");
         Address address = addressService.resolveAddress(request.address());
         User newUser;
         Role role;
         Set<Role> roles = new HashSet<>();
-        System.out.println("aca estamos2");
         if (ERole.ROLE_OWNER.equals(request.role())){
             role = roleRepo.findByName(ERole.ROLE_OWNER);
             roles.add(role);
@@ -98,7 +96,6 @@ public class AuthServiceImpl implements AuthService{
                     .createdAt(LocalDateTime.now())
                     .build();
             newUser = user;
-            System.out.println("aca estamos3");
         } else
             throw new IllegalArgumentException("Tipo de usuario no válido");
 
