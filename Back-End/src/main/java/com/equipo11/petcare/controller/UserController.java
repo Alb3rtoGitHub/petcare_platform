@@ -1,7 +1,10 @@
 package com.equipo11.petcare.controller;
 
+import com.equipo11.petcare.dto.UpdateUserRequestDTO;
 import com.equipo11.petcare.dto.UserResponseDTO;
 import com.equipo11.petcare.service.UserService;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +27,11 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> updateUser(){
-        return null;
+    @Transactional
+    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long id,
+                                                      @RequestHeader("Authorization") String authHeader,
+                                                      @Valid @RequestBody UpdateUserRequestDTO request){
+        UserResponseDTO response = userService.updateUser(id, request, authHeader);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }

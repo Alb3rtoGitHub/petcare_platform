@@ -57,5 +57,5 @@ public class User {
 
     private LocalDateTime updatedAt;
 
-    private boolean verified;
+    private boolean verified = false;
 }

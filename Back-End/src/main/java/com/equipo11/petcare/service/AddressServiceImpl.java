@@ -41,13 +41,29 @@ public class AddressServiceImpl implements AddressService{
         City city = cityRepo.findByNameAndRegion(dto.city(), region)
                 .orElseThrow(() -> new IllegalArgumentException("Ciudad no válida para la región"));
 
-        Address address = Address.builder()
+        return Address.builder()
                 .city(city)
                 .streetName(dto.streetName())
                 .streetNumber(dto.streetNumber())
                 .unit(dto.unit())
                 .build();
+    }
 
+    @Override
+    public Address updateAddress(Long userId, AddressDTO dto) {
+        Address address = addressRepo.findByUserId(userId);
+        Address newAddress = resolveAddress(dto);
+        if (address.equals(newAddress)) {
+
+            return address;
+        } else {
+            addressRepo.delete(address);
+            return newAddress;
+        }
+    }
+
+    @Override
+    public Address createAddress(Address address) {
         return addressRepo.save(address);
     }
 }

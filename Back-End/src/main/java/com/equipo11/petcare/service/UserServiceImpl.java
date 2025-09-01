@@ -1,6 +1,6 @@
 package com.equipo11.petcare.service;
 
-import com.equipo11.petcare.dto.UserRequestDTO;
+import com.equipo11.petcare.dto.UpdateUserRequestDTO;
 import com.equipo11.petcare.dto.UserResponseDTO;
 import com.equipo11.petcare.model.user.User;
 import com.equipo11.petcare.repository.UserRepository;
@@ -12,11 +12,14 @@ public class UserServiceImpl implements UserService{
 
     private final TokenParser tokenParser;
     private final UserRepository userRepository;
+    private final AddressService addressService;
 
     public UserServiceImpl(TokenParser tokenParser,
-                           UserRepository userRepository) {
+                           UserRepository userRepository,
+                           AddressServiceImpl addressService) {
         this.tokenParser = tokenParser;
         this.userRepository = userRepository;
+        this.addressService = addressService;
     }
 
     @Override
@@ -26,8 +29,16 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public UserResponseDTO updateUser(Long id, UserRequestDTO request) {
-        return null;
+    public UserResponseDTO updateUser(Long id, UpdateUserRequestDTO request, String bearer) {
+        User user = confirmIdAndIdUserToken(id, bearer);
+        user.setPhoneNumber(request.phoneNumber());
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
+        user.setBirthDate(request.birthdate());
+        user.setAddress(addressService.createAddress(
+                addressService.updateAddress(id, request.address())));
+        userRepository.save(user);
+        return new UserResponseDTO(user);
     }
 
     @Override
