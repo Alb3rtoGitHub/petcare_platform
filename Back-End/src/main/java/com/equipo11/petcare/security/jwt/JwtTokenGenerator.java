@@ -3,6 +3,8 @@ package com.equipo11.petcare.security.jwt;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.equipo11.petcare.model.user.User;
+import com.equipo11.petcare.security.UserDetailsImpl;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -19,16 +21,16 @@ public class JwtTokenGenerator implements TokenGenerator{
     }
 
     @Override
-    public String generateToken(User user) {
+    public String generateToken(UserDetailsImpl user) {
         Instant now = Instant.now();
         return JWT.create()
                 .withIssuer("petcare")
                 .withIssuedAt(now)
                 .withExpiresAt(now.plusSeconds(expirationMs))
-                .withSubject(user.getEmail())
-                .withClaim("roles", user.getRoles()
+                .withSubject(user.getUsername())
+                .withClaim("roles", user.getAuthorities()
                         .stream()
-                        .map(r -> r.getName().name())
+                        .map(GrantedAuthority::getAuthority)
                         .toList()
                 )
                 .sign(algorithm);

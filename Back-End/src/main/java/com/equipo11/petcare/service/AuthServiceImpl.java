@@ -11,10 +11,12 @@ import com.equipo11.petcare.model.user.User;
 import com.equipo11.petcare.model.user.enums.ERole;
 import com.equipo11.petcare.repository.RoleRepository;
 import com.equipo11.petcare.repository.UserRepository;
+import com.equipo11.petcare.security.UserDetailsImpl;
 import com.equipo11.petcare.security.jwt.TokenGenerator;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -48,14 +50,15 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     public AuthResponseDTO authCredential(AuthRequestDTO request) {
-        Authentication aut = authManager.authenticate(
+        Authentication auth = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.email(),
                         request.password()));
+        var user = (UserDetailsImpl) auth.getPrincipal();
+        var userId = user.getId();
 
-        User user = userRepo.findByEmail(request.email()).get();
 
-        return new AuthResponseDTO(tokenGenerator.generateToken(user));
+        return new AuthResponseDTO(user.getId(), tokenGenerator.generateToken(user));
     }
 
     @Override
@@ -99,8 +102,8 @@ public class AuthServiceImpl implements AuthService{
         } else
             throw new IllegalArgumentException("Tipo de usuario no válido");
 
+        var userDetails = new UserDetailsImpl(userRepo.save(newUser));
 
-        userRepo.save(newUser);
-        return new AuthResponseDTO(tokenGenerator.generateToken(newUser));
+        return new AuthResponseDTO(newUser.getId(), tokenGenerator.generateToken(userDetails));
     }
 }

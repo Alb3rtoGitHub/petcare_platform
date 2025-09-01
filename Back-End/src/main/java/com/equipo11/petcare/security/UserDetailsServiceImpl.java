@@ -23,9 +23,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         var user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Email no registrado"));
-        return new User(user.getEmail(),
-                user.getPassword(),
-                Collections.singletonList(new SimpleGrantedAuthority(user
-                        .getRoles().iterator().next().getName().name())));
+
+        return new UserDetailsImpl(user);
     }
 }

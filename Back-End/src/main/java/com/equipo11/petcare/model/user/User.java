@@ -57,4 +57,5 @@ public class User {
 
     private LocalDateTime updatedAt;
 
+    private boolean verified;
 }

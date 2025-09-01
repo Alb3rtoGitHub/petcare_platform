@@ -22,4 +22,9 @@ public class UserController {
         UserResponseDTO response = userService.getUser(id, authHeader);
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserResponseDTO> updateUser(){
+        return null;
+    }
 }
