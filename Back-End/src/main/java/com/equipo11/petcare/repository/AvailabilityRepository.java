@@ -12,7 +12,7 @@ import java.util.List;
 
 @Repository
 public interface AvailabilityRepository extends JpaRepository<Availability, Long> {
-    @Query("SELECT a FROM Availability a WHERE a.sitter.user.id " +
+    @Query("SELECT a FROM Availability a WHERE a.sitter.id = :sitterId " +
             "AND a.active = true " +
             "AND (:serviceName IS NULL OR a.serviceName = :serviceName)")
     List<Availability> findBySitterIdAndServiceNameAndActiveTrue(
@@ -21,7 +21,7 @@ public interface AvailabilityRepository extends JpaRepository<Availability, Long
     );
 
     // Verificar solapamiento: hay disponibilidad en el rango [startTime, endTime]
-    @Query("SELECT a FROM Availability a WHERE a.sitter.user.id = :sitterId " +
+    @Query("SELECT a FROM Availability a WHERE a.sitter.id = :sitterId " +
             "AND a.active = true " +
             "AND a.startTime < :endTime AND a.endTime > :startTime")
     List<Availability> findOverlappingAvailabilities(
