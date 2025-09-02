@@ -15,6 +15,9 @@ import java.time.LocalDateTime;
 /**
  * Validador de reglas de dominio para Booking.
  * Mantiene el código limpio y separa responsabilidades del servicio.
+ * Se encarga de validar todas las reglas de negocio relacionadas con las
+ * reservas,
+ * incluyendo creación y transiciones de estado.
  */
 @Component
 public class BookingValidator {
@@ -25,13 +28,26 @@ public class BookingValidator {
     this.petService = petService;
   }
 
-  // --- Validaciones de creación ---
+  /**
+   * Valida una solicitud de creación de reserva completa.
+   * 
+   * @param request DTO con los datos de la reserva a crear
+   * @throws ValidationException si alguna de las validaciones falla
+   */
   public void validateBookingRequest(BookingCreateRequest request) {
     validateBookingDates(request.startDateTime(), request.endDateTime());
     validatePetOwnership(request.petId(), request.ownerId());
     validateSitterAvailability(request.sitterId(), request.startDateTime(), request.endDateTime());
   }
 
+  /**
+   * Valida que las fechas de la reserva sean coherentes.
+   * 
+   * @param startDateTime fecha y hora de inicio
+   * @param endDateTime   fecha y hora de fin
+   * @throws ValidationException si las fechas son nulas o si la fecha de inicio
+   *                             es posterior a la de fin
+   */
   public void validateBookingDates(LocalDateTime startDateTime, LocalDateTime endDateTime) {
     if (startDateTime == null || endDateTime == null) {
       throw new ValidationException("Las fechas de inicio y fin son obligatorias");
@@ -41,6 +57,14 @@ public class BookingValidator {
     }
   }
 
+  /**
+   * Verifica que la mascota pertenezca al propietario indicado.
+   * 
+   * @param petId   ID de la mascota
+   * @param ownerId ID del propietario
+   * @throws ValidationException si los IDs son nulos o si la mascota no pertenece
+   *                             al propietario
+   */
   public void validatePetOwnership(Long petId, Long ownerId) {
     if (petId == null || ownerId == null) {
       throw new ValidationException("Los identificadores de mascota y propietario son obligatorios");
@@ -50,21 +74,45 @@ public class BookingValidator {
     }
   }
 
+  /**
+   * Valida la disponibilidad del cuidador para las fechas solicitadas.
+   * 
+   * @param sitterId      ID del cuidador
+   * @param startDateTime fecha y hora de inicio
+   * @param endDateTime   fecha y hora de fin
+   * @throws ValidationException si el ID del cuidador es nulo
+   */
   public void validateSitterAvailability(Long sitterId, LocalDateTime startDateTime, LocalDateTime endDateTime) {
     if (sitterId == null) {
       throw new ValidationException("El identificador del cuidador es obligatorio");
     }
     // La validación de disponibilidad se delegará al servicio durante la creación
-    // Aquí solo verificamos que las fechas sean válidas y presentes (ya validado arriba)
+    // Aquí solo verificamos que las fechas sean válidas y presentes (ya validado
+    // arriba)
   }
 
-  // --- Validaciones de cambio de estado ---
+  /**
+   * Valida una transición de estado completa para una reserva.
+   * 
+   * @param booking     reserva a modificar
+   * @param newStatus   nuevo estado deseado
+   * @param currentUser usuario que intenta realizar el cambio
+   * @throws ValidationException   si la transición no es válida
+   * @throws AccessDeniedException si el usuario no tiene permisos
+   */
   public void validateStatusTransition(Booking booking, BookingStatus newStatus, User currentUser) {
     validateStatusChange(booking.getStatus(), newStatus);
     validateUserPermissions(booking, newStatus, currentUser);
     validateStatusSequence(booking.getStatus(), newStatus);
   }
 
+  /**
+   * Verifica que el estado nuevo sea diferente al actual.
+   * 
+   * @param currentStatus estado actual de la reserva
+   * @param newStatus     nuevo estado deseado
+   * @throws ValidationException si los estados son iguales
+   */
   public void validateStatusChange(BookingStatus currentStatus, BookingStatus newStatus) {
     if (currentStatus == newStatus) {
       throw new ValidationException(
@@ -72,6 +120,14 @@ public class BookingValidator {
     }
   }
 
+  /**
+   * Valida los permisos del usuario para cambiar el estado de una reserva.
+   * 
+   * @param booking     reserva a modificar
+   * @param newStatus   nuevo estado deseado
+   * @param currentUser usuario que intenta realizar el cambio
+   * @throws AccessDeniedException si el usuario no tiene permisos suficientes
+   */
   public void validateUserPermissions(Booking booking, BookingStatus newStatus, User currentUser) {
     if (isAdmin(currentUser)) {
       return; // Admin puede hacer cualquier transición
@@ -87,22 +143,57 @@ public class BookingValidator {
     throw new AccessDeniedException("No tienes permisos para modificar el estado de la reserva");
   }
 
+  /**
+   * Verifica si el usuario tiene rol de administrador.
+   * 
+   * @param user usuario a verificar
+   * @return true si el usuario es administrador
+   */
   public boolean isAdmin(User user) {
     return hasRole(user, ERole.ROLE_ADMIN);
   }
 
+  /**
+   * Verifica si el usuario tiene rol de propietario.
+   * 
+   * @param user usuario a verificar
+   * @return true si el usuario es propietario
+   */
   public boolean isOwner(User user) {
     return hasRole(user, ERole.ROLE_OWNER);
   }
 
+  /**
+   * Verifica si el usuario tiene rol de cuidador.
+   * 
+   * @param user usuario a verificar
+   * @return true si el usuario es cuidador
+   */
   public boolean isSitter(User user) {
     return hasRole(user, ERole.ROLE_SITTER);
   }
 
+  /**
+   * Verifica si el usuario tiene un rol específico.
+   * 
+   * @param user usuario a verificar
+   * @param role rol a buscar
+   * @return true si el usuario tiene el rol especificado
+   */
   public boolean hasRole(User user, ERole role) {
     return user.getRoles().stream().anyMatch(r -> r.getName() == role);
   }
 
+  /**
+   * Valida las transiciones de estado permitidas para un propietario.
+   * 
+   * @param booking     reserva a modificar
+   * @param newStatus   nuevo estado deseado
+   * @param currentUser usuario propietario que intenta realizar el cambio
+   * @throws ValidationException   si la transición no está permitida
+   * @throws AccessDeniedException si el usuario no es el propietario de la
+   *                               reserva
+   */
   public void validateOwnerStatusTransition(Booking booking, BookingStatus newStatus, User currentUser) {
     if (!booking.getOwner().getId().equals(currentUser.getId())) {
       throw new AccessDeniedException("Error de permisos: No eres el dueño de esta reserva");
@@ -117,6 +208,16 @@ public class BookingValidator {
     }
   }
 
+  /**
+   * Valida las transiciones de estado permitidas para un cuidador.
+   * 
+   * @param booking     reserva a modificar
+   * @param newStatus   nuevo estado deseado
+   * @param currentUser usuario cuidador que intenta realizar el cambio
+   * @throws ValidationException   si la transición no está permitida
+   * @throws AccessDeniedException si el usuario no es el cuidador asignado a la
+   *                               reserva
+   */
   public void validateSitterStatusTransition(Booking booking, BookingStatus newStatus, User currentUser) {
     if (!booking.getSitter().getId().equals(currentUser.getId())) {
       throw new AccessDeniedException(
@@ -135,6 +236,13 @@ public class BookingValidator {
     }
   }
 
+  /**
+   * Valida que la secuencia de estados sea correcta según las reglas de negocio.
+   * 
+   * @param currentStatus estado actual de la reserva
+   * @param newStatus     nuevo estado deseado
+   * @throws ValidationException si la transición de estados no está permitida
+   */
   public void validateStatusSequence(BookingStatus currentStatus, BookingStatus newStatus) {
     boolean isValidTransition = switch (currentStatus) {
       case PENDING -> newStatus == BookingStatus.CONFIRMED || newStatus == BookingStatus.CANCELLED;
