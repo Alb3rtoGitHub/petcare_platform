@@ -4,7 +4,9 @@ import com.equipo11.petcare.dto.PetAddRequestDTO;
 import com.equipo11.petcare.dto.PetDeleteRequestDTO;
 import com.equipo11.petcare.dto.PetResponseDTO;
 import com.equipo11.petcare.dto.PetUpdateRequestDTO;
+import org.springframework.stereotype.Service;
 
+@Service
 public class PetServiceImpl implements PetService{
     @Override
     public PetResponseDTO addpet(PetAddRequestDTO request) {
@@ -19,5 +21,10 @@ public class PetServiceImpl implements PetService{
     @Override
     public void deletePet(PetDeleteRequestDTO request) {
 
+    }
+
+    @Override
+    public boolean belongsToOwner(Long petId, Long OwnerId) {
+        return false;
     }
 }

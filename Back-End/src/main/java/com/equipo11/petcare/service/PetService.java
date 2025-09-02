@@ -11,4 +11,6 @@ public interface PetService {
     PetResponseDTO updatePet(PetUpdateRequestDTO request);
 
     void deletePet(PetDeleteRequestDTO request);
+
+    boolean belongsToOwner(Long petId, Long OwnerId);
 }
