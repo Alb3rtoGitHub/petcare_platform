@@ -57,5 +57,6 @@ public class User {
 
     private LocalDateTime updatedAt;
 
+    @Column(nullable = false)
     private boolean verified = false;
 }

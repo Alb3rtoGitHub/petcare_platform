@@ -33,6 +33,14 @@ public class AuthController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+
+    @GetMapping("/confirm")
+    @Transactional
+    public ResponseEntity<?> confirmEmail(@RequestParam String token){
+        var response = authService.validateEmail(token);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @DeleteMapping
     public void test() {
         System.out.println("test");
