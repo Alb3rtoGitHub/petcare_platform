@@ -40,9 +40,4 @@ public class AuthController {
         var response = authService.validateEmail(token);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
-    @DeleteMapping
-    public void test() {
-        System.out.println("test");
-    }
 }
