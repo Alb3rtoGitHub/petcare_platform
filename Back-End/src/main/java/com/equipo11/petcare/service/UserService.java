@@ -1,7 +1,6 @@
 package com.equipo11.petcare.service;
 
 import com.equipo11.petcare.dto.UpdateUserRequestDTO;
-import com.equipo11.petcare.dto.UserRequestDTO;
 import com.equipo11.petcare.dto.UserResponseDTO;
 
 public interface UserService {

@@ -7,6 +7,8 @@ import com.equipo11.petcare.repository.UserRepository;
 import com.equipo11.petcare.security.jwt.TokenParser;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 public class UserServiceImpl implements UserService{
 
@@ -35,8 +37,8 @@ public class UserServiceImpl implements UserService{
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
         user.setBirthDate(request.birthdate());
-        user.setAddress(addressService.createAddress(
-                addressService.updateAddress(id, request.address())));
+        user.setAddress(addressService.updateAddress(id, request.address()));
+        user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
         return new UserResponseDTO(user);
     }

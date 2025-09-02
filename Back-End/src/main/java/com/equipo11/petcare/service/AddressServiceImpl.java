@@ -52,15 +52,14 @@ public class AddressServiceImpl implements AddressService{
     @Override
     public Address updateAddress(Long userId, AddressDTO dto) {
         Address address = addressRepo.findByUserId(userId);
-        Address newAddress = resolveAddress(dto);
-        if (address.equals(newAddress)) {
-
-            return address;
-        } else {
-            addressRepo.delete(address);
-            return newAddress;
+        Address normalizeNewAddress = resolveAddress(dto);
+        address.setCity(normalizeNewAddress.getCity());
+        address.setStreetName(normalizeNewAddress.getStreetName());
+        address.setStreetNumber(normalizeNewAddress.getStreetNumber());
+        address.setUnit(normalizeNewAddress.getUnit());
+        addressRepo.save(address);
+        return address;
         }
-    }
 
     @Override
     public Address createAddress(Address address) {

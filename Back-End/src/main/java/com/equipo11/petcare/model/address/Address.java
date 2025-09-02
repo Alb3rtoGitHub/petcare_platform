@@ -1,5 +1,6 @@
 package com.equipo11.petcare.model.address;
 
+import com.equipo11.petcare.model.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,4 +28,7 @@ public class Address {
     @ManyToOne
     @JoinColumn(name = "city_id", nullable = false)
     private City city;
+
+    @OneToOne(mappedBy = "address", fetch = FetchType.LAZY)
+    private User user;
 }

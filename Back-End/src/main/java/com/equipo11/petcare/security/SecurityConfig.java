@@ -44,8 +44,10 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST, API_V1 + "/auth/register").permitAll()
                                 .requestMatchers(HttpMethod.POST, API_V1 + "/auth").permitAll()
                                 .requestMatchers(HttpMethod.DELETE, API_V1 +"/auth").hasAuthority("ROLE_ADMIN")
-                                .requestMatchers(HttpMethod.GET, API_V1 +"/USER/**")
+                                .requestMatchers(HttpMethod.GET, API_V1 +"/user/**")
                                                 .hasAnyAuthority("ROLE_OWNER", "ROLE_USER", "ROLE_ADMIN")
+                                .requestMatchers(HttpMethod.PUT, API_V1 +"/user/**")
+                                .hasAnyAuthority("ROLE_OWNER", "ROLE_USER", "ROLE_ADMIN")
                                 .anyRequest().authenticated())
                 .sessionManagement(sessionManager ->
                         sessionManager

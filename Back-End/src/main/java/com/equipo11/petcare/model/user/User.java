@@ -39,8 +39,8 @@ public class User {
     @Column(nullable = false)
     private LocalDate birthDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "address_id", nullable = false)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "address_id", unique = true, nullable = false)
     private Address address;
 
     @Column(nullable = false, length = 20)
