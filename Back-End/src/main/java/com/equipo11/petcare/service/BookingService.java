@@ -16,11 +16,7 @@ public interface BookingService {
 
   public BigDecimal calculatePrice(Long serviceId, LocalDateTime start, Long sistterId);
 
-  // New API with security context
   public BookingResponse addBooking(BookingCreateRequest request, User currentUser);
 
   public BookingResponse updateStatus(UUID bookingId, BookingStatus newStatus, User currentUser);
-
-  // Legacy API kept for backward compatibility in unit tests
-  //public com.equipo11.petcare.model.booking.Booking addBooking(BookingCreateRequest request);
 }

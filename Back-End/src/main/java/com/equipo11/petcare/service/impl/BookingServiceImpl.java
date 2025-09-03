@@ -16,7 +16,6 @@ import com.equipo11.petcare.dto.BookingResponse;
 import com.equipo11.petcare.model.booking.Booking;
 import com.equipo11.petcare.model.booking.BookingStatus;
 import com.equipo11.petcare.model.user.User;
-import com.equipo11.petcare.model.user.enums.ERole;
 import com.equipo11.petcare.repository.JpaBookingRepository;
 import com.equipo11.petcare.service.BookingService;
 import com.equipo11.petcare.service.PetServiceImpl;
@@ -25,7 +24,7 @@ import com.equipo11.petcare.validator.BookingValidator;
 
 @Service
 @Transactional
-public class BookingServieImpl implements BookingService {
+public class BookingServiceImpl implements BookingService {
   private final JpaBookingRepository bookingRepository;
   private final SitterService sitterSevice;
   private final PetServiceImpl petService;
@@ -33,11 +32,11 @@ public class BookingServieImpl implements BookingService {
   BookingValidator bookingValidator;
 
   @Autowired
-  public BookingServieImpl(JpaBookingRepository bookingRepository,
-      SitterService sitterService,
-      PetServiceImpl petService,
-      ConversionService conversionService,
-      BookingValidator bookingValidator) {
+  public BookingServiceImpl(JpaBookingRepository bookingRepository,
+                            SitterService sitterService,
+                            PetServiceImpl petService,
+                            ConversionService conversionService,
+                            BookingValidator bookingValidator) {
     this.bookingRepository = bookingRepository;
     this.sitterSevice = sitterService;
     this.petService = petService;
