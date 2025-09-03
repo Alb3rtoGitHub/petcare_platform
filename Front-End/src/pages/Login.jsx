@@ -17,21 +17,23 @@ export default function Login() {
   }
 
   return (
-    <form onSubmit={submit} className="max-w-md mx-auto card space-y-4">
-      <h1 className="text-2xl font-bold">Ingresar</h1>
-      <label className="block">
-        <span className="text-sm">Nombre</span>
-        <input className="mt-1 w-full border rounded-xl p-2 bg-transparent" value={name} onChange={e=>setName(e.target.value)} placeholder="Tu nombre" />
-      </label>
-      <label className="block">
-        <span className="text-sm">Rol</span>
-        <select className="mt-1 w-full border rounded-xl p-2 bg-transparent" value={role} onChange={e=>setRole(e.target.value)}>
-          <option value="owner">Dueño</option>
-          <option value="sitter">Cuidador</option>
-          <option value="admin">Administrador</option>
-        </select>
-      </label>
-      <button className="btn btn-primary w-full">Entrar</button>
-    </form>
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center px-4">
+      <form onSubmit={submit} className="max-w-md w-full card space-y-4 bg-white shadow-lg">
+        <h1 className="text-2xl font-bold text-center text-gray-800">Iniciar Sesión</h1>
+        <label className="block">
+          <span className="text-sm text-gray-600">Nombre</span>
+          <input className="mt-1 w-full border border-gray-300 rounded-xl p-3 bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500" value={name} onChange={e=>setName(e.target.value)} placeholder="Tu nombre" />
+        </label>
+        <label className="block">
+          <span className="text-sm text-gray-600">Rol</span>
+          <select className="mt-1 w-full border border-gray-300 rounded-xl p-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" value={role} onChange={e=>setRole(e.target.value)}>
+            <option value="owner">Dueño</option>
+            <option value="sitter">Cuidador</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </label>
+        <button className="bg-gray-800 text-white w-full py-3 rounded-xl font-medium hover:bg-gray-700 transition-colors">Entrar</button>
+      </form>
+    </div>
   )
 }
