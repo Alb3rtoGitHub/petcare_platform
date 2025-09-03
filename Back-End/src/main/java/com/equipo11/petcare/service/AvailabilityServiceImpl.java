@@ -20,21 +20,17 @@ import java.util.stream.Collectors;
 public class AvailabilityServiceImpl implements AvailabilityService {
 
     private final AvailabilityRepository availabilityRepository;
-    private final UserService userService;
+    private final SitterService sitterService;
 
-    // Precios mínimos recomendados para cada servicio
-    private static final double MIN_HOURLY_RATE = 10.0;  // Precio mínimo por hora
-    private static final double MIN_DAILY_RATE = 30.0;   // Precio mínimo por día
-
-    public AvailabilityServiceImpl(AvailabilityRepository availabilityRepository, UserService userService) {
+    public AvailabilityServiceImpl(AvailabilityRepository availabilityRepository, SitterService sitterService) {
         this.availabilityRepository = availabilityRepository;
-        this.userService = userService;
+        this.sitterService = sitterService;
     }
 
     @Override
     public AvailabilityResponseDTO createAvailability(Long sitterId, AvailabilityRequestDTO availabilityRequestDTO) {
         System.out.println("Id" + sitterId);
-        Sitter sitter = userService.findSitterById(sitterId)
+        Sitter sitter = sitterService.findSitterById(sitterId)
                 .orElseThrow(() -> new BusinessException("Sitter not found"));
 
         dateValidation(availabilityRequestDTO.startTime(), availabilityRequestDTO.endTime());
@@ -51,21 +47,12 @@ public class AvailabilityServiceImpl implements AvailabilityService {
             throw new BusinessException("Availability overlaps with existing schedule");
         }
 
-        // Validar que el precio sea apropiado para el tipo de servicio
-        validatePrice(
-                availabilityRequestDTO.serviceName(),
-                availabilityRequestDTO.startTime(),
-                availabilityRequestDTO.endTime(),
-                availabilityRequestDTO.price()
-        );
-
         Availability availability = Availability.builder()
                 .sitter(sitter)
                 .serviceName(availabilityRequestDTO.serviceName())
                 .startTime(availabilityRequestDTO.startTime())
                 .endTime(availabilityRequestDTO.endTime())
                 .active(true)
-                .price(availabilityRequestDTO.price())
                 .build();
 
         Availability savedAvailability = availabilityRepository.save(availability);
@@ -117,6 +104,12 @@ public class AvailabilityServiceImpl implements AvailabilityService {
             if (!startTime.isBefore(endTime)) {
                 throw new BusinessException("Start date must be before end date for pet daycare");
             }
+
+            long nights = calculateNights(startTime, endTime);
+            //Validar que la duración sea de al menos una noche, sea un valor entero y no sea un valor negativo
+            if (nights < 1 || nights % 1 != 0) {
+                throw new BusinessException("Pet daycare must be in full-night blocks (1n, 2n, 3n, etc.)");
+            }
         }
     }
 
@@ -128,36 +121,6 @@ public class AvailabilityServiceImpl implements AvailabilityService {
         ).toDays();
     }
 
-    private void validatePrice(ServiceName serviceName, LocalDateTime startTime, LocalDateTime endTime, double price) {
-        double minExpectedPrice;
-
-        switch (serviceName) {
-            case WALKING, PET_SITTING -> {
-                long hours = Duration.between(startTime, endTime).toHours();
-                minExpectedPrice = hours * MIN_HOURLY_RATE;
-
-                if (price < minExpectedPrice) {
-                    throw new BusinessException(String.format(
-                            "El precio mínimo para %s es de $%.2f por hora. Para %d hora(s), el precio mínimo es $%.2f",
-                            serviceName.toString().toLowerCase(), MIN_HOURLY_RATE, hours, minExpectedPrice
-                    ));
-                }
-            }
-            case PET_DAYCARE -> {
-                long nights = calculateNights(startTime, endTime);
-                minExpectedPrice = nights * MIN_DAILY_RATE;
-
-                if (price < minExpectedPrice) {
-                    throw new BusinessException(String.format(
-                            "El precio mínimo para guardería es de $%.2f por noche. Para %d noche(s), el precio mínimo es $%.2f",
-                            MIN_DAILY_RATE, nights, minExpectedPrice
-                    ));
-                }
-            }
-        }
-
-    }
-
     private AvailabilityResponseDTO toResponse(Availability availability) {
         return new AvailabilityResponseDTO(
                 availability.getId(),
@@ -165,7 +128,6 @@ public class AvailabilityServiceImpl implements AvailabilityService {
                 availability.getServiceName(),
                 availability.getStartTime(),
                 availability.getEndTime(),
-                availability.getPrice(),
                 availability.getActive()
         );
     }

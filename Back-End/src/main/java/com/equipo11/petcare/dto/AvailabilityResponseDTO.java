@@ -10,6 +10,5 @@ public record AvailabilityResponseDTO(
         ServiceName serviceName,
         LocalDateTime startTime,
         LocalDateTime endTime,
-        double price,
         boolean active
 ) {}

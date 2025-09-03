@@ -2,7 +2,6 @@ package com.equipo11.petcare.service;
 
 import com.equipo11.petcare.dto.AuthResponse;
 import com.equipo11.petcare.dto.RegisterRequest;
-import com.equipo11.petcare.exception.BusinessException;
 import com.equipo11.petcare.model.address.Address;
 import com.equipo11.petcare.model.user.Owner;
 import com.equipo11.petcare.model.user.Role;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -87,32 +85,5 @@ public class UserServiceImpl implements UserService {
 
         userRepo.save(newUser);
         return new AuthResponse(jwtService.generateToken(newUser));
-    }
-
-    @Override
-    public Optional<Sitter> findSitterById(Long id) {
-        if (id == null) {
-            throw new IllegalArgumentException("Sitter ID cannot be null");
-        }
-
-        return userRepo.findById(id)
-                .map(user -> {
-                    if (user instanceof Sitter) {
-                        return (Sitter) user;
-                    }
-                    return null;
-                });
-    }
-
-    @Override
-    public Sitter getSitterByIdOrThrow(Long id) {
-        return findSitterById(id)
-                .orElseThrow(() -> new BusinessException("Sitter not found with id: " + id));
-    }
-
-    @Override
-    public User getUserById(Long id) {
-        return userRepo.findById(id)
-                .orElseThrow(() -> new BusinessException("User not found with id: " + id));
     }
 }
