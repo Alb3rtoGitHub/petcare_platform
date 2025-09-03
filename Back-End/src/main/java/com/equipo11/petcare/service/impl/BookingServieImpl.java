@@ -12,9 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.ValidationException;
 
 import com.equipo11.petcare.dto.BookingCreateRequest;
+import com.equipo11.petcare.dto.BookingResponse;
 import com.equipo11.petcare.model.booking.Booking;
 import com.equipo11.petcare.model.booking.BookingStatus;
 import com.equipo11.petcare.model.user.User;
+import com.equipo11.petcare.model.user.enums.ERole;
 import com.equipo11.petcare.repository.JpaBookingRepository;
 import com.equipo11.petcare.service.BookingService;
 import com.equipo11.petcare.service.PetServiceImpl;
@@ -62,10 +64,10 @@ public class BookingServieImpl implements BookingService {
   }
 
   @Override
-  public Booking addBooking(BookingCreateRequest request) {
+  public BookingResponse addBooking(BookingCreateRequest request, User currentUser) {
 
     // validaciones
-    bookingValidator.validateBookingRequest(request);
+    bookingValidator.validateBookingRequest(request, currentUser);
 
     // Verificar disponibilidad del cuidador y conflictos de reserva
     boolean available = checkAvailability(request.sitterId(), request.startDateTime(), request.endDateTime());
@@ -74,20 +76,22 @@ public class BookingServieImpl implements BookingService {
     }
 
     // Usar mapper
+    // guardar entidad mapeada
     Booking transformed = conversionService.convert(request, Booking.class);
     Booking result = bookingRepository.save(Objects.requireNonNull(transformed));
-    // guardar entidad mapeada
-    return conversionService.convert(result, Booking.class);
+    return conversionService.convert(result, BookingResponse.class);
   }
 
   @Override
-  public Booking updateStatus(UUID bookingId, BookingStatus newStatus, User currentUser) {
+  public BookingResponse updateStatus(UUID bookingId, BookingStatus newStatus, User currentUser) {
     Booking booking = bookingRepository.findById(bookingId)
         .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
     // validaciones
     bookingValidator.validateStatusTransition(booking, newStatus, currentUser);
     booking.setStatus(newStatus);
 
-    return bookingRepository.save(booking);
+    // Guardar y convertir a DTO
+    Booking bookingUpdate = bookingRepository.save(booking);
+    return conversionService.convert(bookingUpdate, BookingResponse.class);
   }
 }

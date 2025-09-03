@@ -4,6 +4,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public interface SitterService {
-    boolean hasAvailableSchedule(Long sistterId, LocalDateTime start,LocalDateTime end);
-    BigDecimal getServicePrice(Long serviceId,Long sistterId);
+  boolean hasAvailableSchedule(Long sistterId, LocalDateTime start, LocalDateTime end);
+
+  BigDecimal getServicePrice(Long serviceId, Long sistterId);
+
+  // Validation helper
+  void validateSitter(Long sitterId);
 }

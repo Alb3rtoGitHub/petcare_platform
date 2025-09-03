@@ -20,6 +20,9 @@ public interface BookingResponseMapper extends Converter<Booking, BookingRespons
   @Mapping(source = "sitter.id", target = "sitterId")
   @Mapping(source = "pet.id", target = "petId")
   @Mapping(source = "serviceEntities", target = "serviceIds", qualifiedByName = "mapServiceIds")
+  @Mapping(source = "status", target = "status")
+  @Mapping(source = "startDateTime", target = "startDateTime")
+  @Mapping(source = "endDateTime", target = "endDateTime")
 
   BookingResponse convert(Booking source);
 

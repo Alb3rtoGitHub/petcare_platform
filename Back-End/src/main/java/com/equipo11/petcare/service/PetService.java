@@ -13,4 +13,9 @@ public interface PetService {
     void deletePet(PetDeleteRequestDTO request);
 
     boolean belongsToOwner(Long petId, Long OwnerId);
+
+    // Validation helpers
+    void validatePetExists(Long petId);
+
+    void validatePetBelongsToOwner(Long petId, Long ownerId);
 }

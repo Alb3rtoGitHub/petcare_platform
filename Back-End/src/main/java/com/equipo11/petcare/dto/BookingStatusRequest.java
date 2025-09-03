@@ -12,6 +12,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BookingStatusRequest {
-  @NotNull
+  @NotNull(message = "El estado de la reserva no puede ser nulo")
   private BookingStatus bookingStatus;
 }
