@@ -1,6 +1,7 @@
 package com.equipo11.petcare.security;
 
 import com.equipo11.petcare.repository.UserRepository;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,6 +24,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         var user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Email no registrado"));
+
+        if (user.isDeleted())
+            throw new DisabledException("Usuario está eliminado");
 
         return new UserDetailsImpl(user);
     }

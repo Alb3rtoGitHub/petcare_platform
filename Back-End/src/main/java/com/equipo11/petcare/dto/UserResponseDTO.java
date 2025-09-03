@@ -19,13 +19,13 @@ public record UserResponseDTO(
                 user.getFirstName(),
                 user.getLastName(),
                 user.getBirthDate(),
-                AddressDTO.builder().city(
-                        user.getAddress().getStreetName())
+                AddressDTO.builder()
+                        .countryCode(user.getAddress().getCity().getRegion().getCountry().getCountryCode())
+                        .region(user.getAddress().getCity().getRegion().getName())
+                        .city(user.getAddress().getStreetName())
+                        .streetName(user.getAddress().getStreetName())
                         .streetNumber(user.getAddress().getStreetNumber())
                         .unit(user.getAddress().getUnit())
-                        .city(user.getAddress().getCity().getName())
-                        .region(user.getAddress().getCity().getRegion().getName())
-                        .countryCode(user.getAddress().getCity().getRegion().getCountry().getCountryCode())
                         .build());
     }
 }

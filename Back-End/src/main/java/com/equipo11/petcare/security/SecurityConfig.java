@@ -43,10 +43,6 @@ public class SecurityConfig {
                         authRequest
                                 .requestMatchers(HttpMethod.POST, API_V1 + "/auth/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, API_V1 +"/auth/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, API_V1 +"/user/**")
-                                                .hasAnyAuthority("ROLE_OWNER", "ROLE_USER", "ROLE_ADMIN")
-                                .requestMatchers(HttpMethod.PUT, API_V1 +"/user/**")
-                                .hasAnyAuthority("ROLE_OWNER", "ROLE_USER", "ROLE_ADMIN")
                                 .anyRequest().authenticated())
                 .sessionManagement(sessionManager ->
                         sessionManager

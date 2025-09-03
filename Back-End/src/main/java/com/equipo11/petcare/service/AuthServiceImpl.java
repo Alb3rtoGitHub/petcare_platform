@@ -16,8 +16,6 @@ import com.equipo11.petcare.security.email.VerificationToken;
 import com.equipo11.petcare.security.email.VerificationTokenRepository;
 import com.equipo11.petcare.security.jwt.TokenGenerator;
 import jakarta.transaction.Transactional;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -119,7 +117,7 @@ public class AuthServiceImpl implements AuthService{
         String confirmationLink = "http://localhost:8080/api/v1/auth/confirm?token=" + token.getToken();
         String subject = "Confirma tu cuenta PetCare";
         String text = String.format(
-                "Hola %s,%n\nVisita el siguiente enlace para activar tu cuenta:%n%s%n\nEl enlace expira en 24 horas.",
+                "Hola %s,%n\nVisita el siguiente enlace para activar tu cuenta:%n%s%n\nEl enlace expira en 24 horas.%n\nNo responda este e-mail.",
                 user.getFirstName(), confirmationLink
         );
         emailService.sendVerificationEmail(user.getEmail(), subject, text);
@@ -132,7 +130,7 @@ public class AuthServiceImpl implements AuthService{
     @Override
     public AuthResponseDTO validateEmail(String token) {
         AuthResponseDTO response;
-        var verificaitionTokenValido = verificationTokenRepo.findByToken(token)
+        var verificationTokenValid = verificationTokenRepo.findByToken(token)
                 .map(t -> {
                     if (t.getExpiryDate().isBefore(LocalDateTime.now())) {
                         throw new IllegalArgumentException("Token expirado");
@@ -145,8 +143,8 @@ public class AuthServiceImpl implements AuthService{
 
                     return new AuthResponseDTO(user.getId(), tokenGenerator.generateToken(userDetails));
                 });
-         if (verificaitionTokenValido.isPresent())
-             response = verificaitionTokenValido.get();
+         if (verificationTokenValid.isPresent())
+             response = verificationTokenValid.get();
          else
              throw new IllegalArgumentException("Token no válido");
          return response;

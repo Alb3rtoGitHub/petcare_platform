@@ -34,4 +34,12 @@ public class UserController {
         UserResponseDTO response = userService.updateUser(id, request, authHeader);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
+
+    @DeleteMapping("{id}")
+    @Transactional
+    public ResponseEntity<String> deleteUser(@PathVariable Long id,
+                                        @RequestHeader("Authorization") String authHeadet) {
+        userService.deleteUser(id, authHeadet);
+        return new ResponseEntity<>("Usuario eliminado", HttpStatus.OK);
+    }
 }

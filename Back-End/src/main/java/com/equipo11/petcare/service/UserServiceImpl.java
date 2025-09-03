@@ -44,8 +44,9 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public Boolean deleteUser(Long id) {
-        return null;
+    public void deleteUser(Long id, String bearer) {
+        User user = confirmIdAndIdUserToken(id, bearer);
+        user.setDeleted(true);
     }
 
     private User confirmIdAndIdUserToken(Long id, String bearer) {
