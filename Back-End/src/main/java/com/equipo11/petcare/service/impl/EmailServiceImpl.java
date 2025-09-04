@@ -1,12 +1,13 @@
-package com.equipo11.petcare.service;
+package com.equipo11.petcare.service.impl;
 
 import com.equipo11.petcare.security.email.EmailProperties;
+import com.equipo11.petcare.service.EmailService;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 @Service
-public class EmailServiceImpl implements EmailService{
+public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
     private final String from;

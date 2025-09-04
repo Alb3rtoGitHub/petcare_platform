@@ -1,6 +1,6 @@
 package com.equipo11.petcare.model.user;
 
-import com.equipo11.petcare.model.Pet;
+import com.equipo11.petcare.model.pet.Pet;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;

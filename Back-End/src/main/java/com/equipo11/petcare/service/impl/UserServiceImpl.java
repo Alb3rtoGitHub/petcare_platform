@@ -1,16 +1,18 @@
-package com.equipo11.petcare.service;
+package com.equipo11.petcare.service.impl;
 
 import com.equipo11.petcare.dto.UpdateUserRequestDTO;
 import com.equipo11.petcare.dto.UserResponseDTO;
 import com.equipo11.petcare.model.user.User;
 import com.equipo11.petcare.repository.UserRepository;
 import com.equipo11.petcare.security.SecurityService;
+import com.equipo11.petcare.service.AddressService;
+import com.equipo11.petcare.service.UserService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
 @Service
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final AddressService addressService;

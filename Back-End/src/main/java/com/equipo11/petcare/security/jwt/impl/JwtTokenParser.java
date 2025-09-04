@@ -1,16 +1,18 @@
-package com.equipo11.petcare.security.jwt;
+package com.equipo11.petcare.security.jwt.impl;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
+import com.equipo11.petcare.security.jwt.JwtProperties;
+import com.equipo11.petcare.security.jwt.TokenParser;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class JwtTokenParser implements TokenParser{
+public class JwtTokenParser implements TokenParser {
 
     private final JWTVerifier verifier;
 

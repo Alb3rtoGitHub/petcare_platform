@@ -1,4 +1,4 @@
-package com.equipo11.petcare.service;
+package com.equipo11.petcare.service.impl;
 
 import com.equipo11.petcare.dto.AuthResponseDTO;
 import com.equipo11.petcare.dto.AuthRequestDTO;
@@ -15,6 +15,9 @@ import com.equipo11.petcare.security.UserDetailsImpl;
 import com.equipo11.petcare.security.email.VerificationToken;
 import com.equipo11.petcare.security.email.VerificationTokenRepository;
 import com.equipo11.petcare.security.jwt.TokenGenerator;
+import com.equipo11.petcare.service.AddressService;
+import com.equipo11.petcare.service.AuthService;
+import com.equipo11.petcare.service.EmailService;
 import jakarta.transaction.Transactional;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,7 +31,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Service
-public class AuthServiceImpl implements AuthService{
+public class AuthServiceImpl implements AuthService {
 
     private final AuthenticationManager authManager;
     private final UserRepository userRepo;
@@ -143,7 +146,7 @@ public class AuthServiceImpl implements AuthService{
          if (verificationTokenValid.isPresent()) {
              var userToken = verificationTokenValid.get();
              response = UriComponentsBuilder
-                     .fromUriString("https://www.google.com")
+                     .fromUriString("http://localhost:5173/Register/pets")
                      .queryParam("userId",   userToken.id())
                      .queryParam("jwtToken", userToken.token())
                      .build().toUriString();

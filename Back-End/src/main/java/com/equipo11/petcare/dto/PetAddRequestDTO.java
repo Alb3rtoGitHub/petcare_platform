@@ -1,7 +1,7 @@
 package com.equipo11.petcare.dto;
 
-import com.equipo11.petcare.model.ESize;
-import com.equipo11.petcare.model.ESpecies;
+import com.equipo11.petcare.model.pet.enums.ESize;
+import com.equipo11.petcare.model.pet.enums.ESpecies;
 import com.equipo11.petcare.model.user.Owner;
 
 public record PetAddRequestDTO(
