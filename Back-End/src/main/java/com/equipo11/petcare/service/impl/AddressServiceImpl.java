@@ -1,4 +1,4 @@
-package com.equipo11.petcare.service;
+package com.equipo11.petcare.service.impl;
 
 import com.equipo11.petcare.dto.AddressDTO;
 import com.equipo11.petcare.model.address.Address;
@@ -9,10 +9,11 @@ import com.equipo11.petcare.repository.AddressRepository;
 import com.equipo11.petcare.repository.CityRepository;
 import com.equipo11.petcare.repository.CountryRepository;
 import com.equipo11.petcare.repository.RegionRepository;
+import com.equipo11.petcare.service.AddressService;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AddressServiceImpl implements AddressService{
+public class AddressServiceImpl implements AddressService {
 
     private final CountryRepository countryRepo;
     private final RegionRepository regionRepo;
@@ -41,13 +42,28 @@ public class AddressServiceImpl implements AddressService{
         City city = cityRepo.findByNameAndRegion(dto.city(), region)
                 .orElseThrow(() -> new IllegalArgumentException("Ciudad no válida para la región"));
 
-        Address address = Address.builder()
+        return Address.builder()
                 .city(city)
                 .streetName(dto.streetName())
                 .streetNumber(dto.streetNumber())
                 .unit(dto.unit())
                 .build();
+    }
 
+    @Override
+    public Address updateAddress(Long userId, AddressDTO dto) {
+        Address address = addressRepo.findByUserId(userId);
+        Address normalizeNewAddress = resolveAddress(dto);
+        address.setCity(normalizeNewAddress.getCity());
+        address.setStreetName(normalizeNewAddress.getStreetName());
+        address.setStreetNumber(normalizeNewAddress.getStreetNumber());
+        address.setUnit(normalizeNewAddress.getUnit());
+        addressRepo.save(address);
+        return address;
+        }
+
+    @Override
+    public Address createAddress(Address address) {
         return addressRepo.save(address);
     }
 }
