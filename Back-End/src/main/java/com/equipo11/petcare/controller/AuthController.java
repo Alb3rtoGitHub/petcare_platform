@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.view.RedirectView;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -36,8 +37,8 @@ public class AuthController {
 
     @GetMapping("/confirm")
     @Transactional
-    public ResponseEntity<?> confirmEmail(@RequestParam String token){
+    public RedirectView confirmEmail(@RequestParam String token){
         var response = authService.validateEmail(token);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new RedirectView(response);
     }
 }

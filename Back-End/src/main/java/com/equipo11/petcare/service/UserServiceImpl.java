@@ -4,7 +4,7 @@ import com.equipo11.petcare.dto.UpdateUserRequestDTO;
 import com.equipo11.petcare.dto.UserResponseDTO;
 import com.equipo11.petcare.model.user.User;
 import com.equipo11.petcare.repository.UserRepository;
-import com.equipo11.petcare.security.jwt.TokenParser;
+import com.equipo11.petcare.security.SecurityService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -12,27 +12,27 @@ import java.time.LocalDateTime;
 @Service
 public class UserServiceImpl implements UserService{
 
-    private final TokenParser tokenParser;
     private final UserRepository userRepository;
     private final AddressService addressService;
+    private final SecurityService securityService;
 
-    public UserServiceImpl(TokenParser tokenParser,
-                           UserRepository userRepository,
-                           AddressServiceImpl addressService) {
-        this.tokenParser = tokenParser;
+    public UserServiceImpl(UserRepository userRepository,
+                           AddressServiceImpl addressService,
+                           SecurityService securityService) {
         this.userRepository = userRepository;
         this.addressService = addressService;
+        this.securityService = securityService;
     }
 
     @Override
     public UserResponseDTO getUser(Long id, String bearer) {
-        var user = confirmIdAndIdUserToken(id, bearer);
+        var user = securityService.verifyUserOrToken(id, bearer);
         return new UserResponseDTO(user);
     }
 
     @Override
     public UserResponseDTO updateUser(Long id, UpdateUserRequestDTO request, String bearer) {
-        User user = confirmIdAndIdUserToken(id, bearer);
+        User user = securityService.verifyUserOrToken(id, bearer);
         user.setPhoneNumber(request.phoneNumber());
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
@@ -45,20 +45,9 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public void deleteUser(Long id, String bearer) {
-        User user = confirmIdAndIdUserToken(id, bearer);
+        User user = securityService.verifyUserOrToken(id, bearer);
         user.setDeleted(true);
     }
 
-    private User confirmIdAndIdUserToken(Long id, String bearer) {
-        String token = bearer.substring(7);
-        String email = tokenParser.extractEmail(token);
-        var userToken = userRepository.findByEmail(email);
-        if (userToken.isPresent()) {
-            var user = userToken.get();
-            if (user.getId().equals(id) || tokenParser.extractRoles(token).contains("ROLE_ADMIN")) {
-                return user;
-            }
-        }
-        throw new IllegalArgumentException("Usuario no autorizado");
-    }
+
 }
