@@ -1,3 +1,4 @@
+import PetOwnerRegistration from './pages/Register.jsx' // ajusta la ruta
 import { Routes, Route, Navigate } from 'react-router-dom'
 import NewNavbar from './components/NewNavbar.jsx'
 import Home from './pages/Home.jsx'
@@ -24,6 +25,8 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/register/owner" element={<PetOwnerRegistration />} />
+
 
             <Route path="/owner/book" element={
               <ProtectedRoute roles={['owner']}>
