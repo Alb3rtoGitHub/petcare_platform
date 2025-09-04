@@ -1,4 +1,4 @@
-package com.equipo11.petcare.service;
+package com.equipo11.petcare.service.impl;
 
 import com.equipo11.petcare.dto.AvailabilityRequestDTO;
 import com.equipo11.petcare.dto.AvailabilityResponseDTO;
@@ -7,6 +7,8 @@ import com.equipo11.petcare.model.availability.Availability;
 import com.equipo11.petcare.model.availability.enums.ServiceName;
 import com.equipo11.petcare.model.user.Sitter;
 import com.equipo11.petcare.repository.AvailabilityRepository;
+import com.equipo11.petcare.service.AvailabilityService;
+import com.equipo11.petcare.service.SitterService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 

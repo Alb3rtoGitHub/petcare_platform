@@ -1,8 +1,9 @@
-package com.equipo11.petcare.service;
+package com.equipo11.petcare.service.impl;
 
 import com.equipo11.petcare.exception.BusinessException;
 import com.equipo11.petcare.model.user.Sitter;
 import com.equipo11.petcare.repository.SitterRepository;
+import com.equipo11.petcare.service.SitterService;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
