@@ -1,8 +1,10 @@
 package com.equipo11.petcare.controller;
 
 import com.equipo11.petcare.dto.PetAddRequestDTO;
+import com.equipo11.petcare.dto.PetResponseDTO;
 import com.equipo11.petcare.service.PetService;
 import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,12 +21,18 @@ public class PetController {
     }
 
     //TODO: generar la respuesta de acuerdo a lo que indique el front
-    @PostMapping("/id")
+    @PostMapping("/{id}")
     @Transactional
     public ResponseEntity<?> createPets(@PathVariable Long ownerId,
-                                        List<PetAddRequestDTO> request,
+                                        List<PetAddRequestDTO> petsList,
                                         @RequestHeader("Authorization") String authHeader) {
-        var response = petService.createPets(ownerId, request, authHeader);
+        var response = petService.createPets(ownerId, petsList, authHeader);
         return null;
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PetResponseDTO> getPet(@PathVariable Long petId) {
+        var pet = petService.getPet(petId);
+        return new ResponseEntity<>(pet, HttpStatus.OK);
     }
 }

@@ -8,6 +8,7 @@ import com.equipo11.petcare.model.Pet;
 import com.equipo11.petcare.model.user.Owner;
 import com.equipo11.petcare.repository.PetRepository;
 import com.equipo11.petcare.security.SecurityService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestHeader;
 
@@ -28,10 +29,10 @@ public class PetServiceImpl implements PetService{
 
     @Override
     public PetResponseDTO createPets(Long ownerId,
-                                     List<PetAddRequestDTO> request,
+                                     List<PetAddRequestDTO> pets,
                                      String authHeader) {
         var owner = (Owner) securityService.verifyUserOrToken(ownerId, authHeader);
-        List<Pet> pets = request.stream().map(pet -> Pet.builder()
+        List<Pet> petsList = pets.stream().map(pet -> Pet.builder()
                 .name(pet.name())
                 .age(pet.age())
                 .species(pet.species())
@@ -45,18 +46,27 @@ public class PetServiceImpl implements PetService{
             throw new IllegalArgumentException("La lista de mascotas está vacía");
         }
 
-        List<Pet> savedPets = petRepository.saveAll(pets);
+        List<Pet> savedPets = petRepository.saveAll(petsList);
 
         return null;
     }
 
     @Override
-    public PetResponseDTO getPet(Long userId) {
-        return null;
+    public PetResponseDTO getPet(Long petId) {
+        var pet = petRepository.findById(petId)
+                .orElseThrow(() -> new EntityNotFoundException("Mascota no encontrada"));
+        return PetResponseDTO.builder()
+                .name(pet.getName())
+                .age(pet.getAge())
+                .species(pet.getSpecies())
+                .sizeCategory(pet.getSizeCategory())
+                .careNote(pet.getCareNote())
+                .build();
     }
 
     @Override
-    public List<PetResponseDTO> getAllPets(Long userId) {
+    public List<PetResponseDTO> getAllPets(Long ownerId,
+                                           String authHeader) {
         return List.of();
     }
 

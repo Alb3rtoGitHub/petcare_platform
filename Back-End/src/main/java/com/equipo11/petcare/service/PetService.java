@@ -9,12 +9,13 @@ import java.util.List;
 
 public interface PetService {
     PetResponseDTO createPets(Long ownerId,
-                              List<PetAddRequestDTO> request,
+                              List<PetAddRequestDTO> pets,
                               String authHeader);
 
-    PetResponseDTO getPet(Long userId);
+    PetResponseDTO getPet(Long petId);
 
-    List<PetResponseDTO> getAllPets(Long userId);
+    List<PetResponseDTO> getAllPets(Long ownerId,
+                                    String authHeader);
 
     PetResponseDTO updatePet(PetUpdateRequestDTO request);
 
