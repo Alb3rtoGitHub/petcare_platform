@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import Navbar from './components/Navbar.jsx'
+import NewNavbar from './components/NewNavbar.jsx'
 import Home from './pages/Home.jsx'
 import Login from './pages/Login.jsx'
 import BookService from './pages/owner/BookService.jsx'
@@ -18,9 +18,9 @@ function ProtectedRoute({ children, roles }) {
 export default function App() {
   return (
     <AuthProvider>
-      <div className="min-h-screen">
-        <Navbar />
-        <div className="mx-auto max-w-6xl p-4">
+      <div className="min-h-screen bg-white">
+        <NewNavbar />
+        <div className="w-full">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
