@@ -67,7 +67,19 @@ public class PetServiceImpl implements PetService{
     @Override
     public List<PetResponseDTO> getAllPets(Long ownerId,
                                            String authHeader) {
-        return List.of();
+        var owner = (Owner) securityService.verifyUserOrToken(ownerId, authHeader);
+        var pets = petRepository.findAllByOwnerId(owner.getId());
+        if (pets.isEmpty())
+            throw new EntityNotFoundException("No hay mascotas para el usuario");
+        return pets.stream()
+                .map(pet -> PetResponseDTO.builder()
+                        .name(pet.getName())
+                        .age(pet.getAge())
+                        .species(pet.getSpecies())
+                        .sizeCategory(pet.getSizeCategory())
+                        .careNote(pet.getCareNote())
+                        .build())
+                .toList();
     }
 
     @Override

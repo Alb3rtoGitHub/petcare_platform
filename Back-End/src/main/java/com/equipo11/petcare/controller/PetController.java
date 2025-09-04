@@ -35,4 +35,12 @@ public class PetController {
         var pet = petService.getPet(petId);
         return new ResponseEntity<>(pet, HttpStatus.OK);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<List<PetResponseDTO>> getAllPetsToTheOwner(
+                            @PathVariable Long ownerId,
+                            @RequestHeader("Authorization") String authHeader) {
+        var pets = petService.getAllPets(ownerId, authHeader);
+        return new ResponseEntity<>(pets, HttpStatus.OK);
+    }
 }
