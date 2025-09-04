@@ -21,6 +21,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -72,7 +73,7 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     @Transactional
-    public AuthResponseDTO registerUser(RegisterRequestDTO request) {
+    public void registerUser(RegisterRequestDTO request) {
         if (userRepo.findByEmail(request.email()).isPresent())
             throw new IllegalArgumentException("Email ya está en uso!");
         User newUser;
@@ -121,15 +122,11 @@ public class AuthServiceImpl implements AuthService{
                 user.getFirstName(), confirmationLink
         );
         emailService.sendVerificationEmail(user.getEmail(), subject, text);
-
-        var userDetails = new UserDetailsImpl(user);
-
-        return new AuthResponseDTO(newUser.getId(), tokenGenerator.generateToken(userDetails));
     }
 
     @Override
-    public AuthResponseDTO validateEmail(String token) {
-        AuthResponseDTO response;
+    public String validateEmail(String token) {
+        String response;
         var verificationTokenValid = verificationTokenRepo.findByToken(token)
                 .map(t -> {
                     if (t.getExpiryDate().isBefore(LocalDateTime.now())) {
@@ -143,9 +140,15 @@ public class AuthServiceImpl implements AuthService{
 
                     return new AuthResponseDTO(user.getId(), tokenGenerator.generateToken(userDetails));
                 });
-         if (verificationTokenValid.isPresent())
-             response = verificationTokenValid.get();
-         else
+         if (verificationTokenValid.isPresent()) {
+             var userToken = verificationTokenValid.get();
+             response = UriComponentsBuilder
+                     .fromUriString("https://www.google.com")
+                     .queryParam("userId",   userToken.id())
+                     .queryParam("jwtToken", userToken.token())
+                     .build().toUriString();
+
+         } else
              throw new IllegalArgumentException("Token no válido");
          return response;
     }

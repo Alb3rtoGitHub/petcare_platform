@@ -9,8 +9,8 @@ public interface AuthService {
 
     AuthResponseDTO authCredential(AuthRequestDTO request);
 
-    AuthResponseDTO registerUser(RegisterRequestDTO request);
+    void registerUser(RegisterRequestDTO request);
 
-    AuthResponseDTO validateEmail(String token);
+    String validateEmail(String token);
 
 }
