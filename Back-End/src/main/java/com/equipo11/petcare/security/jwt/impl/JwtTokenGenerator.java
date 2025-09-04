@@ -1,16 +1,17 @@
-package com.equipo11.petcare.security.jwt;
+package com.equipo11.petcare.security.jwt.impl;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.equipo11.petcare.model.user.User;
 import com.equipo11.petcare.security.UserDetailsImpl;
+import com.equipo11.petcare.security.jwt.JwtProperties;
+import com.equipo11.petcare.security.jwt.TokenGenerator;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 
 @Service
-public class JwtTokenGenerator implements TokenGenerator{
+public class JwtTokenGenerator implements TokenGenerator {
 
     private final Algorithm algorithm;
     private final long expirationMs;
