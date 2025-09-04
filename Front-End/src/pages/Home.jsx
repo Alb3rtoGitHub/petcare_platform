@@ -12,6 +12,9 @@ export default function Home() {
         </p>
         <div className="flex gap-3">
           <Link to="/login" className="btn btn-primary">Comenzar</Link>
+           <Link to="/register/owner" className="btn btn-secondary">
+            Registrarme
+          </Link>
           <a href="#como-funciona" className="btn">Cómo funciona</a>
         </div>
       </div>
