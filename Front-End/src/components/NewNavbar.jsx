@@ -46,7 +46,7 @@ export default function NewNavbar() {
           {!user && (
             <>
               <Link 
-                to="/login" 
+                to="/owner-dashboard" 
                 className="text-gray-600 hover:text-gray-800 font-medium transition-colors hover:bg-blue-50 px-3 py-2 rounded-lg"
               >
                 Iniciar Sesión
@@ -194,7 +194,7 @@ export default function NewNavbar() {
             {!user && (
               <>
                 <Link 
-                  to="/login" 
+                  to="/sitter-dashboard" 
                   className="block text-center text-gray-800 hover:bg-gray-50 px-4 py-3 rounded-lg font-medium transition-colors border border-gray-300"
                   onClick={closeMenu}
                 >
