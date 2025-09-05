@@ -1,5 +1,7 @@
 package com.equipo11.petcare.service.impl;
 
+import com.equipo11.petcare.enums.ApiError;
+import com.equipo11.petcare.exception.PetcareException;
 import com.equipo11.petcare.repository.JpaServiceEntityRepository;
 import com.equipo11.petcare.service.ServiceEntityService;
 import jakarta.validation.ValidationException;
@@ -19,7 +21,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
   @Override
   public void validateServices(List<UUID> serviceIds) {
     if (serviceIds == null || serviceIds.isEmpty()) {
-      throw new ValidationException("Debe seleccionar al menos un servicio");
+      throw new PetcareException(ApiError.VALIDATION_ERROR);
     }
     Set<UUID> requested = Set.copyOf(serviceIds);
     long found = serviceRepository.findAllById(requested).size();
@@ -29,7 +31,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
           .map(s -> s.getId())
           .collect(Collectors.toSet());
       requested.removeAll(existing);
-      throw new ValidationException("Servicios no válidos o inexistentes: " + requested);
+      throw new PetcareException(ApiError.RESOURCE_NOT_FOUND);
     }
   }
 }

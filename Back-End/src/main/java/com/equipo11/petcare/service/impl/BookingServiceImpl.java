@@ -69,7 +69,6 @@ public class BookingServiceImpl implements BookingService {
   @Override
   public BigDecimal calculatePrice(
       Long serviceId,
-      LocalDateTime start,
       Long sistterId) {
     // Recomendable tener un precio base, si no dar precio customizado
     return sitterSevice.getServicePrice(serviceId, sistterId);
