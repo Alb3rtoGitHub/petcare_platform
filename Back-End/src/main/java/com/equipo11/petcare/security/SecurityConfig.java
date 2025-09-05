@@ -43,6 +43,7 @@ public class SecurityConfig {
                         authRequest
                                 .requestMatchers(HttpMethod.POST, API_V1 + "/auth/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, API_V1 + "/auth/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, API_V1 + "/sitters/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, API_V1 + "/pet/**").hasAuthority("ROLE_OWNER")
                                 .requestMatchers(HttpMethod.PUT, API_V1 + "/pet/**").hasAuthority("ROLE_OWNER")
                                 .requestMatchers(HttpMethod.DELETE, API_V1 + "/pet/**").hasAuthority("ROLE_OWNER")

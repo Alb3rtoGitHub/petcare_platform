@@ -24,4 +24,5 @@ public class Sitter extends User{
 
     private String bio;
 
+    private Double rating;
 }
