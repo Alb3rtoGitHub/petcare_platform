@@ -9,10 +9,9 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Repository
-public interface JpaBookingRepository extends JpaRepository<Booking, UUID> {
+public interface JpaBookingRepository extends JpaRepository<Booking, Long> {
   @Query("SELECT b FROM Booking b WHERE " +
       "(:ownerId IS NULL OR b.owner.id = :ownerId) AND " +
       "(:sitterId IS NULL OR b.sitter.id = :sitterId) AND " +

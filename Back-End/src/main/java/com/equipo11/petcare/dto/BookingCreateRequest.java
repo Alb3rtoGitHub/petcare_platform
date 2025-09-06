@@ -15,7 +15,7 @@ public record BookingCreateRequest(
 
     @NotNull Long petId,
 
-    @NotNull List<UUID> serviceId,
+    @NotNull List<Long> serviceIds,
 
     @NotNull @Future LocalDateTime startDateTime,
 

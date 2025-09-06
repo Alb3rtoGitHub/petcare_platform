@@ -42,7 +42,7 @@ public class BookingController {
   @PatchMapping("/{bookingId}/status")
   @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'SITTER')") // Todos pueden actualizar estado
   public ResponseEntity<BookingResponse> updateBookingStatus(
-      @PathVariable UUID bookingId,
+      @PathVariable Long bookingId,
       @Valid @RequestBody BookingStatusRequest statusRequest,
       @AuthenticationPrincipal User currentUser) {
 

@@ -26,8 +26,8 @@ import lombok.Setter;
 @Table(name = "bookings")
 public class Booking {
   @Id
-  @UuidGenerator(style = UuidGenerator.Style.RANDOM)
-  private UUID id;
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
   @ManyToOne(optional = false)
   @JoinColumn(name = "owner_id", nullable = false)

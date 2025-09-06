@@ -8,11 +8,11 @@ import java.util.UUID;
 import com.equipo11.petcare.model.booking.BookingStatus;
 
 public record BookingResponse(
-    UUID id,
+    Long id,
     Long ownerId,
     Long sitterId,
     Long petId,
-    List<UUID> serviceIds,
+    List<Long> serviceIds,
     LocalDateTime startDateTime,
     LocalDateTime endDateTime,
     BigDecimal totalPrice,

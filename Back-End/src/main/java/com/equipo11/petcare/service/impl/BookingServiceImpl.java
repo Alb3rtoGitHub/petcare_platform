@@ -1,5 +1,13 @@
 package com.equipo11.petcare.service.impl;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+import org.springframework.core.convert.ConversionService;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.equipo11.petcare.dto.BookingCreateRequest;
 import com.equipo11.petcare.dto.BookingResponse;
 import com.equipo11.petcare.enums.ApiError;
@@ -12,54 +20,34 @@ import com.equipo11.petcare.service.BookingService;
 import com.equipo11.petcare.service.PetServiceImpl;
 import com.equipo11.petcare.service.SitterService;
 import com.equipo11.petcare.validator.BookingValidator;
-import jakarta.validation.ValidationException;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.UUID;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.ConversionService;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
 
   private final JpaBookingRepository bookingRepository;
   private final SitterService sitterSevice;
   private final PetServiceImpl petService;
   private final ConversionService conversionService;
-  BookingValidator bookingValidator;
-
-  @Autowired
-  public BookingServiceImpl(
-      JpaBookingRepository bookingRepository,
-      SitterService sitterService,
-      PetServiceImpl petService,
-      ConversionService conversionService,
-      BookingValidator bookingValidator) {
-    this.bookingRepository = bookingRepository;
-    this.sitterSevice = sitterService;
-    this.petService = petService;
-    this.conversionService = conversionService;
-    this.bookingValidator = bookingValidator;
-  }
+  private final BookingValidator bookingValidator;
 
   @Override
   public boolean checkAvailability(
-      Long sistterId,
+      Long sitterId,
       LocalDateTime start,
       LocalDateTime end) {
     // Verificar horario diponible
     boolean hasAvailableSchedule = sitterSevice.hasAvailableSchedule(
-        sistterId,
+        sitterId,
         start,
         end);
 
     // Valida que no se repita una reserva o se superponga
     boolean hasOverlapping = bookingRepository.existsOverlappingBooking(
-        sistterId,
+        sitterId,
         start,
         end);
 
@@ -103,7 +91,7 @@ public class BookingServiceImpl implements BookingService {
 
   @Override
   public BookingResponse updateStatus(
-      UUID bookingId,
+      Long bookingId,
       BookingStatus newStatus,
       User currentUser) {
     Booking booking = bookingRepository

@@ -40,7 +40,7 @@ class BookingControllerTest {
         1L, // idCliente
         2L, // idCuidador
         3L, // idDireccion
-        List.of(UUID.randomUUID()), // idsMascotas
+        List.of(10L), // idsMascotas
         fechaInicio,
         fechaFin,
         "Tratar con cuidado");

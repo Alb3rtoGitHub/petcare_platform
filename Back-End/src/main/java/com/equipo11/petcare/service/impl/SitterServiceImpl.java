@@ -17,7 +17,7 @@ public class SitterServiceImpl implements SitterService {
   private final UserRepository userRepository;
 
   @Override
-  public boolean hasAvailableSchedule(Long sistterId, LocalDateTime start, LocalDateTime end) {
+  public boolean hasAvailableSchedule(Long sitterId, LocalDateTime start, LocalDateTime end) {
     // Logica para validar si esta disponible
     return false;
   }

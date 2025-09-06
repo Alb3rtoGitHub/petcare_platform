@@ -19,15 +19,15 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
   private final JpaServiceEntityRepository serviceRepository;
 
   @Override
-  public void validateServices(List<UUID> serviceIds) {
+  public void validateServices(List<Long> serviceIds) {
     if (serviceIds == null || serviceIds.isEmpty()) {
       throw new PetcareException(ApiError.VALIDATION_ERROR);
     }
-    Set<UUID> requested = Set.copyOf(serviceIds);
+    Set<Long> requested = Set.copyOf(serviceIds);
     long found = serviceRepository.findAllById(requested).size();
     if (found != requested.size()) {
       // identify missing for better feedback (optional minimal)
-      Set<UUID> existing = serviceRepository.findAllById(requested).stream()
+      Set<Long> existing = serviceRepository.findAllById(requested).stream()
           .map(s -> s.getId())
           .collect(Collectors.toSet());
       requested.removeAll(existing);

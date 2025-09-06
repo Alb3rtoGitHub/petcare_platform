@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -84,14 +83,15 @@ class BookingServiceImplTest {
         1L, // ownerId
         2L, // sitterId
         3L, // petId
-        List.of(UUID.randomUUID()), // serviceId debe ser List<UUID>
+        //List<Long> serviceId = List.of(System.currentTimeMillis()), // serviceId debe ser List<Long
+            List.of(20L),
         start, // startDateTime
         end, // endDateTime
         "Notas de prueba" // specialInstructions
     );
 
     mockBooking = new Booking();
-    mockBooking.setId(UUID.randomUUID());
+    mockBooking.setId(20L);
     mockBooking.setStatus(BookingStatus.PENDING);
 
     mockResponse = new BookingResponse(
@@ -99,7 +99,7 @@ class BookingServiceImplTest {
         1L, // ownerId
         2L, // sitterId
         3L, // petId
-        List.of(UUID.randomUUID()), // serviceIds debe ser List<UUID>
+        List.of(10L), // serviceIds debe ser List<UUID>
         start, // startDateTime
         end, // endDateTime
         BigDecimal.valueOf(100), // totalPrice
@@ -143,7 +143,7 @@ class BookingServiceImplTest {
   @Test
   void updateStatus_Success() {
     // Arrange
-    when(bookingRepository.findById(any(UUID.class))).thenReturn(Optional.of(mockBooking));
+    when(bookingRepository.findById(any(Long.class))).thenReturn(Optional.of(mockBooking));
     when(bookingRepository.save(any(Booking.class))).thenReturn(mockBooking);
     when(conversionService.convert(mockBooking, BookingResponse.class)).thenReturn(mockResponse);
 
@@ -162,11 +162,11 @@ class BookingServiceImplTest {
   @Test
   void updateStatus_BookingNotFound_ThrowsException() {
     // Arrange
-    when(bookingRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
+    when(bookingRepository.findById(any(Long.class))).thenReturn(Optional.empty());
 
     // Act & Assert
     assertThrows(PetcareException.class, () -> bookingService.updateStatus(
-        UUID.randomUUID(),
+        99L,
         BookingStatus.CONFIRMED,
         mockOwner));
   }
@@ -195,13 +195,12 @@ class BookingServiceImplTest {
     // Arrange
     Long serviceId = 1L;
     Long sitterId = 1L;
-    LocalDateTime start = LocalDateTime.now().plusDays(1);
     BigDecimal expectedPrice = BigDecimal.valueOf(100);
 
     when(sitterService.getServicePrice(serviceId, sitterId)).thenReturn(expectedPrice);
 
     // Act
-    BigDecimal result = bookingService.calculatePrice(serviceId, start, sitterId);
+    BigDecimal result = bookingService.calculatePrice(serviceId, sitterId);
 
     // Assert
     assertEquals(expectedPrice, result);

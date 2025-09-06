@@ -30,7 +30,7 @@ public interface BookingResponseMapper extends Converter<Booking, BookingRespons
   List<BookingResponse> convertList(List<Booking> source);
 
   @Named("mapServiceIds")
-  default List<UUID> mapServiceIds(List<?> services) {
+  default List<Long> mapServiceIds(List<?> services) {
     return services.stream()
         .map(s -> ((ServiceEntity) s).getId())
         .toList();

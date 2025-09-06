@@ -17,5 +17,5 @@ public interface BookingService {
 
   public BookingResponse addBooking(BookingCreateRequest request, User currentUser);
 
-  public BookingResponse updateStatus(UUID bookingId, BookingStatus newStatus, User currentUser);
+  public BookingResponse updateStatus(Long bookingId, BookingStatus newStatus, User currentUser);
 }

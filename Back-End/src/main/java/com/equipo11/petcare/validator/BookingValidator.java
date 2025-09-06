@@ -91,7 +91,7 @@ public class BookingValidator {
   // validaciones de cuidador y servicios
   private void validateSitterAndServices(BookingCreateRequest request) {
     sitterService.validateSitter(request.sitterId());
-    serviceService.validateServices(request.serviceId());
+    serviceService.validateServices(request.serviceIds());
   }
 
   private void validateOwnerIsCurrentUser(Long ownerId, Long currentUserId) {
