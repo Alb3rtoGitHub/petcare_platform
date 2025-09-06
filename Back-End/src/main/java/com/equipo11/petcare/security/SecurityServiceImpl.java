@@ -1,9 +1,15 @@
 package com.equipo11.petcare.security;
 
+import com.equipo11.petcare.exception.PetcareException;
 import com.equipo11.petcare.model.user.User;
 import com.equipo11.petcare.repository.UserRepository;
 import com.equipo11.petcare.security.jwt.TokenParser;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Service
 public class SecurityServiceImpl implements SecurityService{
@@ -28,6 +34,7 @@ public class SecurityServiceImpl implements SecurityService{
                 return user;
             }
         }
-        throw new IllegalArgumentException("Usuario no autorizado");
+        List<String> reason = new ArrayList<>(Collections.singleton("No puedes acceder o modificar datos de otro usuario"));
+        throw new PetcareException(HttpStatus.UNAUTHORIZED, "No autorizado", reason );
     }
 }

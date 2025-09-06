@@ -45,6 +45,7 @@ public class PetServiceImpl implements PetService {
                 .sizeCategory(pet.sizeCategory())
                 .careNote(pet.careNote())
                 .owner(owner)
+                        .isActive(true)
                 .build())
                 .toList();
 
