@@ -25,7 +25,7 @@ public class SitterController {
             @RequestParam(required = false) Long cityId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "rating") String sortBy,
+            @RequestParam(defaultValue = "averageRating") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir,
             @RequestParam(defaultValue = "false") boolean all
 

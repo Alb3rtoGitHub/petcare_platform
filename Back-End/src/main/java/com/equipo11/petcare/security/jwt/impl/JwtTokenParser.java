@@ -5,6 +5,8 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
+import com.equipo11.petcare.enums.ApiError;
+import com.equipo11.petcare.exception.PetcareException;
 import com.equipo11.petcare.security.jwt.JwtProperties;
 import com.equipo11.petcare.security.jwt.TokenParser;
 import org.springframework.stereotype.Service;
@@ -49,7 +51,7 @@ public class JwtTokenParser implements TokenParser {
         try {
             return verifier.verify(token);
         } catch (JWTVerificationException e) {
-            throw new IllegalArgumentException("Token inválido o expirado", e);
+            throw new PetcareException(ApiError.TOKEN_EXPIRED);
         }
     }
 }
