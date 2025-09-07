@@ -31,6 +31,7 @@ public class SitterServiceImpl implements SitterService {
         return sitterRepository.findById(id);
     }
 
+    @Override
     public Page<SitterResponseDTO> getSitters(
             Long cityId,
             int page,
@@ -46,8 +47,8 @@ public class SitterServiceImpl implements SitterService {
                 : PageRequest.of(page, size, sort);
 
         Page<Sitter> sitterPage = (cityId != null)
-                ? sitterRepository.findByCityId(cityId, pageable)
-                : sitterRepository.findAll(pageable);
+                ? sitterRepository.findByAddressCityIdAndEnabledTrue(cityId, pageable)
+                : sitterRepository.findAllByEnabledTrue(pageable);
 
         return sitterPage.map(this::toResponseDto);
     }
@@ -57,7 +58,7 @@ public class SitterServiceImpl implements SitterService {
                 .id(sitter.getId())
                 .firstName(sitter.getFirstName())
                 .lastName(sitter.getLastName())
-                .rating(sitter.getRating())
+                .rating(sitter.getAverageRating())
                 .cityId(sitter.getAddress().getCity().getId())
                 .build();
     }

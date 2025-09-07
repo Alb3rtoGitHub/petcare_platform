@@ -11,9 +11,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SitterRepository extends JpaRepository<Sitter, Long> {
 
-    @Query("SELECT s FROM Sitter s " +
-            "JOIN s.address a " +
-            "JOIN a.city c " +
-            "WHERE c.id = :cityId")
-    Page<Sitter> findByCityId(@Param("cityId") Long cityId, Pageable pageable);
+    Page<Sitter> findByAddressCityIdAndEnabledTrue(Long cityId, Pageable pageable);
+    Page<Sitter> findAllByEnabledTrue(Pageable pageable);
 }
