@@ -1,6 +1,8 @@
 package com.equipo11.petcare.service.impl;
 
 import com.equipo11.petcare.dto.AddressDTO;
+import com.equipo11.petcare.enums.ApiError;
+import com.equipo11.petcare.exception.PetcareException;
 import com.equipo11.petcare.model.address.Address;
 import com.equipo11.petcare.model.address.City;
 import com.equipo11.petcare.model.address.Country;
@@ -34,13 +36,13 @@ public class AddressServiceImpl implements AddressService {
     public Address resolveAddress(AddressDTO dto) {
 
         Country country = countryRepo.findById(dto.countryCode())
-                .orElseThrow(() -> new IllegalArgumentException("País no encontrado"));
+                .orElseThrow(() -> new PetcareException(ApiError.COUNTRY_NOT_FOUND));
 
         Region region = regionRepo.findByNameAndCountry(dto.region(), country)
-                .orElseThrow(() -> new IllegalArgumentException("Región no válida para el país"));
+                .orElseThrow(() -> new PetcareException(ApiError.REGION_NOT_FOUND));
 
         City city = cityRepo.findByNameAndRegion(dto.city(), region)
-                .orElseThrow(() -> new IllegalArgumentException("Ciudad no válida para la región"));
+                .orElseThrow(() -> new PetcareException(ApiError.CITY_NOT_FOUND));
 
         return Address.builder()
                 .city(city)
@@ -53,6 +55,10 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public Address updateAddress(Long userId, AddressDTO dto) {
         Address address = addressRepo.findByUserId(userId);
+        if (address == null) {
+            throw new PetcareException(ApiError.RESOURCE_NOT_FOUND);
+        }
+
         Address normalizeNewAddress = resolveAddress(dto);
         address.setCity(normalizeNewAddress.getCity());
         address.setStreetName(normalizeNewAddress.getStreetName());

@@ -3,6 +3,8 @@ package com.equipo11.petcare.service.impl;
 import com.equipo11.petcare.dto.PetAddRequestDTO;
 import com.equipo11.petcare.dto.PetResponseDTO;
 import com.equipo11.petcare.dto.PetUpdateRequestDTO;
+import com.equipo11.petcare.enums.ApiError;
+import com.equipo11.petcare.exception.PetcareException;
 import com.equipo11.petcare.model.pet.Pet;
 import com.equipo11.petcare.model.user.Owner;
 import com.equipo11.petcare.repository.PetRepository;
@@ -37,21 +39,20 @@ public class PetServiceImpl implements PetService {
     public PetResponseDTO createPets(Long ownerId,
                                      List<PetAddRequestDTO> pets,
                                      String token) {
+        if (pets.isEmpty()) {
+            throw new PetcareException(ApiError.PET_LIST_EMPTY);
+        }
         var owner = (Owner) securityService.verifyUserOrToken(ownerId, token);
         List<Pet> petsList = pets.stream().map(pet -> Pet.builder()
-                .name(pet.name())
-                .age(pet.age())
-                .species(pet.species())
-                .sizeCategory(pet.sizeCategory())
-                .careNote(pet.careNote())
-                .owner(owner)
+                        .name(pet.name())
+                        .age(pet.age())
+                        .species(pet.species())
+                        .sizeCategory(pet.sizeCategory())
+                        .careNote(pet.careNote())
+                        .owner(owner)
                         .isActive(true)
-                .build())
+                        .build())
                 .toList();
-
-        if (pets.isEmpty()) {
-            throw new IllegalArgumentException("La lista de mascotas está vacía");
-        }
 
         List<Pet> savedPets = petRepository.saveAll(petsList);
 
@@ -60,8 +61,7 @@ public class PetServiceImpl implements PetService {
 
     @Override
     public PetResponseDTO getPet(Long petId) {
-        var pet = petRepository.findById(petId)
-                .orElseThrow(() -> new EntityNotFoundException("Mascota no encontrada"));
+        var pet = findPet(petId);
         return PetResponseDTO.builder()
                 .id(pet.getId())
                 .name(pet.getName())
@@ -78,7 +78,7 @@ public class PetServiceImpl implements PetService {
         var owner = (Owner) securityService.verifyUserOrToken(ownerId, token);
         var pets = petRepository.findAllByOwnerId(owner.getId());
         if (pets.isEmpty())
-            throw new EntityNotFoundException("No hay mascotas para el usuario");
+            throw new PetcareException(ApiError.USER_HAS_NO_PETS);
         return pets.stream()
                 .map(pet -> PetResponseDTO.builder()
                         .id(pet.getId())
@@ -95,10 +95,9 @@ public class PetServiceImpl implements PetService {
     public PetResponseDTO updatePet(Long petId,
                                     PetUpdateRequestDTO petDTO,
                                     String token) {
-        var pet = petRepository.findById(petId)
-                .orElseThrow(() -> new EntityNotFoundException("Mascota no encontrada"));
+        var pet = findPet(petId);
         var owner = userRepository.findByEmail(tokenParser.extractEmail(token.substring(7)))
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no válido"));
+                .orElseThrow(() -> new PetcareException(ApiError.USER_NOT_FOUND));
         if (pet.getOwner().equals(owner)) {
             pet.setName(petDTO.name());
             pet.setAge(petDTO.age());
@@ -106,7 +105,7 @@ public class PetServiceImpl implements PetService {
             pet.setSizeCategory(petDTO.sizeCategory());
             pet.setCareNote(petDTO.careNote());
         } else {
-            throw new IllegalArgumentException("La mascota no pertenece a es usuario");
+            throw new PetcareException(ApiError.PET_NOT_OWNED_BY_USER);
         }
         return PetResponseDTO.builder()
                 .id(pet.getId())
@@ -120,14 +119,18 @@ public class PetServiceImpl implements PetService {
 
     @Override
     public void deletePet(Long petId, String token) {
-        var pet = petRepository.findById(petId)
-                .orElseThrow(() -> new EntityNotFoundException("Mascota no encontrada"));
+        var pet = findPet(petId);
         var owner = userRepository.findByEmail(tokenParser.extractEmail(token.substring(7)))
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no válido"));
-        if (!pet.getOwner().getId().equals(owner.getId())) {
-            throw new IllegalArgumentException("La mascota no pertenece al dueño");
+                .orElseThrow(() -> new PetcareException(ApiError.USER_NOT_FOUND));
+        if (!pet.getOwner().equals(owner)) {
+            throw new PetcareException(ApiError.PET_NOT_OWNED_BY_USER);
         }
         pet.setActive(false);
         petRepository.save(pet);
+    }
+
+    private Pet findPet(Long petId) {
+        return petRepository.findById(petId)
+                .orElseThrow(() -> new PetcareException(ApiError.PET_NOT_FOUND));
     }
 }

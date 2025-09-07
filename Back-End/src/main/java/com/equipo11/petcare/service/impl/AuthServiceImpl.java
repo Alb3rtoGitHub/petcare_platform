@@ -3,6 +3,8 @@ package com.equipo11.petcare.service.impl;
 import com.equipo11.petcare.dto.AuthResponseDTO;
 import com.equipo11.petcare.dto.AuthRequestDTO;
 import com.equipo11.petcare.dto.RegisterRequestDTO;
+import com.equipo11.petcare.enums.ApiError;
+import com.equipo11.petcare.exception.PetcareException;
 import com.equipo11.petcare.model.address.Address;
 import com.equipo11.petcare.model.user.Owner;
 import com.equipo11.petcare.model.user.Role;
@@ -71,50 +73,60 @@ public class AuthServiceImpl implements AuthService {
                         request.password()));
         var user = (UserDetailsImpl) auth.getPrincipal();
         var userId = user.getId();
-        return new AuthResponseDTO(userId, tokenGenerator.generateToken(user));
+        var jwt = tokenGenerator.generateToken(user);
+        return new AuthResponseDTO(userId, jwt);
     }
 
     @Override
     @Transactional
     public void registerUser(RegisterRequestDTO request) {
         if (userRepo.findByEmail(request.email()).isPresent())
-            throw new IllegalArgumentException("Email ya está en uso!");
-        User newUser;
-        Role role;
-        Set<Role> roles = new HashSet<>();
-        if (ERole.ROLE_OWNER.equals(request.role())){
-            role = roleRepo.findByName(ERole.ROLE_OWNER);
-            roles.add(role);
-            newUser = Owner.builder()
-                    .email(request.email())
-                    .password(passwordEncoder.encode(request.password()))
-                    .firstName(request.firstName())
-                    .lastName(request.lastName())
-                    .birthDate(request.birthdate())
-                    .phoneNumber(request.phoneNumber())
-                    .roles(roles)
-                    .createdAt(LocalDateTime.now())
-                    .build();
-        } else if (ERole.ROLE_SITTER.equals(request.role())) {
-            role = roleRepo.findByName(ERole.ROLE_SITTER);
-            roles.add(role);
-            newUser = Sitter.builder()
-                    .email(request.email())
-                    .password(passwordEncoder.encode(request.password()))
-                    .firstName(request.firstName())
-                    .lastName(request.lastName())
-                    .birthDate(request.birthdate())
-                    .phoneNumber(request.phoneNumber())
-                    .roles(roles)
-                    .createdAt(LocalDateTime.now())
-                    .build();
-        } else
-            throw new IllegalArgumentException("Tipo de usuario no válido");
+            throw new PetcareException(ApiError.EMAIL_ALREADY_IN_USE);
+        ERole roleType = request.role();
+        if (roleType == ERole.ROLE_ADMIN) {
+            throw new PetcareException(ApiError.ROLE_NOT_ALLOWED);
+        }
+        Role role = roleRepo.findByName(roleType)
+                .orElseThrow(() -> new PetcareException(ApiError.ROLE_NOT_FOUND));
         Address address = addressService.createAddress(
                 addressService.resolveAddress(request.address()));
-        newUser.setAddress(address);
-        var user = userRepo.save(newUser);
+        var newUser = userRepo.save(builderUser(address, request, role));
+        sendVerificationEmail(newUser);
+    }
 
+    private User builderUser(Address address, RegisterRequestDTO request, Role role) {
+        Set<Role> roles = new HashSet<>();
+        roles.add(role);
+        return switch (role.getName()) {
+            case ROLE_OWNER ->
+                    Owner.builder()
+                            .email(request.email())
+                            .password(passwordEncoder.encode(request.password()))
+                            .firstName(request.firstName())
+                            .lastName(request.lastName())
+                            .birthDate(request.birthdate())
+                            .phoneNumber(request.phoneNumber())
+                            .address(address)
+                            .roles(roles)
+                            .createdAt(LocalDateTime.now())
+                            .build();
+            case ROLE_SITTER ->
+                    Sitter.builder()
+                            .email(request.email())
+                            .password(passwordEncoder.encode(request.password()))
+                            .firstName(request.firstName())
+                            .lastName(request.lastName())
+                            .birthDate(request.birthdate())
+                            .phoneNumber(request.phoneNumber())
+                            .address(address)
+                            .roles(roles)
+                            .createdAt(LocalDateTime.now())
+                            .build();
+            default -> throw new PetcareException(ApiError.INVALID_ROLE);
+        };
+    }
+
+    private void sendVerificationEmail(User user) {
         VerificationToken token = new VerificationToken(user, LocalDateTime.now().plusHours(24));
         tokenRepo.save(token);
 
@@ -127,32 +139,27 @@ public class AuthServiceImpl implements AuthService {
         emailService.sendVerificationEmail(user.getEmail(), subject, text);
     }
 
+
     @Override
     public String validateEmail(String token) {
         String response;
-        var verificationTokenValid = verificationTokenRepo.findByToken(token)
-                .map(t -> {
-                    if (t.getExpiryDate().isBefore(LocalDateTime.now())) {
-                        throw new IllegalArgumentException("Token expirado");
-                    }
-                    var user = t.getUser();
-                    user.setVerified(true);
-                    userRepo.save(user);
-                    verificationTokenRepo.delete(t);
-                    var userDetails = new UserDetailsImpl(userRepo.save(user));
+        var verificationToken = verificationTokenRepo.findByToken(token)
+                .orElseThrow(() -> new PetcareException(ApiError.TOKEN_NOT_FOUND));
+        if (verificationToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new PetcareException(ApiError.TOKEN_EXPIRED);
+        }
 
-                    return new AuthResponseDTO(user.getId(), tokenGenerator.generateToken(userDetails));
-                });
-         if (verificationTokenValid.isPresent()) {
-             var userToken = verificationTokenValid.get();
-             response = UriComponentsBuilder
-                     .fromUriString("http://localhost:5173/Register/pets")
-                     .queryParam("userId",   userToken.id())
-                     .queryParam("jwtToken", userToken.token())
-                     .build().toUriString();
-
-         } else
-             throw new IllegalArgumentException("Token no válido");
-         return response;
+        var user = verificationToken.getUser();
+        user.setVerified(true);
+        userRepo.save(user);
+        verificationTokenRepo.delete(verificationToken);
+        var userDetails = new UserDetailsImpl(userRepo.save(user));
+        var jwt = tokenGenerator.generateToken(userDetails);
+        response = UriComponentsBuilder
+                .fromUriString("http://localhost:5173/Register/pets")
+                .queryParam("userId",   user.getId())
+                .queryParam("jwtToken", token)
+                .build().toUriString();
+        return response;
     }
 }

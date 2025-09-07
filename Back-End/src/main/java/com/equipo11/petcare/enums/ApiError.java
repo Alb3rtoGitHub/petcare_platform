@@ -14,7 +14,22 @@ public enum ApiError {
     REVIEW_SAVE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Error al guardar la reseña"),
     BOOKING_NOT_FOUND(HttpStatus.NOT_FOUND, "La reserva buscada no existe"),
     BOOKING_NOT_COMPLETED(HttpStatus.UNPROCESSABLE_ENTITY, "la reserva no esta completada, no puede calificar"),
-    REVIEW_ALREADY_EXIST(HttpStatus.CONFLICT, "la reserva ya cuenta con una reseña");
+    REVIEW_ALREADY_EXIST(HttpStatus.CONFLICT, "la reserva ya cuenta con una reseña"),
+    COUNTRY_NOT_FOUND(HttpStatus.NOT_FOUND, "País no encontrado"),
+    REGION_NOT_FOUND(HttpStatus.NOT_FOUND, "Región/Provincia no encontrada/o"),
+    CITY_NOT_FOUND(HttpStatus.NOT_FOUND, "Ciudad no encontrada"),
+    EMAIL_ALREADY_IN_USE(HttpStatus.CONFLICT, "Se intentó registrar un email que ya existe"),
+    ROLE_NOT_ALLOWED(HttpStatus.FORBIDDEN, "No tiene permiso para crear un usuario con el rol"),
+    ROLE_NOT_FOUND(HttpStatus.NOT_FOUND, "El rol solicitado no existe"), 
+    INVALID_ROLE(HttpStatus.BAD_REQUEST, "El rol solicitado no existe"),
+    TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "El token de verificacion no encontrado"),
+    TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "El token enviado está expirado"),
+    EMAIL_DELIVERY_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "No se pudo enviar el email de verificación"),
+    PET_LIST_EMPTY(HttpStatus.BAD_REQUEST, "No se enviaron mascotas para guardar"),
+    PET_NOT_FOUND(HttpStatus.NOT_FOUND, "Mascota no encontrada"),
+    USER_HAS_NO_PETS(HttpStatus.NOT_FOUND, "No hay mascotas para el usuario"),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "Usuario no válido"),
+    PET_NOT_OWNED_BY_USER(HttpStatus.FORBIDDEN, "La mascota no pertenece a ese usuario");
 
 
     private final HttpStatus httpStatus;
