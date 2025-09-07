@@ -14,7 +14,7 @@ public enum ApiError {
     REVIEW_SAVE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Error al guardar la reseña"),
     BOOKING_NOT_FOUND(HttpStatus.NOT_FOUND, "La reserva buscada no existe"),
     BOOKING_NOT_COMPLETED(HttpStatus.UNPROCESSABLE_ENTITY, "la reserva no esta completada, no puede calificar"),
-    REVIEW_ALREADY_EXIST(HttpStatus.CONFLICT, "la reserva ya cuenta con una reseña.");
+    REVIEW_ALREADY_EXIST(HttpStatus.CONFLICT, "la reserva ya cuenta con una reseña");
 
 
     private final HttpStatus httpStatus;
