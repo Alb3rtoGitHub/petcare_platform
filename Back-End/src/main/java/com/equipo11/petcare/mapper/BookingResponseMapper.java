@@ -1,15 +1,15 @@
 package com.equipo11.petcare.mapper;
 
-import com.equipo11.petcare.dto.BookingResponse;
-import com.equipo11.petcare.model.booking.Booking;
-import com.equipo11.petcare.model.serviceentity.ServiceEntity;
+import java.util.List;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.springframework.core.convert.converter.Converter;
 
-import java.util.List;
-import java.util.UUID;
+import com.equipo11.petcare.dto.BookingResponse;
+import com.equipo11.petcare.model.booking.Booking;
+import com.equipo11.petcare.model.serviceentity.ServiceEntity;
 
 @Mapper(componentModel = "spring")
 public interface BookingResponseMapper extends Converter<Booking, BookingResponse> {
