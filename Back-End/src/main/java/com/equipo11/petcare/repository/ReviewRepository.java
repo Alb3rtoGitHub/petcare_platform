@@ -1,6 +1,6 @@
 package com.equipo11.petcare.repository;
 
-import com.equipo11.petcare.model.Review;
+import com.equipo11.petcare.model.review.Review;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

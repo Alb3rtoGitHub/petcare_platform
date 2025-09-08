@@ -3,7 +3,7 @@ package com.equipo11.petcare.service.impl;
 import com.equipo11.petcare.dto.CreateReviewRequestDTO;
 import com.equipo11.petcare.enums.ApiError;
 import com.equipo11.petcare.exception.PetcareException;
-import com.equipo11.petcare.model.Review;
+import com.equipo11.petcare.model.review.Review;
 import com.equipo11.petcare.model.booking.Booking;
 import com.equipo11.petcare.model.booking.BookingStatus;
 import com.equipo11.petcare.repository.JpaBookingRepository;
