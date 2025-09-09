@@ -40,6 +40,11 @@ export default function OwnerNavbar() {
           <Link
             to="/owner/book"
             className="text-gray-600 hover:text-gray-800 transition-colors"
+            onClick={(e) => {
+              // dispatch a global event so OwnerDashboard can open the modal if mounted
+              const ev = new CustomEvent("open:reservation-modal");
+              window.dispatchEvent(ev);
+            }}
           >
             Reservar Servicio
           </Link>
@@ -187,7 +192,11 @@ export default function OwnerNavbar() {
             <Link
               to="/owner/book"
               className="block text-gray-800 hover:bg-gray-50 px-4 py-3 rounded-lg font-medium transition-colors"
-              onClick={closeMenu}
+              onClick={(e) => {
+                const ev = new CustomEvent("open:reservation-modal");
+                window.dispatchEvent(ev);
+                closeMenu();
+              }}
             >
               Reservar Servicio
             </Link>
