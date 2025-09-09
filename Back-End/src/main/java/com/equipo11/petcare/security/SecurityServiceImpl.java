@@ -1,6 +1,8 @@
 package com.equipo11.petcare.security;
 
+import com.equipo11.petcare.enums.ApiError;
 import com.equipo11.petcare.exception.PetcareException;
+import com.equipo11.petcare.model.user.Owner;
 import com.equipo11.petcare.model.user.User;
 import com.equipo11.petcare.repository.UserRepository;
 import com.equipo11.petcare.security.jwt.TokenParser;
@@ -25,16 +27,25 @@ public class SecurityServiceImpl implements SecurityService{
 
     @Override
     public User verifyUserOrToken(Long targetId, String bearer) {
-        String token = bearer.substring(7);
-        String email = tokenParser.extractEmail(token);
-        var userToken = userRepository.findByEmail(email);
-        if (userToken.isPresent()) {
-            var user = userToken.get();
-            if (user.getId().equals(targetId) || tokenParser.extractRoles(token).contains("ROLE_ADMIN")) {
-                return user;
-            }
+        var userToken = extractTokenUser(bearer);
+        if (userToken.getId().equals(targetId) || tokenParser.extractRoles(bearer.substring(7)).contains("ROLE_ADMIN")) {
+            return userToken;
         }
         List<String> reason = new ArrayList<>(Collections.singleton("No puedes acceder o modificar datos de otro usuario"));
         throw new PetcareException(HttpStatus.UNAUTHORIZED, "No autorizado", reason );
+    }
+
+    @Override
+    public void creatorClaimVerify(User claimUser, String bearer) {
+        var creator = extractTokenUser(bearer);
+        if (!creator.equals(claimUser))
+            throw new PetcareException(ApiError.CLAIM_OWNER_MISMATCH);
+    }
+
+    private User extractTokenUser(String bearer) {
+        String token = bearer.substring(7);
+        String email = tokenParser.extractEmail(token);
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new PetcareException(ApiError.USER_NOT_FOUND));
     }
 }

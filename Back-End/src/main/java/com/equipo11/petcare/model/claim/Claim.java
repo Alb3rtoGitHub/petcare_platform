@@ -4,10 +4,7 @@ import com.equipo11.petcare.model.booking.Booking;
 import com.equipo11.petcare.model.claim.enums.ClaimState;
 import com.equipo11.petcare.model.user.Owner;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -17,6 +14,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Claim {
 
     @Id
@@ -43,6 +41,8 @@ public class Claim {
 
     @Column(name = "update_at")
     private LocalDateTime updateAt;
+
+    private String determination;
 
     @PrePersist
     public void prePersist() {
