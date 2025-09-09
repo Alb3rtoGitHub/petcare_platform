@@ -1,31 +1,79 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+// En context/AuthContext.jsx
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { jwtDecode } from 'jwt-decode';
 
-const AuthCtx = createContext(null)
+const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+
+  const getUserTypeFromToken = (token) => {
+    try {
+      if (!token) return null;
+      const decoded = jwtDecode(token);
+      
+      if (decoded.roles && Array.isArray(decoded.roles)) {
+        const role = decoded.roles[0];
+        if (role === 'ROLE_OWNER') return 'owner';
+        if (role === 'ROLE_SITTER') return 'sitter';
+      }
+      return null;
+    } catch (error) {
+      console.error('Error decodificando token:', error);
+      return null;
+    }
+  };
 
   useEffect(() => {
-    const stored = localStorage.getItem('pc_user')
-    if (stored) setUser(JSON.parse(stored))
-  }, [])
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        const userType = getUserTypeFromToken(token);
+        
+        setUser({
+          name: decoded.name,
+          email: decoded.sub,
+          role: userType,
+          roles: decoded.roles
+        });
+      } catch (error) {
+        console.error('Error inicializando usuario:', error);
+        localStorage.removeItem('authToken');
+      }
+    }
+  }, []);
 
-  const login = (role, name) => {
-    const u = { role, name }
-    setUser(u)
-    localStorage.setItem('pc_user', JSON.stringify(u))
-  }
+  const login = (token) => {
+    localStorage.setItem('authToken', token);
+    const decoded = jwtDecode(token);
+    const userType = getUserTypeFromToken(token);
+    
+    setUser({
+      name: decoded.name,
+      email: decoded.sub,
+      role: userType,
+      roles: decoded.roles
+    });
+  };
 
   const logout = () => {
-    setUser(null)
-    localStorage.removeItem('pc_user')
-  }
+    localStorage.removeItem('authToken');
+    setUser(null);
+  };
 
   return (
-    <AuthCtx.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
-    </AuthCtx.Provider>
-  )
-}
+    </AuthContext.Provider>
+  );
+};
 
-export const useAuth = () => useContext(AuthCtx)
+// ESTA EXPORTACIÓN ES LA QUE FALTA:
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth debe usarse dentro de AuthProvider');
+  }
+  return context;
+};
