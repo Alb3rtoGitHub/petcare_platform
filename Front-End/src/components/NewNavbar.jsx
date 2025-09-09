@@ -63,8 +63,8 @@ export default function NewNavbar() {
               >
                 Iniciar Sesión
               </Link>
-              <Link
-                to="/register"
+              <Link 
+                to="/Register" 
                 className="bg-gray-800 text-white px-6 py-2 rounded-lg font-medium hover:bg-gray-700 transition-colors"
               >
                 Quiero registrarme
