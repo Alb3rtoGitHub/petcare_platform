@@ -26,9 +26,8 @@ public class PetController {
     @PostMapping("/{ownerId}")
     @Transactional
     public ResponseEntity<?> createPets(@PathVariable Long ownerId,
-                                        @RequestBody @Valid List<PetAddRequestDTO> petsList,
-                                        @RequestHeader("Authorization") String authHeader) {
-        var response = petService.createPets(ownerId, petsList, authHeader);
+                                        @RequestBody @Valid List<PetAddRequestDTO> petsList) {
+        var response = petService.createPets(ownerId, petsList);
         return null;
     }
 
@@ -40,25 +39,22 @@ public class PetController {
 
     @GetMapping("/{ownerId}/owner")
     public ResponseEntity<List<PetResponseDTO>> getAllPetsToTheOwner(
-                            @PathVariable Long ownerId,
-                            @RequestHeader("Authorization") String authHeader) {
-        var pets = petService.getAllPets(ownerId, authHeader);
+                            @PathVariable Long ownerId) {
+        var pets = petService.getAllPets(ownerId);
         return new ResponseEntity<>(pets, HttpStatus.OK);
     }
 
     @PutMapping("/{petId}")
     @Transactional
     public ResponseEntity<PetResponseDTO> updatePet(@PathVariable Long petId,
-                                                    @RequestBody @Valid PetUpdateRequestDTO petDTO,
-                                                    @RequestHeader("Authorization") String authHeader) {
-        var pet = petService.updatePet(petId, petDTO, authHeader);
+                                                    @RequestBody @Valid PetUpdateRequestDTO petDTO){
+        var pet = petService.updatePet(petId, petDTO);
         return new ResponseEntity<>(pet, HttpStatus.OK);
     }
 
     @DeleteMapping("/{petId}")
-    public ResponseEntity<?> deletePet(@PathVariable Long petId,
-                                       @RequestHeader("Authorization") String authHeader) {
-        petService.deletePet(petId, authHeader);
+    public ResponseEntity<?> deletePet(@PathVariable Long petId) {
+        petService.deletePet(petId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
