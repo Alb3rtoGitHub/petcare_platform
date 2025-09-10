@@ -62,7 +62,9 @@ public class ClaimServiceImpl implements ClaimService {
 
     @Override
     public Page<ClaimResponseDTO> getClaims(Long userId, Long bookingId, ClaimState state, Pageable page) {
-        return null;
+        return claimRepository
+                .findByFilters(userId, bookingId, state, page)
+                .map(this::buildClaimResponse);
     }
 
     @Override
