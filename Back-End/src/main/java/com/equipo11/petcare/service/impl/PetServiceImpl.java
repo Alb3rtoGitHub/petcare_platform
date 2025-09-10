@@ -22,27 +22,20 @@ public class PetServiceImpl implements PetService {
 
     private final SecurityService securityService;
     private final PetRepository petRepository;
-    private final UserRepository userRepository;
-    private final TokenParser tokenParser;
 
     public PetServiceImpl(SecurityService securityService,
-                          PetRepository petRepository,
-                          UserRepository userRepository,
-                          TokenParser tokenParser) {
+                          PetRepository petRepository) {
         this.securityService = securityService;
         this.petRepository = petRepository;
-        this.userRepository = userRepository;
-        this.tokenParser = tokenParser;
     }
 
     @Override
     public PetResponseDTO createPets(Long ownerId,
-                                     List<PetAddRequestDTO> pets,
-                                     String token) {
+                                     List<PetAddRequestDTO> pets) {
         if (pets.isEmpty()) {
             throw new PetcareException(ApiError.PET_LIST_EMPTY);
         }
-        var owner = (Owner) securityService.verifyUserOrToken(ownerId, token);
+        var owner = (Owner) securityService.verifyUserOrToken(ownerId);
         List<Pet> petsList = pets.stream().map(pet -> Pet.builder()
                         .name(pet.name())
                         .age(pet.age())
@@ -73,9 +66,8 @@ public class PetServiceImpl implements PetService {
     }
 
     @Override
-    public List<PetResponseDTO> getAllPets(Long ownerId,
-                                           String token) {
-        var owner = (Owner) securityService.verifyUserOrToken(ownerId, token);
+    public List<PetResponseDTO> getAllPets(Long ownerId) {
+        var owner = (Owner) securityService.verifyUserOrToken(ownerId);
         var pets = petRepository.findAllByOwnerId(owner.getId());
         if (pets.isEmpty())
             throw new PetcareException(ApiError.USER_HAS_NO_PETS);
@@ -93,11 +85,9 @@ public class PetServiceImpl implements PetService {
 
     @Override
     public PetResponseDTO updatePet(Long petId,
-                                    PetUpdateRequestDTO petDTO,
-                                    String token) {
+                                    PetUpdateRequestDTO petDTO) {
         var pet = findPet(petId);
-        var owner = userRepository.findByEmail(tokenParser.extractEmail(token.substring(7)))
-                .orElseThrow(() -> new PetcareException(ApiError.USER_NOT_FOUND));
+        var owner = (Owner) securityService.userAuthenticate();
         if (pet.getOwner().equals(owner)) {
             pet.setName(petDTO.name());
             pet.setAge(petDTO.age());
@@ -118,10 +108,9 @@ public class PetServiceImpl implements PetService {
     }
 
     @Override
-    public void deletePet(Long petId, String token) {
+    public void deletePet(Long petId) {
         var pet = findPet(petId);
-        var owner = userRepository.findByEmail(tokenParser.extractEmail(token.substring(7)))
-                .orElseThrow(() -> new PetcareException(ApiError.USER_NOT_FOUND));
+        var owner = securityService.userAuthenticate();
         if (!pet.getOwner().equals(owner)) {
             throw new PetcareException(ApiError.PET_NOT_OWNED_BY_USER);
         }

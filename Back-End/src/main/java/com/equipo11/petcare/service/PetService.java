@@ -8,17 +8,14 @@ import java.util.List;
 
 public interface PetService {
     PetResponseDTO createPets(Long ownerId,
-                              List<PetAddRequestDTO> pets,
-                              String token);
+                              List<PetAddRequestDTO> pets);
 
     PetResponseDTO getPet(Long petId);
 
-    List<PetResponseDTO> getAllPets(Long ownerId,
-                                    String token);
+    List<PetResponseDTO> getAllPets(Long ownerId);
 
     PetResponseDTO updatePet(Long petId,
-                             PetUpdateRequestDTO request,
-                             String token);
+                             PetUpdateRequestDTO request);
 
-    void deletePet(Long id, String token);
+    void deletePet(Long id);
 }

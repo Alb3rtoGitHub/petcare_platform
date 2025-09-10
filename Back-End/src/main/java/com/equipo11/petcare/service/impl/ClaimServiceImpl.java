@@ -40,9 +40,9 @@ public class ClaimServiceImpl implements ClaimService {
     }
 
     @Override
-    public ClaimResponseDTO createClaim(ClaimCreateRequestDTO request, String bearer) {
+    public ClaimResponseDTO createClaim(ClaimCreateRequestDTO request) {
         var booking = findBooking(request.bookingId());
-        securityService.creatorClaimVerify(booking.getOwner(), bearer);
+        securityService.creatorClaimVerify(booking.getOwner());
         Claim newClaim = Claim.builder()
                 .owner(booking.getOwner())
                 .booking(booking)
@@ -54,9 +54,9 @@ public class ClaimServiceImpl implements ClaimService {
     }
 
     @Override
-    public ClaimResponseDTO getClaim(Long claimId, String bearer) {
+    public ClaimResponseDTO getClaim(Long claimId) {
         var claim = findClaimById(claimId);
-        securityService.creatorClaimVerify(claim.getOwner(), bearer);
+        securityService.creatorClaimVerify(claim.getOwner());
         return buildClaimResponse(claim);
     }
 

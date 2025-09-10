@@ -8,9 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface ClaimService {
-    ClaimResponseDTO createClaim(ClaimCreateRequestDTO request, String bearer);
-    ClaimResponseDTO getClaim(Long claimId, String bearer);
+    ClaimResponseDTO createClaim(ClaimCreateRequestDTO request);
+    ClaimResponseDTO getClaim(Long claimId);
     Page<ClaimResponseDTO> getClaims(Long userId, Long bookingId, ClaimState state, Pageable page);
     ClaimResponseDTO updateState(ClaimUpdateRequestDTO request);
-
 }
