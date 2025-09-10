@@ -13,8 +13,8 @@ public interface ClaimRepository extends JpaRepository<Claim, Long> {
     @Query("""
         SELECT c
           FROM Claim c
-         WHERE (:userId    IS NULL OR c.reservation.owner.id = :userId)
-           AND (:bookingId IS NULL OR c.reservation.id       = :bookingId)
+         WHERE (:userId    IS NULL OR c.booking.owner.id = :userId)
+           AND (:bookingId IS NULL OR c.booking.id       = :bookingId)
            AND (:state     IS NULL OR c.state                = :state)
         """)
     Page<Claim> findByFilters(@Param("userId")    Long userId,
