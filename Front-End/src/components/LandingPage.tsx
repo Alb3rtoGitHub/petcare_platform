@@ -40,6 +40,26 @@ export default function LandingPage(props: LandingPageProps) {
       services: ["Paseos", "Cuidado en casa", "Visitas"],
       price: "15€/hora",
       image: "https://images.unsplash.com/photo-1559198837-e3d443d28c02?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXQlMjBzaXR0ZXIlMjBwbGF5aW5nJTIwY2F0fGVufDF8fHx8MTc1NjI2MjQzOXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+    },
+    {
+      id: 2,
+      name: "Carlos Rodríguez",
+      location: "Barcelona Eixample",
+      rating: 4.8,
+      reviews: 93,
+      services: ["Paseos", "Hospedaje", "Entrenamientos"],
+      price: "18€/hora",
+      image: "https://images.unsplash.com/photo-1702569808326-6eb367c68c76?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXQlMjBzaXR0ZXIlMjB3aXRoJTIwZG9nJTIwcHJvZmVzc2lvbmFsfGVufDF8fHx8MTc1NzQ3NzM2OHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+    },
+    {
+      id: 3,
+      name: "Ana Martínez",
+      location: "Valencia Centro",
+      rating: 4.9,
+      reviews: 156,
+      services: ["Cuidado en casa", "Visitas", "Grooming"],
+      price: "16€/hora",
+      image: "https://images.unsplash.com/photo-1629990941644-45c40aac3d68?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBwZXQlMjBjYXJlJTIwd29tYW58ZW58MXx8fHwxNzU3NDc3MzcxfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
     }
   ]
 
@@ -83,7 +103,7 @@ export default function LandingPage(props: LandingPageProps) {
                     <FileText className="h-8 w-8 text-purple-600" />
                   </div>
                   <h3 className="text-xl mb-2">Quiero Registrarme</h3>
-                  <p className="text-gray-600 text-sm">Únete a nuestra plataforma como cuidador o dueño</p>
+                  <p className="text-gray-600 text-sm">Únete a nuestra plataforma</p>
                 </CardContent>
               </Card>
             </div>
@@ -196,7 +216,7 @@ export default function LandingPage(props: LandingPageProps) {
           <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-8">
             <div className="space-y-4">
               <h3 className="text-xl">PetCare</h3>
-              <p className="text-gray-300 text-sm leading-relaxed">
+              <p className="text-gray-300 leading-relaxed">
                 Conectamos dueños de mascotas con cuidadores profesionales y confiables. 
                 Tu mascota merece el mejor cuidado cuando no puedes estar con ella.
               </p>
@@ -211,16 +231,16 @@ export default function LandingPage(props: LandingPageProps) {
               <h4 className="text-lg">Contacto</h4>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <Phone className="h-4 w-4 text-blue-400" />
-                  <span className="text-gray-300 text-sm">+34 900 123 456</span>
+                  <Phone className="h-5 w-5 text-blue-400" />
+                  <span className="text-gray-300">+34 900 123 456</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Mail className="h-4 w-4 text-blue-400" />
-                  <span className="text-gray-300 text-sm">info@petcare.es</span>
+                  <Mail className="h-5 w-5 text-blue-400" />
+                  <span className="text-gray-300">info@petcare.es</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <Navigation className="h-4 w-4 text-blue-400 mt-1" />
-                  <div className="text-gray-300 text-sm">
+                  <Navigation className="h-5 w-5 text-blue-400 mt-1" />
+                  <div className="text-gray-300">
                     <p>Calle Gran Vía, 123</p>
                     <p>28013 Madrid, España</p>
                   </div>
@@ -233,62 +253,50 @@ export default function LandingPage(props: LandingPageProps) {
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
                   <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs mt-0.5">1</div>
-                  <p className="text-gray-300 text-sm">Regístrate y crea tu perfil</p>
+                  <p className="text-gray-300">Regístrate y crea tu perfil</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs mt-0.5">2</div>
-                  <p className="text-gray-300 text-sm">Busca y conecta con cuidadores</p>
+                  <p className="text-gray-300">Busca y conecta con cuidadores</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs mt-0.5">3</div>
-                  <p className="text-gray-300 text-sm">Reserva y disfruta del servicio</p>
+                  <p className="text-gray-300">Reserva y disfruta del servicio</p>
                 </div>
               </div>
             </div>
 
             <div className="space-y-4">
-              <h4 className="text-lg">Nuestra Ubicación</h4>
-              
-              <div className="bg-gray-800 rounded-lg p-4 aspect-video flex items-center justify-center">
-                <div className="text-center">
-                  <Navigation className="h-8 w-8 text-blue-400 mx-auto mb-2" />
-                  <p className="text-gray-400 text-xs">Madrid, España</p>
-                  <p className="text-gray-500 text-xs">Ver en Google Maps</p>
-                </div>
-              </div>
-
-              <div>
-                <h5 className="text-sm mb-3">Síguenos</h5>
-                <div className="flex gap-3">
-                  <a href="#" className="bg-gray-800 p-2 rounded-lg hover:bg-gray-700 transition-colors">
-                    <Facebook className="h-4 w-4 text-blue-400" />
-                  </a>
-                  <a href="#" className="bg-gray-800 p-2 rounded-lg hover:bg-gray-700 transition-colors">
-                    <Instagram className="h-4 w-4 text-pink-400" />
-                  </a>
-                  <a href="#" className="bg-gray-800 p-2 rounded-lg hover:bg-gray-700 transition-colors">
-                    <Twitter className="h-4 w-4 text-blue-400" />
-                  </a>
-                  <a href="#" className="bg-gray-800 p-2 rounded-lg hover:bg-gray-700 transition-colors">
-                    <Linkedin className="h-4 w-4 text-blue-400" />
-                  </a>
-                </div>
+              <h4 className="text-lg">Síguenos</h4>
+              <div className="flex gap-4">
+                <a href="#" className="bg-gray-800 p-3 rounded-lg hover:bg-gray-700 transition-colors">
+                  <Facebook className="h-6 w-6 text-blue-400" />
+                </a>
+                <a href="#" className="bg-gray-800 p-3 rounded-lg hover:bg-gray-700 transition-colors">
+                  <Instagram className="h-6 w-6 text-pink-400" />
+                </a>
+                <a href="#" className="bg-gray-800 p-3 rounded-lg hover:bg-gray-700 transition-colors">
+                  <Twitter className="h-6 w-6 text-blue-400" />
+                </a>
+                <a href="#" className="bg-gray-800 p-3 rounded-lg hover:bg-gray-700 transition-colors">
+                  <Linkedin className="h-6 w-6 text-blue-400" />
+                </a>
               </div>
             </div>
           </div>
 
           <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-400">
               © 2024 PetCare. Todos los derechos reservados.
             </p>
             <div className="flex gap-6 mt-4 md:mt-0">
-              <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">
+              <a href="#" className="text-gray-400 hover:text-white transition-colors">
                 Términos de Servicio
               </a>
-              <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">
+              <a href="#" className="text-gray-400 hover:text-white transition-colors">
                 Política de Privacidad
               </a>
-              <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">
+              <a href="#" className="text-gray-400 hover:text-white transition-colors">
                 Ayuda
               </a>
             </div>

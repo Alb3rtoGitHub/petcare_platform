@@ -24,9 +24,23 @@ import {
 
 interface HowItWorksProps {
   onBack: () => void
+  isAuthenticated?: boolean
+  userType?: 'owner' | 'sitter' | 'admin' | null
+  onShowLogin?: () => void
+  onShowRegister?: () => void
+  onSearchSitters?: () => void
+  onViewServices?: () => void
 }
 
-export default function HowItWorks({ onBack }: HowItWorksProps) {
+export default function HowItWorks({ 
+  onBack, 
+  isAuthenticated = false, 
+  userType = null, 
+  onShowLogin, 
+  onShowRegister, 
+  onSearchSitters, 
+  onViewServices 
+}: HowItWorksProps) {
   const ownerSteps = [
     {
       icon: Search,
@@ -164,7 +178,7 @@ export default function HowItWorks({ onBack }: HowItWorksProps) {
           <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
             <div>
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1553322396-0c9cd410975e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYXBweSUyMHBldCUyMG93bmVyJTIwd2l0aCUyMGRvZ3xlbnwxfHx8fDE3NTYzNTE4MDV8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+                src="https://images.unsplash.com/photo-1553322396-0c9cd410975e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYXBweSUyMHBldCUyMGRvZ3xlbnwxfHx8fDE3NTYzNTE4MDV8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
                 alt="Dueño feliz con su mascota"
                 className="w-full h-64 md:h-80 object-cover rounded-lg shadow-lg"
               />
@@ -386,14 +400,31 @@ export default function HowItWorks({ onBack }: HowItWorksProps) {
             Únete a la comunidad PetCare y experimenta el mejor cuidado para mascotas
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="secondary">
-              <Heart className="h-5 w-5 mr-2" />
-              Buscar Cuidador
-            </Button>
-            <Button size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-primary">
-              <DollarSign className="h-5 w-5 mr-2" />
-              Convertirse en Cuidador
-            </Button>
+            {isAuthenticated ? (
+              // Botones para usuarios autenticados
+              <>
+                <Button size="lg" variant="secondary" onClick={onSearchSitters}>
+                  <Heart className="h-5 w-5 mr-2" />
+                  Buscar Cuidadores
+                </Button>
+                <Button size="lg" variant="secondary"  onClick={onViewServices}>
+                  <Search className="h-5 w-5 mr-2" />
+                  Servicios
+                </Button>
+              </>
+            ) : (
+              // Botones para usuarios no autenticados
+              <>
+                <Button size="lg" variant="secondary" onClick={onShowLogin}>
+                  <Heart className="h-5 w-5 mr-2" />
+                  Iniciar Sesión
+                </Button>
+                <Button size="lg" variant="secondary" onClick={onShowRegister}>
+                  <CheckCircle className="h-5 w-5 mr-2" />
+                  Registrarse
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </section>

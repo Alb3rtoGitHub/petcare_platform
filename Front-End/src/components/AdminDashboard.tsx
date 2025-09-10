@@ -5,8 +5,12 @@ import { Badge } from "./ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table"
 import { Alert, AlertDescription } from "./ui/alert"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import UserManagement from "./UserManagement"
 import ServicePricingManager from "./ServicePricingManager"
+import AllReports from "./AllReports"
+import AllFlaggedContent from "./AllFlaggedContent"
+import AdminProfileManager from "./AdminProfileManager"
 import { BarChart3, Users, DollarSign, AlertTriangle, CheckCircle, XCircle, Eye, Flag, TrendingUp, Calendar } from "lucide-react"
 
 interface AdminDashboardProps {
@@ -16,6 +20,9 @@ interface AdminDashboardProps {
 export default function AdminDashboard({ userData }: AdminDashboardProps) {
   const [showUserManagement, setShowUserManagement] = useState(false)
   const [showServicePricing, setShowServicePricing] = useState(false)
+  const [showAllReports, setShowAllReports] = useState(false)
+  const [showAllFlaggedContent, setShowAllFlaggedContent] = useState(false)
+  const [currentTab, setCurrentTab] = useState("reports")
 
   if (showUserManagement) {
     return <UserManagement onBack={() => setShowUserManagement(false)} />
@@ -24,6 +31,15 @@ export default function AdminDashboard({ userData }: AdminDashboardProps) {
   if (showServicePricing) {
     return <ServicePricingManager onBack={() => setShowServicePricing(false)} />
   }
+
+  if (showAllReports) {
+    return <AllReports onBack={() => setShowAllReports(false)} />
+  }
+
+  if (showAllFlaggedContent) {
+    return <AllFlaggedContent onBack={() => setShowAllFlaggedContent(false)} />
+  }
+
   const systemStats = {
     totalUsers: "2,847",
     activeSitters: "437",
@@ -193,20 +209,42 @@ export default function AdminDashboard({ userData }: AdminDashboardProps) {
           </Card>
         </div>
 
-        <Tabs defaultValue="reports" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="reports">Reportes</TabsTrigger>
-            <TabsTrigger value="users">Usuarios</TabsTrigger>
-            <TabsTrigger value="services">Servicios</TabsTrigger>
-            <TabsTrigger value="content">Contenido</TabsTrigger>
-            <TabsTrigger value="analytics">Analíticas</TabsTrigger>
-            <TabsTrigger value="settings">Configuración</TabsTrigger>
-          </TabsList>
+        <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-6">
+          <div className="flex flex-col space-y-4">
+            {/* Tabs normales para desktop y tablet */}
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-7">
+              <TabsTrigger value="reports" className="text-xs sm:text-sm">Reportes</TabsTrigger>
+              <TabsTrigger value="users" className="text-xs sm:text-sm">Usuarios</TabsTrigger>
+              <TabsTrigger value="services" className="text-xs sm:text-sm">Servicios</TabsTrigger>
+              <TabsTrigger value="content" className="text-xs sm:text-sm">Contenido</TabsTrigger>
+              <TabsTrigger value="analytics" className="text-xs sm:text-sm lg:block hidden">Analíticas</TabsTrigger>
+              <TabsTrigger value="settings" className="text-xs sm:text-sm lg:block hidden">Configuración</TabsTrigger>
+              <TabsTrigger value="profile" className="text-xs sm:text-sm lg:block hidden">Perfil</TabsTrigger>
+            </TabsList>
+
+            {/* Dropdown para tabs adicionales en móvil/tablet */}
+            <div className="lg:hidden">
+              <Select value={currentTab} onValueChange={setCurrentTab}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Más opciones" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="analytics">Analíticas</SelectItem>
+                  <SelectItem value="settings">Configuración</SelectItem>
+                  <SelectItem value="profile">Perfil</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
           <TabsContent value="reports" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl">Reportes Pendientes ({pendingReports.length})</h2>
-              <Button variant="outline">Ver Todos los Reportes</Button>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+              <h2 className="text-xl hidden sm:inline">Reportes Pendientes ({pendingReports.length})</h2>
+              <h2 className="text-lg sm:hidden">Reportes ({pendingReports.length})</h2>
+              <Button variant="outline" onClick={() => setShowAllReports(true)} className="text-xs sm:text-sm w-full sm:w-auto">
+                <span className="hidden sm:inline">Ver Todos los Reportes</span>
+                <span className="sm:hidden">Ver Todos</span>
+              </Button>
             </div>
 
             <div className="space-y-4">
@@ -409,7 +447,13 @@ export default function AdminDashboard({ userData }: AdminDashboardProps) {
           </TabsContent>
 
           <TabsContent value="content" className="space-y-6">
-            <h2 className="text-xl">Contenido Reportado</h2>
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl">Contenido Reportado</h2>
+              <Button variant="outline" onClick={() => setShowAllFlaggedContent(true)}>
+                <Flag className="h-4 w-4 mr-2" />
+                Ver Todo el Contenido Reportado
+              </Button>
+            </div>
 
             <div className="space-y-4">
               {flaggedContent.map((content) => (
@@ -532,6 +576,11 @@ export default function AdminDashboard({ userData }: AdminDashboardProps) {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="profile" className="space-y-6">
+            <h2 className="text-xl">Perfil del Administrador</h2>
+            <AdminProfileManager userData={userData} />
           </TabsContent>
         </Tabs>
       </div>

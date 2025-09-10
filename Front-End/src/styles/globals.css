@@ -1,7 +1,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --font-size: 14px;
+  --font-size: 16px;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;
@@ -212,4 +212,42 @@
 
 html {
   font-size: var(--font-size);
+}
+
+/* Responsive utilities */
+@layer utilities {
+  .break-words {
+    word-wrap: break-word;
+    word-break: break-word;
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Improved button sizing for mobile */
+  .btn-mobile {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Better touch targets */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Responsive grid improvements */
+  .grid-responsive {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+  
+  .grid-responsive-cards {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
 }

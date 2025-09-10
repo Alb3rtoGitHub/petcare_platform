@@ -5,7 +5,8 @@ import { Badge } from "./ui/badge"
 import { Input } from "./ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
-import { Clock, DollarSign, MapPin, Star, Search, Filter, ArrowLeft } from "lucide-react"
+import { Clock, DollarSign, MapPin, Star, Search, Filter, ArrowLeft, Heart, User, CheckCircle } from "lucide-react"
+import BookingModal from "./BookingModal"
 
 interface Service {
   id: string
@@ -120,31 +121,47 @@ const mockServices: Service[] = [
 interface ServicesViewProps {
   onBack: () => void
   onBookService: (service: any) => void
+  isAuthenticated?: boolean
+  userPets?: any[]
+  onLoginRequired?: () => void
+  onSearchSitters?: () => void
+  onViewServices?: () => void
+  onShowLogin?: () => void
+  onShowRegister?: () => void
 }
 
-export default function ServicesView({ onBack, onBookService }: ServicesViewProps) {
+export default function ServicesView({ 
+  onBack, 
+  onBookService, 
+  isAuthenticated = false, 
+  userPets = [], 
+  onLoginRequired,
+  onSearchSitters,
+  onViewServices,
+  onShowLogin,
+  onShowRegister
+}: ServicesViewProps) {
   const [services] = useState<Service[]>(mockServices)
   const [filteredServices, setFilteredServices] = useState<Service[]>(mockServices)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedType, setSelectedType] = useState<string>('all')
-  const [priceRange, setPriceRange] = useState<string>('all')
-
+  
+  // Estados para el modal de reserva
+  const [showBookingModal, setShowBookingModal] = useState(false)
+  const [selectedSitter, setSelectedSitter] = useState<any>(null)
+  const [selectedService, setSelectedService] = useState("")
+  
   const handleSearch = (term: string) => {
     setSearchTerm(term)
-    filterServices(term, selectedType, priceRange)
+    filterServices(term, selectedType)
   }
 
   const handleTypeFilter = (type: string) => {
     setSelectedType(type)
-    filterServices(searchTerm, type, priceRange)
+    filterServices(searchTerm, type)
   }
 
-  const handlePriceFilter = (range: string) => {
-    setPriceRange(range)
-    filterServices(searchTerm, selectedType, range)
-  }
-
-  const filterServices = (search: string, type: string, price: string) => {
+  const filterServices = (search: string, type: string) => {
     let filtered = services
 
     // Filtro por búsqueda
@@ -161,44 +178,72 @@ export default function ServicesView({ onBack, onBookService }: ServicesViewProp
       filtered = filtered.filter(service => service.type === type)
     }
 
-    // Filtro por precio
-    if (price !== 'all') {
-      filtered = filtered.filter(service => {
-        switch (price) {
-          case 'low': return service.price <= 20
-          case 'medium': return service.price > 20 && service.price <= 40
-          case 'high': return service.price > 40
-          default: return true
-        }
-      })
-    }
-
     setFilteredServices(filtered)
   }
 
-  const handleBookService = (serviceId: string) => {
-    const service = services.find(s => s.id === serviceId)
-    if (service) {
-      // Convert the service to the format expected by BookingCalendar
-      const formattedService = {
-        id: parseInt(service.id),
-        title: service.name,
-        description: service.description,
-        price: `${service.price}€/hora`,
-        duration: service.duration,
-        rating: service.sitterRating,
-        reviews: 127, // Mock value
-        category: serviceTypes[service.type],
-        provider: {
-          name: service.sitterName,
-          image: service.sitterImage,
-          rating: service.sitterRating,
-          location: service.location
-        },
-        image: service.sitterImage
-      }
-      onBookService(formattedService)
+  const handleBookServiceDirect = (service: Service) => {
+    // Convertir a formato sitter para el modal
+    const sitterData = {
+      id: service.id,
+      name: service.sitterName,
+      image: service.sitterImage,
+      rating: service.sitterRating,
+      location: service.location,
+      priceRange: `${service.price}-${service.price + 10}€/hora`,
+      services: [serviceTypes[service.type]]
     }
+    
+    setSelectedSitter(sitterData)
+    setSelectedService(serviceTypes[service.type])
+    setShowBookingModal(true)
+  }
+
+  const handleViewProfile = (service: Service) => {
+    if (!isAuthenticated) {
+      onLoginRequired?.()
+      return
+    }
+    
+    // Aquí se podría implementar la vista del perfil del cuidador
+    console.log('Ver perfil de:', service.sitterName)
+  }
+
+  const handleBookingComplete = (bookingData: any) => {
+    // Aquí se manejaría la reserva completada
+    console.log('Reserva completada:', bookingData)
+    setShowBookingModal(false)
+    setSelectedSitter(null)
+    setSelectedService("")
+  }
+
+  const handleProceedToPayment = (bookingData: any) => {
+    // Crear item del carrito y proceder al pago
+    const cartItem = {
+      id: bookingData.id,
+      sitterId: bookingData.sitterId,
+      sitterName: bookingData.sitterName,
+      sitterImage: bookingData.sitterImage,
+      sitterRating: selectedSitter?.rating || 4.5,
+      service: bookingData.service,
+      date: bookingData.date,
+      startTime: bookingData.time,
+      endTime: bookingData.time,
+      duration: bookingData.duration,
+      pricePerHour: bookingData.price / bookingData.duration,
+      location: selectedSitter?.location || "Por definir",
+      petType: bookingData.pets[0]?.type || "Mascota",
+      quantity: 1,
+      specialRequests: bookingData.specialRequests
+    }
+    
+    // Pasar al callback del padre para manejar el pago
+    if (onBookService) {
+      onBookService({ cartItem, bookingData })
+    }
+    
+    setShowBookingModal(false)
+    setSelectedSitter(null)
+    setSelectedService("")
   }
 
   return (
@@ -241,17 +286,6 @@ export default function ServicesView({ onBack, onBookService }: ServicesViewProp
                 {Object.entries(serviceTypes).map(([key, value]) => (
                   <SelectItem key={key} value={key}>{value}</SelectItem>
                 ))}
-              </SelectContent>
-            </Select>
-            <Select value={priceRange} onValueChange={handlePriceFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Rango de precio" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los precios</SelectItem>
-                <SelectItem value="low">Hasta $20</SelectItem>
-                <SelectItem value="medium">$20 - $40</SelectItem>
-                <SelectItem value="high">Más de $40</SelectItem>
               </SelectContent>
             </Select>
             <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -309,7 +343,7 @@ export default function ServicesView({ onBack, onBookService }: ServicesViewProp
                           <p className="text-gray-600">{service.description}</p>
                         </div>
                         <div className="text-right ml-4">
-                          <p className="text-2xl text-primary">${service.price}</p>
+                          <p className="text-2xl text-primary">{service.price}€</p>
                           <p className="text-sm text-gray-600">{service.duration}</p>
                         </div>
                       </div>
@@ -325,7 +359,7 @@ export default function ServicesView({ onBack, onBookService }: ServicesViewProp
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <DollarSign className="h-4 w-4" />
-                          <span>${service.price}</span>
+                          <span>{service.price}€</span>
                         </div>
                       </div>
 
@@ -341,7 +375,7 @@ export default function ServicesView({ onBack, onBookService }: ServicesViewProp
                           </div>
                         </div>
                         <Button 
-                          onClick={() => handleBookService(service.id)}
+                          onClick={() => handleBookServiceDirect(service)}
                           className="ml-4 h-14 px-8 text-lg font-medium"
                           size="lg"
                         >
@@ -357,15 +391,54 @@ export default function ServicesView({ onBack, onBookService }: ServicesViewProp
         </div>
 
         {/* Call to Action */}
-        <div className="mt-12 text-center bg-white p-8 rounded-lg shadow-sm">
-          <h2 className="mb-4">¿Eres cuidador de mascotas?</h2>
-          <p className="text-gray-600 mb-6">
-            Únete a nuestra plataforma y comienza a ganar dinero cuidando mascotas
-          </p>
-          <Button size="lg">
-            Registrarse como Cuidador
-          </Button>
+        <div className="mt-12 bg-primary text-white py-16 px-4 sm:px-6 lg:px-8 rounded-lg">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl mb-4">¿Listo para Comenzar?</h2>
+            <p className="text-xl mb-8 opacity-90">
+              Únete a la comunidad PetCare y experimenta el mejor cuidado para mascotas
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              {isAuthenticated ? (
+                // Botones para usuarios autenticados
+                <>
+                  <Button size="lg" variant="secondary" onClick={onSearchSitters}>
+                    <Heart className="h-5 w-5 mr-2" />
+                    Buscar Cuidadores
+                  </Button>
+                  <Button size="lg" variant="secondary" onClick={onViewServices}>
+                    <Search className="h-5 w-5 mr-2" />
+                    Servicios
+                  </Button>
+                </>
+              ) : (
+                // Botones para usuarios no autenticados
+                <>
+                  <Button size="lg" variant="secondary" onClick={onShowLogin}>
+                    <Heart className="h-5 w-5 mr-2" />
+                    Iniciar Sesión
+                  </Button>
+                  <Button size="lg" variant="secondary" onClick={onShowRegister}>
+                    <CheckCircle className="h-5 w-5 mr-2" />
+                    Registrarse
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
         </div>
+
+        {/* Modal de reserva */}
+        <BookingModal
+          isOpen={showBookingModal}
+          onClose={() => setShowBookingModal(false)}
+          sitter={selectedSitter}
+          service={selectedService}
+          userPets={userPets || []}
+          isAuthenticated={!!isAuthenticated}
+          onLoginRequired={onLoginRequired}
+          onBookingComplete={handleBookingComplete}
+          onProceedToPayment={handleProceedToPayment}
+        />
       </div>
     </div>
   )

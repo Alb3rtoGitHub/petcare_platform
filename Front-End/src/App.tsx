@@ -48,6 +48,28 @@ export default function App() {
   const [cartTotal, setCartTotal] = useState(0)
   const [selectedService, setSelectedService] = useState<any>(null)
   const [pendingUserEmail, setPendingUserEmail] = useState<string>("")
+  const [previousView, setPreviousView] = useState<CurrentView | null>(null) // Nueva variable para recordar la vista anterior
+  const [navigationHistory, setNavigationHistory] = useState<CurrentView[]>(['landing']) // Historial completo de navegación
+
+  // Función universal para navegar con historial
+  const navigateToView = (newView: CurrentView, updateHistory: boolean = true) => {
+    if (updateHistory && currentView !== newView) {
+      setNavigationHistory(prev => [...prev, currentView])
+    }
+    setCurrentView(newView)
+  }
+
+  // Función universal para volver atrás
+  const handleGoBack = () => {
+    if (navigationHistory.length > 0) {
+      const lastView = navigationHistory[navigationHistory.length - 1]
+      setNavigationHistory(prev => prev.slice(0, -1))
+      setCurrentView(lastView)
+    } else {
+      // Si no hay historial, ir a landing por defecto
+      setCurrentView('landing')
+    }
+  }
 
   const handleUserTypeChange = (type: UserType) => {
     if (type && !isAuthenticated) {
@@ -67,11 +89,56 @@ export default function App() {
   }
 
   const handleLogin = (type: 'owner' | 'sitter' | 'admin', userData: any) => {
+    // Agregar mascotas de ejemplo para testing
+    if (type === 'owner' && (!userData.pets || userData.pets.length === 0)) {
+      userData.pets = [
+        { 
+          id: '1', 
+          name: 'Max', 
+          type: 'Perro', 
+          breed: 'Golden Retriever', 
+          age: '3 años',
+          image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=100&h=100&fit=crop&crop=face'
+        },
+        { 
+          id: '2', 
+          name: 'Luna', 
+          type: 'Gato', 
+          breed: 'Siamés', 
+          age: '2 años',
+          image: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?w=100&h=100&fit=crop&crop=face'
+        }
+      ]
+    }
+
+    // Agregar datos de identificación de ejemplo para testing si no existen
+    if (!userData.identificationType) {
+      userData.identificationType = type === 'owner' ? 'cedula_ciudadania' : 'pasaporte'
+      userData.identificationNumber = type === 'owner' ? '12345678X' : 'AA123456'
+    }
+
+    // Asegurar que todas las mascotas existentes tengan IDs únicos
+    if (type === 'owner' && userData.pets && userData.pets.length > 0) {
+      userData.pets = userData.pets.map((pet: any, index: number) => ({
+        ...pet,
+        id: pet.id || `pet-${Date.now()}-${index}`, // Asignar ID si no existe
+        age: pet.age || '1 año', // Asegurar que tenga edad
+        image: pet.image || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=100&h=100&fit=crop&crop=face' // Imagen por defecto
+      }))
+    }
+
     setUserType(type)
     setUserData(userData)
     setIsAuthenticated(true)
     setSelectedUserTypeForLogin(null) // Clear the selected type after successful login
-    setCurrentView('dashboard')
+    
+    // Ir a la vista anterior si existe, sino ir al dashboard
+    if (previousView && previousView !== 'login' && previousView !== 'register') {
+      setCurrentView(previousView)
+      setPreviousView(null) // Limpiar la vista anterior después de usarla
+    } else {
+      setCurrentView('dashboard')
+    }
   }
 
   const handleLogout = () => {
@@ -79,10 +146,21 @@ export default function App() {
     setUserData(null)
     setIsAuthenticated(false)
     setSelectedUserTypeForLogin(null)
+    setPreviousView(null) // Limpiar la vista anterior al hacer logout
     setCurrentView('landing')
   }
 
   const handleRegister = (type: 'owner' | 'sitter', userData: any) => {
+    // Asegurar que todas las mascotas del registro tengan IDs únicos
+    if (type === 'owner' && userData.pets && userData.pets.length > 0) {
+      userData.pets = userData.pets.map((pet: any, index: number) => ({
+        ...pet,
+        id: pet.id || `pet-${Date.now()}-${index}`, // Asignar ID si no existe
+        age: pet.age || '1 año', // Asegurar que tenga edad
+        image: pet.image || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=100&h=100&fit=crop&crop=face' // Imagen por defecto
+      }))
+    }
+
     // After successful registration, automatically log in the user
     setUserType(type)
     setUserData(userData)
@@ -92,46 +170,61 @@ export default function App() {
   }
 
   const handleSearchSitters = () => {
-    setCurrentView('search')
+    navigateToView('search')
   }
 
   const handleViewServices = () => {
-    setCurrentView('services')
+    navigateToView('services')
   }
 
   const handleViewHowItWorks = () => {
-    setCurrentView('how-it-works')
+    navigateToView('how-it-works')
   }
 
   const handleViewHelp = () => {
-    setCurrentView('help')
+    navigateToView('help')
   }
 
   const handleShowLogin = () => {
     setSelectedUserTypeForLogin(null) // Clear any pre-selected type when manually going to login
-    setCurrentView('login')
+    navigateToView('login')
   }
 
   const handleShowRegister = () => {
-    setCurrentView('register')
+    navigateToView('register')
+  }
+
+  // Nueva función para manejar login requerido desde otras vistas
+  const handleLoginRequired = () => {
+    setPreviousView(currentView) // Guardar la vista actual antes de ir a login
+    setSelectedUserTypeForLogin(null)
+    navigateToView('login')
   }
 
   const handleBackToLanding = () => {
+    setNavigationHistory(['landing']) // Reset navigation history
     setCurrentView('landing')
     setSelectedUserTypeForLogin(null) // Clear selected type when going back to landing
+    setPreviousView(null) // Limpiar la vista anterior cuando se va a landing
   }
 
   const handleViewCart = () => {
-    setCurrentView('cart')
+    navigateToView('cart')
   }
 
   const handleViewBookings = () => {
-    setCurrentView('bookings')
+    navigateToView('bookings')
+  }
+
+  const handleGoToDashboard = () => {
+    if (isAuthenticated) {
+      navigateToView('dashboard')
+    }
   }
 
   const handleEmailVerification = (email: string) => {
     setPendingUserEmail(email)
-    setCurrentView('email-verification')
+    navigateToView('email-verification')
   }
 
   const handleResendEmail = () => {
@@ -154,6 +247,15 @@ export default function App() {
   }
 
   const handleBookService = (service: any) => {
+    // Si es un objeto con cartItem y bookingData, ir directo a pago
+    if (service.cartItem && service.bookingData) {
+      setCartItems([service.cartItem])
+      setCartTotal(service.bookingData.price)
+      setCurrentView('payment')
+      return
+    }
+    
+    // Flujo original para calendario
     setSelectedService(service)
     setCurrentView('calendar')
   }
@@ -184,11 +286,31 @@ export default function App() {
 
   const renderContent = () => {
     if (currentView === 'search') {
-      return <SearchSitters onBack={handleBackToLanding} onBookService={handleBookService} />
+      return (
+        <SearchSitters 
+          onBack={handleGoBack} 
+          onBookService={handleBookService}
+          isAuthenticated={isAuthenticated}
+          userPets={userData?.pets || []}
+          onLoginRequired={handleLoginRequired}
+        />
+      )
     }
 
     if (currentView === 'services') {
-      return <ServicesView onBack={handleBackToLanding} onBookService={handleBookService} />
+      return (
+        <ServicesView 
+          onBack={handleGoBack} 
+          onBookService={handleBookService}
+          isAuthenticated={isAuthenticated}
+          userPets={userData?.pets || []}
+          onLoginRequired={handleLoginRequired}
+          onSearchSitters={handleSearchSitters}
+          onViewServices={handleViewServices}
+          onShowLogin={handleShowLogin}
+          onShowRegister={handleShowRegister}
+        />
+      )
     }
 
     if (currentView === 'calendar' && selectedService) {
@@ -201,7 +323,7 @@ export default function App() {
       return (
         <EnhancedBookingCalendar 
           service={selectedService}
-          onBack={handleBackToServices}
+          onBack={handleGoBack}
           onAddToCart={handleAddToCart}
           onGoToCart={handleViewCart}
           userPets={userPets}
@@ -210,17 +332,27 @@ export default function App() {
     }
 
     if (currentView === 'how-it-works') {
-      return <HowItWorks onBack={handleBackToLanding} />
+      return (
+        <HowItWorks 
+          onBack={handleGoBack} 
+          isAuthenticated={isAuthenticated}
+          userType={userType}
+          onShowLogin={handleShowLogin}
+          onShowRegister={handleShowRegister}
+          onSearchSitters={handleSearchSitters}
+          onViewServices={handleViewServices}
+        />
+      )
     }
 
     if (currentView === 'help') {
-      return <Help onBack={handleBackToLanding} />
+      return <Help onBack={handleGoBack} />
     }
 
     if (currentView === 'email-verification') {
       return (
         <EmailVerification 
-          onBack={handleBackToLanding}
+          onBack={handleGoBack}
           onResendEmail={handleResendEmail}
           userEmail={pendingUserEmail}
         />
@@ -230,7 +362,7 @@ export default function App() {
     if (currentView === 'cart') {
       return (
         <ShoppingCart 
-          onBack={() => setCurrentView('services')}
+          onBack={handleGoBack}
           onProceedToPayment={handleProceedToPayment}
           cartItems={cartItems}
           onUpdateCart={handleUpdateCart}
@@ -241,7 +373,7 @@ export default function App() {
     if (currentView === 'payment') {
       return (
         <PaymentGateway 
-          onBack={handleViewCart}
+          onBack={handleGoBack}
           onPaymentSuccess={handlePaymentSuccess}
           cartItems={cartItems}
           totalAmount={cartTotal}
@@ -250,13 +382,14 @@ export default function App() {
     }
 
     if (currentView === 'bookings' && isAuthenticated) {
-      return <BookingManager onBack={() => setCurrentView('dashboard')} userData={userData} />
+      return <BookingManager onBack={handleGoBack} userData={userData} />
     }
 
     if (currentView === 'login') {
       return (
         <Login 
           onBack={handleBackToLanding} 
+          onGoBack={handleGoBack}
           onLogin={handleLogin}
           onShowRegister={handleShowRegister}
         />
@@ -266,7 +399,7 @@ export default function App() {
     if (currentView === 'register') {
       return (
         <Register 
-          onBack={handleBackToLanding} 
+          onBack={handleGoBack} 
           onRegister={handleRegister}
           onShowLogin={handleShowLogin}
           onEmailVerification={handleEmailVerification}
@@ -306,6 +439,7 @@ export default function App() {
         onLogout={handleLogout}
         onViewCart={handleViewCart}
         onViewBookings={handleViewBookings}
+        onGoToDashboard={handleGoToDashboard}
         cartItemsCount={cartItems.length}
       />
       {renderContent()}

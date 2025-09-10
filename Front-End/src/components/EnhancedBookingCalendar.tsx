@@ -410,12 +410,12 @@ export default function EnhancedBookingCalendar({
                     <SelectContent>
                       {serviceType === 'hourly' 
                         ? [1, 2, 3, 4, 5, 6, 7, 8].map(hour => (
-                            <SelectItem key={hour} value={hour.toString()}>
+                            <SelectItem key={`hour-${hour}`} value={hour.toString()}>
                               {hour} {hour === 1 ? 'hora' : 'horas'}
                             </SelectItem>
                           ))
                         : [1, 2, 3, 4, 5, 6, 7, 14, 21, 30].map(day => (
-                            <SelectItem key={day} value={day.toString()}>
+                            <SelectItem key={`day-${day}`} value={day.toString()}>
                               {day} {day === 1 ? 'día/noche' : 'días/noches'}
                             </SelectItem>
                           ))

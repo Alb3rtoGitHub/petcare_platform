@@ -5,10 +5,10 @@ import { Input } from "./ui/input"
 import { Badge } from "./ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
-import { Slider } from "./ui/slider"
 import { Checkbox } from "./ui/checkbox"
 import { ImageWithFallback } from "./figma/ImageWithFallback"
 import { Search, MapPin, Star, Heart, MessageSquare, Calendar, Filter, SlidersHorizontal, X, ShoppingCart, Clock } from "lucide-react"
+import BookingModal from "./BookingModal"
 
 interface CartItem {
   id: string
@@ -31,11 +31,13 @@ interface CartItem {
 interface SearchSittersProps {
   onBack: () => void
   onBookService?: (service: any) => void
+  isAuthenticated?: boolean
+  userPets?: any[]
+  onLoginRequired?: () => void
 }
 
-export default function SearchSitters({ onBack, onBookService }: SearchSittersProps) {
+export default function SearchSitters({ onBack, onBookService, isAuthenticated, userPets, onLoginRequired }: SearchSittersProps) {
   const [searchLocation, setSearchLocation] = useState("")
-  const [priceRange, setPriceRange] = useState([10, 30])
   const [selectedServices, setSelectedServices] = useState<string[]>([])
   const [minRating, setMinRating] = useState("0")
   const [availability, setAvailability] = useState("any")
@@ -46,6 +48,11 @@ export default function SearchSitters({ onBack, onBookService }: SearchSittersPr
   const [selectedDays, setSelectedDays] = useState<string[]>([])
   const [timeSlot, setTimeSlot] = useState("any")
   const [serviceType, setServiceType] = useState("any")
+  
+  // Estados para el modal de reserva
+  const [showBookingModal, setShowBookingModal] = useState(false)
+  const [selectedSitter, setSelectedSitter] = useState<any>(null)
+  const [selectedService, setSelectedService] = useState("")
   
   const daysOfWeek = [
     { value: "monday", label: "Lunes" },
@@ -110,7 +117,7 @@ export default function SearchSitters({ onBack, onBookService }: SearchSittersPr
       responseTime: "En 30 min",
       experience: "3 años",
       about: "Entrenador canino profesional. Especializado en comportamiento y obediencia básica.",
-      image: "https://images.unsplash.com/photo-1649160388750-26fafdcaf4eb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXJzb24lMjB3YWxraW5nJTIwbXVsdGlwbGUlMjBkb2dzfGVufDF8fHx8MTc1NjI2MjQzOXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+      image: "https://images.unsplash.com/photo-1649160388750-26fafdcaf4eb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXJzb24lMjB3YWxraW5nJTIwY2F0fGVufDF8fHx8MTc1NjI2MjQzOXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
       specialties: ["Entrenamiento", "Perros reactivos", "Socialización"]
     },
     {
@@ -164,7 +171,7 @@ export default function SearchSitters({ onBack, onBookService }: SearchSittersPr
       responseTime: "En 45 min",
       experience: "2 años",
       about: "Peluquero canino profesional. Me encanta mantener a las mascotas limpias y felices.",
-      image: "https://images.unsplash.com/photo-1649160388750-26fafdcaf4eb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXJzb24lMjB3YWxraW5nJTIwbXVsdGlwbGUlMjBkb2dzfGVufDF8fHx8MTc1NjI2MjQzOXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+      image: "https://images.unsplash.com/photo-1649160388750-26fafdcaf4eb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXJzb24lMjB3YWxraW5nJTIwY2F0fGVufDF8fHx8MTc1NjI2MjQzOXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
       specialties: ["Grooming", "Razas de pelo largo", "Cortes especializados"]
     }
   ]
@@ -186,27 +193,56 @@ export default function SearchSitters({ onBack, onBookService }: SearchSittersPr
   }
 
   const handleBookService = (sitter: any, service: string) => {
-    if (onBookService) {
-      // Convert sitter to service format for BookingCalendar
-      const formattedService = {
-        id: sitter.id,
-        title: service,
-        description: `${service} con ${sitter.name}`,
-        price: `${parseInt(sitter.priceRange.split('-')[0])}€/hora`,
-        duration: '1 hora',
-        rating: sitter.rating,
-        reviews: sitter.reviews,
-        category: service,
-        provider: {
-          name: sitter.name,
-          image: sitter.image,
-          rating: sitter.rating,
-          location: sitter.location
-        },
-        image: sitter.image
-      }
-      onBookService(formattedService)
+    setSelectedSitter(sitter)
+    setSelectedService(service)
+    setShowBookingModal(true)
+  }
+
+  const handleViewProfile = (sitter: any) => {
+    if (!isAuthenticated) {
+      onLoginRequired?.()
+      return
     }
+    // Aquí se puede implementar la navegación al perfil del cuidador
+    console.log('Ver perfil de:', sitter.name)
+  }
+
+  const handleBookingComplete = (bookingData: any) => {
+    // Aquí se manejaría la reserva completada
+    console.log('Reserva completada:', bookingData)
+    setShowBookingModal(false)
+    setSelectedSitter(null)
+    setSelectedService("")
+  }
+
+  const handleProceedToPayment = (bookingData: any) => {
+    // Crear item del carrito y proceder al pago
+    const cartItem = {
+      id: bookingData.id,
+      sitterId: bookingData.sitterId,
+      sitterName: bookingData.sitterName,
+      sitterImage: bookingData.sitterImage,
+      sitterRating: selectedSitter?.rating || 4.5,
+      service: bookingData.service,
+      date: bookingData.date,
+      startTime: bookingData.time,
+      endTime: bookingData.time,
+      duration: bookingData.duration,
+      pricePerHour: bookingData.price / bookingData.duration,
+      location: selectedSitter?.location || "Por definir",
+      petType: bookingData.pets[0]?.type || "Mascota",
+      quantity: 1,
+      specialRequests: bookingData.specialRequests
+    }
+    
+    // Pasar al callback del padre para manejar el pago
+    if (onBookService) {
+      onBookService({ cartItem, bookingData })
+    }
+    
+    setShowBookingModal(false)
+    setSelectedSitter(null)
+    setSelectedService("")
   }
 
   return (
@@ -329,20 +365,6 @@ export default function SearchSitters({ onBack, onBookService }: SearchSittersPr
                         <SelectItem value="emergency">Emergencias</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
-                  
-                  <div>
-                    <label className="text-sm text-gray-700 mb-3 block">
-                      Precio por hora: {priceRange[0]}€ - {priceRange[1]}€
-                    </label>
-                    <Slider
-                      value={priceRange}
-                      onValueChange={setPriceRange}
-                      min={5}
-                      max={50}
-                      step={5}
-                      className="w-full"
-                    />
                   </div>
 
                   <div>
@@ -471,20 +493,6 @@ export default function SearchSitters({ onBack, onBookService }: SearchSittersPr
                     </SelectContent>
                   </Select>
                 </div>
-                
-                <div>
-                  <label className="text-sm text-gray-700 mb-3 block">
-                    Precio por hora: {priceRange[0]}€ - {priceRange[1]}€
-                  </label>
-                  <Slider
-                    value={priceRange}
-                    onValueChange={setPriceRange}
-                    min={5}
-                    max={50}
-                    step={5}
-                    className="w-full"
-                  />
-                </div>
 
                 <div>
                   <label className="text-sm text-gray-700 mb-3 block">Calificación mínima</label>
@@ -548,10 +556,9 @@ export default function SearchSitters({ onBack, onBookService }: SearchSittersPr
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="rating">Mejor calificación</SelectItem>
-                  <SelectItem value="price-low">Precio: menor a mayor</SelectItem>
-                  <SelectItem value="price-high">Precio: mayor a menor</SelectItem>
                   <SelectItem value="distance">Distancia</SelectItem>
                   <SelectItem value="reviews">Más reseñas</SelectItem>
+                  <SelectItem value="experience">Experiencia</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -641,7 +648,11 @@ export default function SearchSitters({ onBack, onBookService }: SearchSittersPr
                             <Calendar className="h-5 w-5 mr-2" />
                             Reservar
                           </Button>
-                          <Button variant="outline" className="flex-1">
+                          <Button 
+                            variant="outline" 
+                            className="flex-1"
+                            onClick={() => handleViewProfile(sitter)}
+                          >
                             Ver Perfil
                           </Button>
                           <Button variant="outline" size="icon" className="sm:shrink-0">
@@ -668,6 +679,19 @@ export default function SearchSitters({ onBack, onBookService }: SearchSittersPr
           </div>
         </div>
       </div>
+
+      {/* Modal de reserva */}
+      <BookingModal
+        isOpen={showBookingModal}
+        onClose={() => setShowBookingModal(false)}
+        sitter={selectedSitter}
+        service={selectedService}
+        userPets={userPets || []}
+        isAuthenticated={!!isAuthenticated}
+        onLoginRequired={onLoginRequired}
+        onBookingComplete={handleBookingComplete}
+        onProceedToPayment={handleProceedToPayment}
+      />
     </div>
   )
 }

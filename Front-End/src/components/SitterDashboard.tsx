@@ -4,10 +4,20 @@ import { Badge } from "./ui/badge"
 import { Avatar, AvatarFallback } from "./ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import { Switch } from "./ui/switch"
-import { Calendar, Clock, DollarSign, Star, TrendingUp, CheckCircle, XCircle, MessageSquare, Settings } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
+import { Calendar, Clock, DollarSign, Star, TrendingUp, CheckCircle, XCircle, MessageSquare, Settings, User } from "lucide-react"
 import ServiceManager from "./ServiceManager"
+import ProfileManager from "./ProfileManager"
+import { useState } from "react"
 
-export default function SitterDashboard() {
+interface SitterDashboardProps {
+  userData?: any
+  onViewBookings?: () => void
+}
+
+export default function SitterDashboard({ userData, onViewBookings }: SitterDashboardProps) {
+  const [currentTab, setCurrentTab] = useState("requests")
+  
   const pendingRequests = [
     {
       id: 1,
@@ -145,14 +155,31 @@ export default function SitterDashboard() {
           </Card>
         </div>
 
-        <Tabs defaultValue="requests" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="requests">Solicitudes</TabsTrigger>
-            <TabsTrigger value="schedule">Programación</TabsTrigger>
-            <TabsTrigger value="services">Servicios</TabsTrigger>
-            <TabsTrigger value="earnings">Ganancias</TabsTrigger>
-            <TabsTrigger value="profile">Perfil</TabsTrigger>
-          </TabsList>
+        <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-6">
+          <div className="flex flex-col space-y-4">
+            {/* Tabs normales para desktop y tablet */}
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+              <TabsTrigger value="requests" className="text-xs sm:text-sm">Solicitudes</TabsTrigger>
+              <TabsTrigger value="schedule" className="text-xs sm:text-sm">Programación</TabsTrigger>
+              <TabsTrigger value="services" className="text-xs sm:text-sm lg:block hidden">Servicios</TabsTrigger>
+              <TabsTrigger value="earnings" className="text-xs sm:text-sm lg:block hidden">Ganancias</TabsTrigger>
+              <TabsTrigger value="profile" className="text-xs sm:text-sm lg:block hidden">Perfil</TabsTrigger>
+            </TabsList>
+
+            {/* Dropdown para tabs adicionales en móvil/tablet */}
+            <div className="lg:hidden">
+              <Select value={currentTab} onValueChange={setCurrentTab}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Más opciones" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="services">Servicios</SelectItem>
+                  <SelectItem value="earnings">Ganancias</SelectItem>
+                  <SelectItem value="profile">Perfil</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
           <TabsContent value="requests" className="space-y-6">
             <h2 className="text-xl">Solicitudes Pendientes ({pendingRequests.length})</h2>
@@ -308,49 +335,7 @@ export default function SitterDashboard() {
           </TabsContent>
 
           <TabsContent value="profile" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl">Mi Perfil</h2>
-              <Button variant="outline">
-                <Settings className="h-4 w-4 mr-2" />
-                Editar Perfil
-              </Button>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Información Personal</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="text-sm text-gray-600">Nombre</label>
-                    <p>María González</p>
-                  </div>
-                  <div>
-                    <label className="text-sm text-gray-600">Ubicación</label>
-                    <p>Madrid Centro</p>
-                  </div>
-                  <div>
-                    <label className="text-sm text-gray-600">Experiencia</label>
-                    <p>5 años cuidando mascotas</p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Servicios Ofrecidos</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <Badge variant="default">Paseos - 15€/hora</Badge>
-                    <Badge variant="default">Cuidado en casa - 18€/hora</Badge>
-                    <Badge variant="default">Visitas - 12€/visita</Badge>
-                    <Badge variant="default">Emergencias - 25€/hora</Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <ProfileManager userData={userData} userType="sitter" />
           </TabsContent>
         </Tabs>
       </div>

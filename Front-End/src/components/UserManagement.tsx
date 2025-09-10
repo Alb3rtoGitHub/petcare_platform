@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "./ui/alert"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog"
 import { Textarea } from "./ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { 
   Search, 
   Filter, 
@@ -27,7 +28,9 @@ import {
   XCircle,
   Users,
   Heart,
-  PawPrint
+  PawPrint,
+  ArrowLeft,
+  Save
 } from "lucide-react"
 
 interface User {
@@ -250,9 +253,15 @@ export default function UserManagement({ onBack }: UserManagementProps) {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl mb-2">Gestión de Usuarios</h1>
-          <p className="text-gray-600">Administra todos los usuarios de la plataforma</p>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" onClick={onBack}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Volver al Panel
+          </Button>
+          <div>
+            <h1 className="text-3xl mb-2">Gestión de Usuarios</h1>
+            <p className="text-gray-600">Administra todos los usuarios de la plataforma</p>
+          </div>
         </div>
       </div>
 
@@ -477,26 +486,36 @@ export default function UserManagement({ onBack }: UserManagementProps) {
                 </div>
                 <div>
                   <label className="text-sm mb-2 block">Estado</label>
-                  <select
+                  <Select
                     className="w-full p-2 border rounded-md"
                     value={editForm.status || 'active'}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, status: e.target.value as 'active' | 'blocked' | 'pending' }))}
+                    onValueChange={(value) => setEditForm(prev => ({ ...prev, status: value as 'active' | 'blocked' | 'pending' }))}
                   >
-                    <option value="active">Activo</option>
-                    <option value="pending">Pendiente</option>
-                    <option value="blocked">Bloqueado</option>
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Activo</SelectItem>
+                      <SelectItem value="pending">Pendiente</SelectItem>
+                      <SelectItem value="blocked">Bloqueado</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <label className="text-sm mb-2 block">Verificado</label>
-                  <select
+                  <Select
                     className="w-full p-2 border rounded-md"
                     value={editForm.verified ? 'true' : 'false'}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, verified: e.target.value === 'true' }))}
+                    onValueChange={(value) => setEditForm(prev => ({ ...prev, verified: value === 'true' }))}
                   >
-                    <option value="true">Sí</option>
-                    <option value="false">No</option>
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar verificación" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">Sí</SelectItem>
+                      <SelectItem value="false">No</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 

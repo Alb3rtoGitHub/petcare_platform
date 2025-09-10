@@ -17,17 +17,26 @@ interface HeaderProps {
   onLogout?: () => void
   onViewCart?: () => void
   onViewBookings?: () => void
+  onGoToDashboard?: () => void
   cartItemsCount?: number
 }
 
-export default function Header({ userType, userData, isAuthenticated, onUserTypeChange, onSearchSitters, onViewServices, onViewHowItWorks, onViewHelp, onShowLogin, onShowRegister, onLogout, onViewCart, onViewBookings, cartItemsCount = 0 }: HeaderProps) {
+export default function Header({ userType, userData, isAuthenticated, onUserTypeChange, onSearchSitters, onViewServices, onViewHowItWorks, onViewHelp, onShowLogin, onShowRegister, onLogout, onViewCart, onViewBookings, onGoToDashboard, cartItemsCount = 0 }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const handleLogoClick = () => {
-    if (onLogout) {
-      onLogout()
+    // Para admin y sitter autenticados, ir al dashboard
+    if (isAuthenticated && (userType === 'admin' || userType === 'sitter')) {
+      if (onGoToDashboard) {
+        onGoToDashboard()
+      }
     } else {
-      onUserTypeChange(null)
+      // Para owners y usuarios no autenticados, flujo normal (logout/landing)
+      if (onLogout) {
+        onLogout()
+      } else {
+        onUserTypeChange(null)
+      }
     }
   }
 
@@ -46,24 +55,34 @@ export default function Header({ userType, userData, isAuthenticated, onUserType
           </div>
 
           <nav className="hidden md:flex items-center space-x-8">
-            <button 
-              onClick={onSearchSitters}
-              className="text-gray-600 hover:text-gray-900"
-            >
-              Buscar Cuidadores
-            </button>
-            <button 
-              onClick={onViewServices}
-              className="text-gray-600 hover:text-gray-900"
-            >
-              Servicios
-            </button>
-            <button 
-              onClick={onViewHowItWorks}
-              className="text-gray-600 hover:text-gray-900"
-            >
-              Cómo Funciona
-            </button>
+            {/* Buscar Cuidadores - Solo para owners y usuarios no autenticados */}
+            {(!isAuthenticated || userType === 'owner') && (
+              <button 
+                onClick={onSearchSitters}
+                className="text-gray-600 hover:text-gray-900"
+              >
+                Buscar Cuidadores
+              </button>
+            )}
+            {/* Servicios - Solo para owners y usuarios no autenticados */}
+            {(!isAuthenticated || userType === 'owner') && (
+              <button 
+                onClick={onViewServices}
+                className="text-gray-600 hover:text-gray-900"
+              >
+                Servicios
+              </button>
+            )}
+            {/* Cómo Funciona - Solo para owners y usuarios no autenticados */}
+            {(!isAuthenticated || userType === 'owner') && (
+              <button 
+                onClick={onViewHowItWorks}
+                className="text-gray-600 hover:text-gray-900"
+              >
+                Cómo Funciona
+              </button>
+            )}
+            {/* Ayuda - Disponible para todos */}
             <button 
               onClick={onViewHelp}
               className="text-gray-600 hover:text-gray-900"
@@ -117,7 +136,7 @@ export default function Header({ userType, userData, isAuthenticated, onUserType
                 <Button variant="ghost" size="sm">
                   <Bell className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" onClick={onGoToDashboard}>
                   <User className="h-4 w-4" />
                   <span className="hidden md:inline ml-2">{userData?.name}</span>
                 </Button>
@@ -127,6 +146,14 @@ export default function Header({ userType, userData, isAuthenticated, onUserType
                   onClick={onLogout}
                 >
                   Cerrar Sesión
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="md:hidden"
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                >
+                  <Menu className="h-4 w-4" />
                 </Button>
               </>
             ) : (
@@ -175,7 +202,7 @@ export default function Header({ userType, userData, isAuthenticated, onUserType
           </div>
         </div>
 
-        {isMenuOpen && !isAuthenticated && (
+        {(isMenuOpen && !isAuthenticated) && (
           <div className="md:hidden py-4 border-t">
             <div className="flex flex-col space-y-2">
               <Button 
@@ -263,6 +290,117 @@ export default function Header({ userType, userData, isAuthenticated, onUserType
                 }}
               >
                 Administrador
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Menú móvil para usuarios autenticados */}
+        {isMenuOpen && isAuthenticated && (
+          <div className="md:hidden py-4 border-t">
+            <div className="flex flex-col space-y-2">
+              {/* Opciones específicas para owners */}
+              {userType === 'owner' && (
+                <>
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start"
+                    onClick={() => {
+                      if (onSearchSitters) onSearchSitters()
+                      setIsMenuOpen(false)
+                    }}
+                  >
+                    Buscar Cuidadores
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start"
+                    onClick={() => {
+                      if (onViewServices) onViewServices()
+                      setIsMenuOpen(false)
+                    }}
+                  >
+                    Servicios
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start"
+                    onClick={() => {
+                      if (onViewCart) onViewCart()
+                      setIsMenuOpen(false)
+                    }}
+                  >
+                    Carrito ({cartItemsCount})
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start"
+                    onClick={() => {
+                      if (onViewBookings) onViewBookings()
+                      setIsMenuOpen(false)
+                    }}
+                  >
+                    Mis Reservas
+                  </Button>
+                </>
+              )}
+              
+              {/* Opciones específicas para sitters */}
+              {userType === 'sitter' && (
+                <Button 
+                  variant="ghost" 
+                  className="justify-start"
+                  onClick={() => {
+                    if (onViewBookings) onViewBookings()
+                    setIsMenuOpen(false)
+                  }}
+                >
+                  Mis Trabajos
+                </Button>
+              )}
+              
+              {/* Opciones disponibles para todos los usuarios autenticados */}
+              {userType === 'owner' && (
+                <Button 
+                  variant="ghost" 
+                  className="justify-start"
+                  onClick={() => {
+                    if (onViewHowItWorks) onViewHowItWorks()
+                    setIsMenuOpen(false)
+                  }}
+                >
+                  Cómo Funciona
+                </Button>
+              )}
+              <Button 
+                variant="ghost" 
+                className="justify-start"
+                onClick={() => {
+                  if (onViewHelp) onViewHelp()
+                  setIsMenuOpen(false)
+                }}
+              >
+                Ayuda
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="justify-start"
+                onClick={() => {
+                  if (onGoToDashboard) onGoToDashboard()
+                  setIsMenuOpen(false)
+                }}
+              >
+                Dashboard
+              </Button>
+              <Button 
+                variant="outline" 
+                className="justify-start"
+                onClick={() => {
+                  if (onLogout) onLogout()
+                  setIsMenuOpen(false)
+                }}
+              >
+                Cerrar Sesión
               </Button>
             </div>
           </div>

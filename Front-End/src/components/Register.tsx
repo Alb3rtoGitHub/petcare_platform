@@ -46,6 +46,10 @@ interface OwnerRegisterForm {
   state: string
   city: string
   
+  // Identification Info
+  identificationType: string
+  identificationNumber: string
+  
   // Pets Info
   pets: Array<{
     name: string
@@ -78,6 +82,10 @@ interface SitterRegisterForm {
   country: string
   state: string
   city: string
+  
+  // Identification Info
+  identificationType: string
+  identificationNumber: string
   
   // Professional Info
   experience: string
@@ -116,6 +124,8 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
     country: '',
     state: '',
     city: '',
+    identificationType: '',
+    identificationNumber: '',
     pets: [{ name: '', type: '', breed: '', age: '', weight: '', specialNeeds: '' }],
     emergencyContact: '',
     emergencyPhone: '',
@@ -135,6 +145,8 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
     country: '',
     state: '',
     city: '',
+    identificationType: '',
+    identificationNumber: '',
     experience: '',
     description: '',
     services: [],
@@ -156,6 +168,15 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
   const availabilityOptions = [
     'Mañanas (6-12h)', 'Tardes (12-18h)', 'Noches (18-24h)', 'Madrugadas (0-6h)',
     'Fines de semana', 'Días festivos', 'Emergencias 24/7'
+  ]
+
+  // Identification types
+  const identificationTypes = [
+    { value: 'cedula_ciudadania', label: 'Cédula de Ciudadanía' },
+    { value: 'nit', label: 'NIT' },
+    { value: 'pasaporte', label: 'Pasaporte' },
+    { value: 'id_card', label: 'ID Card' },
+    { value: 'driver_license', label: 'Driver License' }
   ]
 
   // Location data
@@ -380,6 +401,11 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
       return
     }
 
+    if (!currentForm.acceptMarketing) {
+      setError('Debes aceptar recibir comunicaciones de marketing y promociones')
+      return
+    }
+
     setIsLoading(true)
     
     // Simulate API call
@@ -390,7 +416,7 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
     setIsLoading(false)
   }
 
-  const totalSteps = 3
+  const totalSteps = 1
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -415,8 +441,6 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
               Crea tu cuenta y forma parte de nuestra comunidad de amantes de las mascotas
             </p>
           </div>
-
-
 
           {/* Progress Indicator */}
           <div className="flex items-center justify-center space-x-4">
@@ -491,6 +515,33 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
                       </div>
                       
                       <div className="grid md:grid-cols-2 gap-4">
+						<div>
+                          <label className="text-sm mb-2 block">Tipo de Identificación *</label>
+                          <Select 
+                            value={ownerForm.identificationType} 
+                            onValueChange={(value) => handleOwnerInputChange('identificationType', value)}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Selecciona tu tipo de identificación" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {identificationTypes.map((idType) => (
+                                <SelectItem key={idType.value} value={idType.value}>
+                                  {idType.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="text-sm mb-2 block">Número de Identificación *</label>
+                          <Input
+                            value={ownerForm.identificationNumber}
+                            onChange={(e) => handleOwnerInputChange('identificationNumber', e.target.value)}
+                            placeholder="Ej: 12345678A"
+                            required
+                          />
+                        </div>
                         <div>
                           <label className="text-sm mb-2 block">Nombre *</label>
                           <Input
@@ -626,6 +677,29 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
                             onChange={(e) => handleOwnerInputChange('address', e.target.value)}
                             placeholder="Calle, número, código postal"
                           />
+                        </div>
+                    </div>
+                      
+                      <div className="space-y-3 mt-6">
+                        <div className="flex items-start space-x-2">
+                          <Checkbox
+                            id="terms-owner"
+                            checked={ownerForm.acceptTerms}
+                            onCheckedChange={(checked) => handleOwnerInputChange('acceptTerms', checked)}
+                          />
+                          <label htmlFor="terms-owner" className="text-sm">
+                            Acepto los <a href="#" className="text-primary hover:underline">Términos y Condiciones</a> y la <a href="#" className="text-primary hover:underline">Política de Privacidad</a> *
+                          </label>
+                        </div>
+                        <div className="flex items-start space-x-2">
+                          <Checkbox
+                            id="marketing-owner"
+                            checked={ownerForm.acceptMarketing}
+                            onCheckedChange={(checked) => handleOwnerInputChange('acceptMarketing', checked)}
+                          />
+                          <label htmlFor="marketing-owner" className="text-sm">
+                            Acepto recibir comunicaciones de marketing y promociones *
+                          </label>
                         </div>
                       </div>
                     </div>
@@ -766,7 +840,7 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
                             onCheckedChange={(checked) => handleOwnerInputChange('acceptMarketing', checked)}
                           />
                           <label htmlFor="marketing-owner" className="text-sm">
-                            Acepto recibir comunicaciones de marketing y promociones
+                            Acepto recibir comunicaciones de marketing y promociones *
                           </label>
                         </div>
                       </div>
@@ -949,6 +1023,56 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
                             onChange={(e) => handleSitterInputChange('address', e.target.value)}
                             placeholder="Calle, número, código postal"
                           />
+                        </div>
+                        <div>
+                          <label className="text-sm mb-2 block">Tipo de Identificación *</label>
+                          <Select 
+                            value={sitterForm.identificationType} 
+                            onValueChange={(value) => handleSitterInputChange('identificationType', value)}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Selecciona tu tipo de identificación" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {identificationTypes.map((idType) => (
+                                <SelectItem key={idType.value} value={idType.value}>
+                                  {idType.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="text-sm mb-2 block">Número de Identificación *</label>
+                          <Input
+                            value={sitterForm.identificationNumber}
+                            onChange={(e) => handleSitterInputChange('identificationNumber', e.target.value)}
+                            placeholder="Ej: 12345678A"
+                            required
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3 mt-6">
+                        <div className="flex items-start space-x-2">
+                          <Checkbox
+                            id="terms-sitter"
+                            checked={sitterForm.acceptTerms}
+                            onCheckedChange={(checked) => handleSitterInputChange('acceptTerms', checked)}
+                          />
+                          <label htmlFor="terms-sitter" className="text-sm">
+                            Acepto los <a href="#" className="text-primary hover:underline">Términos y Condiciones</a> y la <a href="#" className="text-primary hover:underline">Política de Privacidad</a> *
+                          </label>
+                        </div>
+                        <div className="flex items-start space-x-2">
+                          <Checkbox
+                            id="marketing-sitter"
+                            checked={sitterForm.acceptMarketing}
+                            onCheckedChange={(checked) => handleSitterInputChange('acceptMarketing', checked)}
+                          />
+                          <label htmlFor="marketing-sitter" className="text-sm">
+                            Acepto recibir comunicaciones de marketing y promociones *
+                          </label>
                         </div>
                       </div>
                     </div>

@@ -4,8 +4,9 @@ import { Badge } from "./ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import { ImageWithFallback } from "./figma/ImageWithFallback"
-import { Calendar, Clock, MapPin, Star, Plus, MessageSquare, Camera, Heart, ShoppingCart, CreditCard } from "lucide-react"
+import { Calendar, Clock, MapPin, Star, Plus, MessageSquare, Camera, Heart, ShoppingCart, CreditCard, User, Settings } from "lucide-react"
 import ServiceBooking from "./ServiceBooking"
+import ProfileManager from "./ProfileManager"
 
 interface OwnerDashboardProps {
   userData?: any
@@ -113,12 +114,13 @@ export default function OwnerDashboard({ userData, onViewBookings, onViewCart }:
         </div>
 
         <Tabs defaultValue="bookings" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="bookings">Reservas</TabsTrigger>
             <TabsTrigger value="services">Servicios</TabsTrigger>
             <TabsTrigger value="pets">Mis Mascotas</TabsTrigger>
             <TabsTrigger value="activity">Actividad</TabsTrigger>
             <TabsTrigger value="favorites">Favoritos</TabsTrigger>
+            <TabsTrigger value="profile">Mi Perfil</TabsTrigger>
           </TabsList>
 
           <TabsContent value="bookings" className="space-y-6">
@@ -275,6 +277,10 @@ export default function OwnerDashboard({ userData, onViewBookings, onViewCart }:
               <p className="text-gray-600 mb-4">Agrega cuidadores a favoritos para encontrarlos fácilmente</p>
               <Button>Buscar Cuidadores</Button>
             </div>
+          </TabsContent>
+
+          <TabsContent value="profile" className="space-y-6">
+            <ProfileManager userData={userData} userType="owner" />
           </TabsContent>
         </Tabs>
       </div>

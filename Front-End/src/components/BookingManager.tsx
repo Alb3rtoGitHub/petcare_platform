@@ -3,6 +3,10 @@ import { Button } from "./ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { Badge } from "./ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
+import { Textarea } from "./ui/textarea"
+import { Label } from "./ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { ImageWithFallback } from "./figma/ImageWithFallback"
 import { 
   ArrowLeft, 
@@ -16,8 +20,10 @@ import {
   MessageSquare,
   Download,
   Eye,
-  MoreHorizontal
+  MoreHorizontal,
+  XCircle
 } from "lucide-react"
+import { toast } from "sonner@2.0.3"
 
 interface Booking {
   id: string
@@ -53,6 +59,11 @@ interface BookingManagerProps {
 
 export default function BookingManager({ onBack, userData }: BookingManagerProps) {
   const [activeTab, setActiveTab] = useState('all')
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
+  const [cancellationReason, setCancellationReason] = useState('')
+  const [cancellationDetails, setCancellationDetails] = useState('')
+  const [isProcessingCancellation, setIsProcessingCancellation] = useState(false)
   
   // Mock bookings data
   const [bookings] = useState<Booking[]>([
@@ -171,19 +182,58 @@ export default function BookingManager({ onBack, userData }: BookingManagerProps
 
   const handleContactSitter = (booking: Booking) => {
     // Mock contact functionality
-    alert(`Contactando con ${booking.sitterName}...`)
+    toast.info(`Contactando con ${booking.sitterName}...`)
   }
 
-  const handleCancelBooking = (bookingId: string) => {
-    // Mock cancellation functionality
-    if (confirm('¿Estás seguro de que quieres cancelar esta reserva?')) {
-      alert('Reserva cancelada. Se procesará el reembolso en 3-5 días hábiles.')
+  const handleCancelBooking = (booking: Booking) => {
+    setSelectedBooking(booking)
+    setShowCancelModal(true)
+  }
+
+  const handleConfirmCancellation = async () => {
+    if (!selectedBooking || !cancellationReason) return
+
+    setIsProcessingCancellation(true)
+
+    try {
+      // Simular proceso de cancelación
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      toast.success('Reserva cancelada exitosamente. Se procesará el reembolso en 3-5 días hábiles.')
+      setShowCancelModal(false)
+      setSelectedBooking(null)
+      setCancellationReason('')
+      setCancellationDetails('')
+    } catch (error) {
+      toast.error('Error al cancelar la reserva. Inténtalo de nuevo.')
+    } finally {
+      setIsProcessingCancellation(false)
     }
   }
 
   const handleDownloadReceipt = (bookingId: string) => {
-    // Mock receipt download
-    alert('Descargando recibo...')
+    toast.info('Descargando recibo...')
+  }
+
+  const cancellationReasons = [
+    { value: 'schedule_change', label: 'Cambio de planes' },
+    { value: 'emergency', label: 'Emergencia personal' },
+    { value: 'pet_health', label: 'Problema de salud de mi mascota' },
+    { value: 'sitter_issue', label: 'Problema con el cuidador' },
+    { value: 'weather', label: 'Condiciones climáticas' },
+    { value: 'other', label: 'Otro motivo' }
+  ]
+
+  const getRefundAmount = (booking: Booking) => {
+    // Simular cálculo de reembolso basado en política de cancelación
+    const hoursUntilService = 24 // Simular horas hasta el servicio
+    if (hoursUntilService >= 24) {
+      return booking.totalAmount // Reembolso completo
+    } else if (hoursUntilService >= 2) {
+      return booking.totalAmount * 0.5 // 50% de reembolso
+    } else {
+      return 0 // Sin reembolso
+    }
   }
 
   return (
@@ -334,7 +384,7 @@ export default function BookingManager({ onBack, userData }: BookingManagerProps
                                 <Button 
                                   size="sm" 
                                   variant="outline"
-                                  onClick={() => handleCancelBooking(booking.id)}
+                                  onClick={() => handleCancelBooking(booking)}
                                 >
                                   Cancelar
                                 </Button>
@@ -345,7 +395,7 @@ export default function BookingManager({ onBack, userData }: BookingManagerProps
                               <Button 
                                 size="sm" 
                                 variant="outline"
-                                onClick={() => handleCancelBooking(booking.id)}
+                                onClick={() => handleCancelBooking(booking)}
                               >
                                 Cancelar
                               </Button>
@@ -427,6 +477,111 @@ export default function BookingManager({ onBack, userData }: BookingManagerProps
             </Card>
           </div>
         )}
+
+        {/* Modal de cancelación */}
+        <Dialog open={showCancelModal} onOpenChange={setShowCancelModal}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <XCircle className="h-5 w-5 text-red-500" />
+                Cancelar Reserva
+              </DialogTitle>
+            </DialogHeader>
+            
+            {selectedBooking && (
+              <div className="space-y-6">
+                {/* Información de la reserva */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="text-sm text-gray-900 mb-2">Reserva a cancelar:</h4>
+                  <div className="space-y-1 text-sm text-gray-600">
+                    <p><span className="text-gray-900">Servicio:</span> {selectedBooking.service}</p>
+                    <p><span className="text-gray-900">Cuidador:</span> {selectedBooking.sitterName}</p>
+                    <p><span className="text-gray-900">Fecha:</span> {formatDate(selectedBooking.date)}</p>
+                    <p><span className="text-gray-900">Hora:</span> {selectedBooking.startTime} - {selectedBooking.endTime}</p>
+                    <p><span className="text-gray-900">Mascota:</span> {selectedBooking.petName}</p>
+                    <p><span className="text-gray-900">Total:</span> {selectedBooking.totalAmount.toFixed(2)}€</p>
+                  </div>
+                </div>
+
+                {/* Información de reembolso */}
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="text-sm text-blue-900 mb-2 flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4" />
+                    Información de reembolso
+                  </h4>
+                  <p className="text-sm text-blue-800">
+                    Reembolso estimado: <span className="text-blue-900">{getRefundAmount(selectedBooking).toFixed(2)}€</span>
+                  </p>
+                  <p className="text-xs text-blue-700 mt-1">
+                    {getRefundAmount(selectedBooking) === selectedBooking.totalAmount 
+                      ? "Reembolso completo - Cancelación con más de 24h de antelación"
+                      : getRefundAmount(selectedBooking) > 0
+                      ? "Reembolso parcial - Cancelación con menos de 24h"
+                      : "Sin reembolso - Cancelación muy tardía"
+                    }
+                  </p>
+                </div>
+
+                {/* Motivo de cancelación */}
+                <div>
+                  <Label htmlFor="reason">Motivo de cancelación *</Label>
+                  <Select value={cancellationReason} onValueChange={setCancellationReason}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Selecciona un motivo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cancellationReasons.map((reason) => (
+                        <SelectItem key={reason.value} value={reason.value}>
+                          {reason.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Detalles adicionales */}
+                <div>
+                  <Label htmlFor="details">Detalles adicionales (opcional)</Label>
+                  <Textarea
+                    id="details"
+                    value={cancellationDetails}
+                    onChange={(e) => setCancellationDetails(e.target.value)}
+                    placeholder="Comparte cualquier detalle adicional sobre la cancelación..."
+                    rows={3}
+                    className="mt-1"
+                  />
+                </div>
+
+                {/* Advertencia */}
+                <div className="bg-yellow-50 p-3 rounded-lg">
+                  <p className="text-xs text-yellow-800">
+                    <AlertCircle className="h-3 w-3 inline mr-1" />
+                    Una vez cancelada, esta acción no se puede deshacer. El cuidador será notificado inmediatamente.
+                  </p>
+                </div>
+
+                {/* Botones */}
+                <div className="flex gap-3 pt-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowCancelModal(false)}
+                    className="flex-1"
+                    disabled={isProcessingCancellation}
+                  >
+                    Mantener Reserva
+                  </Button>
+                  <Button 
+                    onClick={handleConfirmCancellation}
+                    className="flex-1 bg-red-600 hover:bg-red-700"
+                    disabled={!cancellationReason || isProcessingCancellation}
+                  >
+                    {isProcessingCancellation ? "Cancelando..." : "Confirmar Cancelación"}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )
