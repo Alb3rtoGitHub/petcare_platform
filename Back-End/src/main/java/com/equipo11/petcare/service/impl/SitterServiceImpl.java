@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -53,6 +54,41 @@ public class SitterServiceImpl implements SitterService {
         return sitterPage.map(this::toResponseDto);
     }
 
+    @Override
+    public List<SitterFullResponseDTO> findAllSitters() {
+        return List.of();
+    }
+
+    @Override
+    public SitterFullResponseDTO findSitterByUserId(Long userId) {
+        return null;
+    }
+
+    @Override
+    public SitterFullResponseDTO saveSitter(SitterFullRequestDTO sitterFullRequestDTO) {
+        return null;
+    }
+
+    @Override
+    public SitterFullResponseDTO updateSitter(Long id, SitterFullRequestDTO sitterFullRequestDTO) {
+        return null;
+    }
+
+    @Override
+    public void deleteSitter(Long id) {
+
+    }
+
+    @Override
+    public SitterFullResponseDTO addService(Long sitterId, Long serviceEntityId) {
+        return null;
+    }
+
+    @Override
+    public void removeService(Long sitterId, Long serviceEntityId) {
+
+    }
+
     private SitterResponseDTO toResponseDto(Sitter sitter) {
         return SitterResponseDTO.builder()
                 .id(sitter.getId())
@@ -62,4 +98,6 @@ public class SitterServiceImpl implements SitterService {
                 .cityId(sitter.getAddress().getCity().getId())
                 .build();
     }
+
+
 }
