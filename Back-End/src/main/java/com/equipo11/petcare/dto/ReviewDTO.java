@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
 @Builder
-public record CreateReviewRequestDTO(
+public record ReviewDTO(
         @NotNull(message = "Debe asociar una reserva a la reseña")
         Long bookingId,
 

@@ -1,6 +1,6 @@
 package com.equipo11.petcare.service.impl;
 
-import com.equipo11.petcare.dto.CreateReviewRequestDTO;
+import com.equipo11.petcare.dto.ReviewDTO;
 import com.equipo11.petcare.enums.ApiError;
 import com.equipo11.petcare.exception.PetcareException;
 import com.equipo11.petcare.model.Review;
@@ -25,7 +25,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public Review createReview(CreateReviewRequestDTO request) {
+    public Review createReview(ReviewDTO request) {
         Booking booking = fetchBooking(request.bookingId());
         bookingEnsureCompleted(booking);
         bookingEnsureNoExistingReview(booking);

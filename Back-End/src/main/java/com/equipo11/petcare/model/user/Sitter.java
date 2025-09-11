@@ -62,7 +62,7 @@ public class Sitter extends User {
             inverseJoinColumns = @JoinColumn(name = "service_entity_id"))
     private Set<ServiceEntity> serviceEntitySet = new HashSet<>();
 
-    @OneToMany(mappedBy = "sitter", cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(mappedBy = "sitter", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Availability> availabilities = new HashSet<>();
 
     public void updateAverageRating() {
@@ -74,5 +74,16 @@ public class Sitter extends User {
                 .mapToInt(Review::getRating)
                 .average()
                 .orElse(0.0);
+    }
+
+    // Métodos de ayuda
+    public void addService(ServiceEntity serviceEntity) {
+        this.serviceEntitySet.add(serviceEntity);
+        serviceEntity.getSitters().add(this);
+    }
+
+    public void removeService(ServiceEntity serviceEntity) {
+        this.serviceEntitySet.remove(serviceEntity);
+        serviceEntity.getSitters().remove(this);
     }
 }

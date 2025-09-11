@@ -1,5 +1,7 @@
 package com.equipo11.petcare.service;
 
+import com.equipo11.petcare.dto.SitterFullRequestDTO;
+import com.equipo11.petcare.dto.SitterFullResponseDTO;
 import com.equipo11.petcare.dto.SitterResponseDTO;
 import com.equipo11.petcare.model.user.Sitter;
 import org.springframework.data.domain.Page;
