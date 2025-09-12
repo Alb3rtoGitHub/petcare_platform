@@ -20,26 +20,23 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> getUser(@PathVariable Long id,
-                                  @RequestHeader("Authorization") String authHeader) {
-        UserResponseDTO response = userService.getUser(id, authHeader);
+    public ResponseEntity<UserResponseDTO> getUser(@PathVariable Long id) {
+        UserResponseDTO response = userService.getUser(id);
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
     @Transactional
     public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long id,
-                                                      @RequestHeader("Authorization") String authHeader,
                                                       @Valid @RequestBody UpdateUserRequestDTO request){
-        UserResponseDTO response = userService.updateUser(id, request, authHeader);
+        UserResponseDTO response = userService.updateUser(id, request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @DeleteMapping("{id}")
     @Transactional
-    public ResponseEntity<String> deleteUser(@PathVariable Long id,
-                                        @RequestHeader("Authorization") String authHeadet) {
-        userService.deleteUser(id, authHeadet);
+    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
         return new ResponseEntity<>("Usuario eliminado", HttpStatus.OK);
     }
 }

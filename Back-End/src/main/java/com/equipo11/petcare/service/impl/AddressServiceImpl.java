@@ -46,8 +46,7 @@ public class AddressServiceImpl implements AddressService {
 
         return Address.builder()
                 .city(city)
-                .streetName(dto.streetName())
-                .streetNumber(dto.streetNumber())
+                .streetName(dto.streetAddress())
                 .unit(dto.unit())
                 .build();
     }

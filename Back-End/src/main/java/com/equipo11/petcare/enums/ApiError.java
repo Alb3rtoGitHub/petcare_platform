@@ -28,8 +28,10 @@ public enum ApiError {
     PET_LIST_EMPTY(HttpStatus.BAD_REQUEST, "No se enviaron mascotas para guardar"),
     PET_NOT_FOUND(HttpStatus.NOT_FOUND, "Mascota no encontrada"),
     USER_HAS_NO_PETS(HttpStatus.NOT_FOUND, "No hay mascotas para el usuario"),
-    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "Usuario no válido"),
-    PET_NOT_OWNED_BY_USER(HttpStatus.FORBIDDEN, "La mascota no pertenece a ese usuario");
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "Usuario no encontrado"),
+    PET_NOT_OWNED_BY_USER(HttpStatus.FORBIDDEN, "La mascota no pertenece a ese usuario"),
+    CLAIM_NOT_FOUND(HttpStatus.NOT_FOUND, "Reclamo no encontrado"),
+    CLAIM_OWNER_MISMATCH(HttpStatus.UNAUTHORIZED, "No puedes crear un reclamo para servicio no vinculado");
 
 
     private final HttpStatus httpStatus;

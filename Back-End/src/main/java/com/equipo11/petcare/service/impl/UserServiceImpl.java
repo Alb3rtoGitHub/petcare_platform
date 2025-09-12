@@ -27,14 +27,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDTO getUser(Long id, String bearer) {
-        var user = securityService.verifyUserOrToken(id, bearer);
+    public UserResponseDTO getUser(Long id) {
+        var user = securityService.verifyUserOrToken(id);
         return new UserResponseDTO(user);
     }
 
     @Override
-    public UserResponseDTO updateUser(Long id, UpdateUserRequestDTO request, String bearer) {
-        User user = securityService.verifyUserOrToken(id, bearer);
+    public UserResponseDTO updateUser(Long id, UpdateUserRequestDTO request) {
+        User user = securityService.verifyUserOrToken(id);
         user.setPhoneNumber(request.phoneNumber());
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
@@ -46,10 +46,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUser(Long id, String bearer) {
-        User user = securityService.verifyUserOrToken(id, bearer);
+    public void deleteUser(Long id) {
+        User user = securityService.verifyUserOrToken(id);
         user.setDeleted(true);
     }
-
-
 }

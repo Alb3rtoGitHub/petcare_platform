@@ -21,7 +21,7 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendVerificationEmail(String to, String subject, String text) {
+    public void sendEmail(String to, String subject, String text) {
         try {
             SimpleMailMessage msg = new SimpleMailMessage();
             msg.setFrom(from);

@@ -136,7 +136,7 @@ public class AuthServiceImpl implements AuthService {
                 "Hola %s,%n\nVisita el siguiente enlace para activar tu cuenta:%n%s%n\nEl enlace expira en 24 horas.%n\nNo responda este e-mail.",
                 user.getFirstName(), confirmationLink
         );
-        emailService.sendVerificationEmail(user.getEmail(), subject, text);
+        emailService.sendEmail(user.getEmail(), subject, text);
     }
 
 

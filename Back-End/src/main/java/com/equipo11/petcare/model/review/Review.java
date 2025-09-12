@@ -1,4 +1,4 @@
-package com.equipo11.petcare.model;
+package com.equipo11.petcare.model.review;
 
 import com.equipo11.petcare.model.booking.Booking;
 import com.equipo11.petcare.model.user.Owner;

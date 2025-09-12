@@ -47,6 +47,10 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST, API_V1 + "/pet/**").hasAuthority("ROLE_OWNER")
                                 .requestMatchers(HttpMethod.PUT, API_V1 + "/pet/**").hasAuthority("ROLE_OWNER")
                                 .requestMatchers(HttpMethod.DELETE, API_V1 + "/pet/**").hasAuthority("ROLE_OWNER")
+                                .requestMatchers(HttpMethod.POST, API_V1 + "/reviews/**").hasAuthority("ROLE_OWNER")
+                                .requestMatchers(HttpMethod.POST, API_V1 + "/claims/**").hasAuthority("ROLE_OWNER")
+                                .requestMatchers(HttpMethod.PUT, API_V1 + "/claims/**").hasAuthority("ROLE_ADMIN")
+                                .requestMatchers(HttpMethod.GET, API_V1 + "/claims/**").hasAnyAuthority("ROLE_OWNER", "ROLE_ADMIN")
                                 .anyRequest().authenticated())
                 .sessionManagement(sessionManager ->
                         sessionManager

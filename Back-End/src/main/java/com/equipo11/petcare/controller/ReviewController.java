@@ -23,7 +23,7 @@ public class ReviewController {
 
     @PostMapping
     @Transactional
-    public ResponseEntity<?> createReview(@RequestBody @Valid ReviewDTO request) {
+    public ResponseEntity<ReviewDTO> createReview(@RequestBody @Valid ReviewDTO request) {
         var response = reviewService.createReview(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
