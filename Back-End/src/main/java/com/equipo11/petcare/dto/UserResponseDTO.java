@@ -22,9 +22,8 @@ public record UserResponseDTO(
                 AddressDTO.builder()
                         .countryCode(user.getAddress().getCity().getRegion().getCountry().getCountryCode())
                         .region(user.getAddress().getCity().getRegion().getName())
-                        .city(user.getAddress().getStreetName())
-                        .streetName(user.getAddress().getStreetName())
-                        .streetNumber(user.getAddress().getStreetNumber())
+                        .city(user.getAddress().getCity().getName())
+                        .streetAddress(user.getAddress().getStreetAddress())
                         .unit(user.getAddress().getUnit())
                         .build());
     }
