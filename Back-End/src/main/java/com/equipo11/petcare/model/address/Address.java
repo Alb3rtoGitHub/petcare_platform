@@ -17,11 +17,8 @@ public class Address {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "street_name", nullable = false)
-    private String streetName;
-
-    @Column(name = "street_number", nullable = false)
-    private String streetNumber;
+    @Column(name = "street_address", nullable = false)
+    private String streetAddress;
 
     private String unit;
 

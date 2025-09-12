@@ -2,7 +2,7 @@ package com.equipo11.petcare.service.impl;
 
 import com.equipo11.petcare.dto.*;
 import com.equipo11.petcare.exception.BusinessException;
-import com.equipo11.petcare.model.Review;
+import com.equipo11.petcare.model.review.Review;
 import com.equipo11.petcare.model.serviceentity.ServiceEntity;
 import com.equipo11.petcare.model.user.Sitter;
 import com.equipo11.petcare.model.user.enums.ERole;
@@ -219,8 +219,7 @@ public class SitterServiceImpl implements SitterService {
         AddressDTO addressDTO = null;
         if (sitter.getAddress() != null) {
             addressDTO = new AddressDTO(
-                    sitter.getAddress().getStreetName(),
-                    sitter.getAddress().getStreetNumber(),
+                    sitter.getAddress().getStreetAddress(),
                     sitter.getAddress().getUnit(),
                     sitter.getAddress().getCity().getName(),
                     sitter.getAddress().getCity().getRegion().getName(),

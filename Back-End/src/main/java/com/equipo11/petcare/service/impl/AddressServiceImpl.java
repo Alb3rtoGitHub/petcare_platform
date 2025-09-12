@@ -46,7 +46,7 @@ public class AddressServiceImpl implements AddressService {
 
         return Address.builder()
                 .city(city)
-                .streetName(dto.streetAddress())
+                .streetAddress(dto.streetAddress())
                 .unit(dto.unit())
                 .build();
     }
@@ -60,8 +60,7 @@ public class AddressServiceImpl implements AddressService {
 
         Address normalizeNewAddress = resolveAddress(dto);
         address.setCity(normalizeNewAddress.getCity());
-        address.setStreetName(normalizeNewAddress.getStreetName());
-        address.setStreetNumber(normalizeNewAddress.getStreetNumber());
+        address.setStreetAddress(dto.streetAddress());
         address.setUnit(normalizeNewAddress.getUnit());
         addressRepo.save(address);
         return address;
