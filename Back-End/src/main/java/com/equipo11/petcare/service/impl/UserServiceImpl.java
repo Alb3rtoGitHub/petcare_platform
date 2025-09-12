@@ -50,6 +50,4 @@ public class UserServiceImpl implements UserService {
         User user = securityService.verifyUserOrToken(id);
         user.setDeleted(true);
     }
-
-
 }

@@ -7,10 +7,7 @@ import lombok.Builder;
 @Builder
 public record AddressDTO (
         @NotBlank(message = "El nombre de la calle no puede estar vacío")
-        String streetName,
-
-        @NotBlank(message = "El número de la calle no puede estar vacío")
-        String streetNumber,
+        String streetAddress,
 
         String unit,
 
