@@ -15,7 +15,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "sitters")
+@Table(name = "sitters", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "email"),
+        @UniqueConstraint(columnNames = "document_number")
+})
 @DiscriminatorValue("SITTER")
 @Getter
 @Setter
@@ -26,8 +29,14 @@ public class Sitter extends User {
     @Column(name = "document_type", nullable = false)
     private String documentType;
 
+    @Column(name = "document_number", nullable = false, unique = true)
+    private String documentNumber;
+
     @Column(nullable = false)
     private boolean enabled = false;
+
+    @Column(columnDefinition = "TEXT")
+    private String experience;
 
     @Column(columnDefinition = "TEXT")
     private String bio;

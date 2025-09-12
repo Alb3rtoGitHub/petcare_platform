@@ -118,10 +118,20 @@ public class SitterServiceImpl implements SitterService {
     }
 
     @Override
+    public boolean existsSitterByDocumentNumber(String documentNumber) {
+        return sitterRepository.existsSitterByDocumentNumber(documentNumber);
+    }
+
+    @Override
     @Transactional
     public SitterFullResponseDTO updateSitter(Long id, SitterFullRequestDTO sitterFullRequestDTO) {
         Sitter existingSitter = sitterRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("Sitter not found with id: " + id));
+
+        if (!existingSitter.getDocumentNumber().equals(sitterFullRequestDTO.documentNumber()) &&
+            sitterRepository.existsSitterByDocumentNumber(sitterFullRequestDTO.documentNumber())) {
+            throw new BusinessException("Sitter already exists with document number: " + sitterFullRequestDTO.documentNumber());
+        }
 
         // Actualizar campos básicos
         existingSitter.setFirstName(sitterFullRequestDTO.firstName());
@@ -129,6 +139,8 @@ public class SitterServiceImpl implements SitterService {
         existingSitter.setBirthDate(sitterFullRequestDTO.birthDate());
         existingSitter.setPhoneNumber(sitterFullRequestDTO.phoneNumber());
         existingSitter.setDocumentType(sitterFullRequestDTO.documentType());
+        existingSitter.setDocumentNumber(sitterFullRequestDTO.documentNumber());
+        existingSitter.setExperience(sitterFullRequestDTO.experience());
         existingSitter.setBio(sitterFullRequestDTO.bio());
         existingSitter.setHourlyRate(sitterFullRequestDTO.hourlyRate());
         existingSitter.setProfilePicture(sitterFullRequestDTO.profilePicture());
@@ -153,6 +165,10 @@ public class SitterServiceImpl implements SitterService {
             throw new BusinessException("Sitter already exists with email: " + sitterFullRequestDTO.email());
         }
 
+        if (sitterRepository.existsSitterByDocumentNumber(sitterFullRequestDTO.documentNumber())) {
+            throw new BusinessException("Sitter already exists with document number: " + sitterFullRequestDTO.documentNumber());
+        }
+
         // Convertir DTO a entidad
         Sitter sitter = Sitter.builder()
                 .email(sitterFullRequestDTO.email())
@@ -163,6 +179,8 @@ public class SitterServiceImpl implements SitterService {
                 .address(sitterFullRequestDTO.address())
                 .phoneNumber(sitterFullRequestDTO.phoneNumber())
                 .documentType(sitterFullRequestDTO.documentType())
+                .documentNumber(sitterFullRequestDTO.documentNumber())
+                .experience(sitterFullRequestDTO.experience())
                 .bio(sitterFullRequestDTO.bio())
                 .hourlyRate(sitterFullRequestDTO.hourlyRate())
                 .profilePicture(sitterFullRequestDTO.profilePicture())
@@ -259,6 +277,8 @@ public class SitterServiceImpl implements SitterService {
                 .address(addressDTO)
                 .phoneNumber(sitter.getPhoneNumber())
                 .documentType(sitter.getDocumentType())
+                .documentNumber(sitter.getDocumentNumber())
+                .experience(sitter.getExperience())
                 .enabled(sitter.isEnabled())
                 .bio(sitter.getBio())
                 .hourlyRate(sitter.getHourlyRate())

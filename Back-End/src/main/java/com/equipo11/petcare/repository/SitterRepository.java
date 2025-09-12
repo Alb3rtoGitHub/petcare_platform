@@ -18,4 +18,8 @@ public interface SitterRepository extends JpaRepository<Sitter, Long> {
 
     @Query("SELECT s FROM Sitter s WHERE s.email = :email")
     Optional<Sitter> findSitterByEmail(@Param("email") String email);
+
+    @Query("SELECT s FROM Sitter s WHERE s.documentNumber = :documentNumber")
+    Optional<Sitter> findSitterByDocumentNumber(@Param("documentNumber") String documentNumber);
+    Boolean existsSitterByDocumentNumber(String documentNumber);
 }

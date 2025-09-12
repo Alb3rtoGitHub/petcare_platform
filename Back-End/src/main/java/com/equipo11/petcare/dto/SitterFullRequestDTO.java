@@ -37,6 +37,11 @@ public record SitterFullRequestDTO(
         @NotBlank(message = "Document type is required")
         String documentType,
 
+        @NotBlank(message = "Document number is required")
+        String documentNumber,
+
+        String experience,
+
         String bio,
 
         @PositiveOrZero(message = "Hourly rate must be positive or zero")

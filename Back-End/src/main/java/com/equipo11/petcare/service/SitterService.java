@@ -26,5 +26,5 @@ public interface SitterService {
     void deleteSitter(Long id);
     SitterFullResponseDTO addService(Long sitterId, Long serviceEntityId);
     void removeService(Long sitterId, Long serviceEntityId);
-
+    boolean existsSitterByDocumentNumber(String documentNumber);
 }

@@ -18,6 +18,8 @@ public record SitterFullResponseDTO(
         AddressDTO address,
         String phoneNumber,
         String documentType,
+        String documentNumber,
+        String experience,
         boolean enabled,
         String bio,
         Double hourlyRate,
