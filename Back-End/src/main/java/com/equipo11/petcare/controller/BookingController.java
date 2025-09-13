@@ -1,7 +1,11 @@
 package com.equipo11.petcare.controller;
 
 import com.equipo11.petcare.dto.BookingDetailResponse;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -12,12 +16,14 @@ import org.springframework.web.bind.annotation.*;
 import com.equipo11.petcare.dto.BookingCreateRequest;
 import com.equipo11.petcare.dto.BookingResponse;
 import com.equipo11.petcare.dto.BookingStatusRequest;
+import com.equipo11.petcare.model.booking.BookingStatus;
 import com.equipo11.petcare.model.user.User;
 import com.equipo11.petcare.repository.UserRepository;
 import com.equipo11.petcare.service.BookingService;
 
 import jakarta.validation.Valid;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -32,13 +38,31 @@ public class BookingController {
     this.userRepository = userRepository;
   }
 
+  // @GetMapping
+  // @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OWNER')") // Solo admin y
+  // public ResponseEntity<List<BookingDetailResponse>>
+  // getAllBookings(@AuthenticationPrincipal String email) {
+  // User currentUser = userRepository.findByEmail(email)
+  // .orElseThrow(() -> new AccessDeniedException("Usuario no autenticado"));
+  // List<BookingDetailResponse> bookings =
+  // bookingService.getCurrentUserBookings(currentUser);
+  // return ResponseEntity.status(HttpStatus.OK).body(bookings);
+  // }
+
   @GetMapping
-  @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OWNER')") // Solo admin y
-  public ResponseEntity<List<BookingDetailResponse>> getAllBookings(@AuthenticationPrincipal String email){
-      User currentUser = userRepository.findByEmail(email)
-              .orElseThrow(() -> new AccessDeniedException("Usuario no autenticado"));
-      List<BookingDetailResponse> bookings = bookingService.getCurrentUserBookings(currentUser);
-     return ResponseEntity.status(HttpStatus.OK).body(bookings);
+  public ResponseEntity<Page<BookingDetailResponse>> getBookingsUser(
+      @RequestParam(required = false) BookingStatus status,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE.TIME) LocalDateTime startDate,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE.TIME) LocalDateTime endDate,
+      @PageableDefault(size = 14, sort = "createdAt") Pageable pageable,
+      @AuthenticationPrincipal String email) {
+
+    User currentUser = userRepository.findByEmail(email)
+        .orElseThrow(() -> new AccessDeniedException("Usuario no autenticado"));
+
+    Page<BookingDetailResponse> bookings = bookingService.getCurrentUserBookingsPaged(currentUser, status, startDate,
+        endDate, pageable);
+    return ResponseEntity.status(HttpStatus.OK).body(bookings);
   }
 
   @PostMapping

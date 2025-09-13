@@ -2,7 +2,6 @@ package com.equipo11.petcare.service.impl;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
@@ -122,21 +121,6 @@ public class BookingServiceImpl implements BookingService {
     // Guardar y convertir a DTO
     Booking bookingUpdate = bookingRepository.save(booking);
     return conversionService.convert(bookingUpdate, BookingResponse.class);
-  }
-
-  // Mostrar servicios a usuarios logueados
-  @Override
-  public List<BookingDetailResponse> getCurrentUserBookings(User userCurrent) {
-    List<Booking> bookings;
-    if (userCurrent instanceof Owner) {
-      bookings = bookingRepository
-          .findByOwnerIdOrderByCreatedAtDesc(userCurrent.getId());
-    } else if (userCurrent instanceof Sitter) {
-      bookings = bookingRepository.findBySitterIdOrderByCreatedAtDesc(userCurrent.getId());
-    } else {
-      throw new AccessDeniedException("Usuario no autorizado");
-    }
-    return bookingResponseMapper.toDetailResponseList(bookings);
   }
 
   public Page<BookingDetailResponse> getCurrentUserBookingsPaged(

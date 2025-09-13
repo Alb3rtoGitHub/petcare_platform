@@ -16,10 +16,6 @@ import java.util.List;
 @Repository
 public interface JpaBookingRepository extends JpaRepository<Booking, Long> {
 
-  List<Booking> findByOwnerIdOrderByCreatedAtDesc(Long ownerId);
-
-  List<Booking> findBySitterIdOrderByCreatedAtDesc(Long sitterId);
-
   @Query("""
           SELECT b FROM Booking b
           WHERE b.owner.id = :userId
@@ -49,19 +45,6 @@ public interface JpaBookingRepository extends JpaRepository<Booking, Long> {
       @Param("startDate") LocalDateTime startDate,
       @Param("endDate") LocalDateTime endDate,
       Pageable pageable);
-
-  @Query("SELECT b FROM Booking b WHERE " +
-      "(:ownerId IS NULL OR b.owner.id = :ownerId) AND " +
-      "(:sitterId IS NULL OR b.sitter.id = :sitterId) AND " +
-      "(:status IS NULL OR b.status = :status) AND " +
-      "(:fromDate IS NULL OR b.startDateTime >= :fromDate) AND " +
-      "(:toDate IS NULL OR b.endDateTime <= :toDate)")
-  List<Booking> findByFilters(
-      @Param("ownerId") Long ownerId,
-      @Param("sitterId") Long sitterId,
-      @Param("status") BookingStatus status,
-      @Param("fromDate") LocalDateTime fromDate,
-      @Param("toDate") LocalDateTime toDate);
 
   @Query("SELECT COUNT(b) > 0 FROM Booking b " +
       "WHERE b.sitter.id = :sitterId AND " +

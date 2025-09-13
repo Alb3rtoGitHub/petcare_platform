@@ -1,7 +1,10 @@
 package com.equipo11.petcare.service;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.time.LocalDateTime;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.equipo11.petcare.dto.BookingCreateRequest;
 import com.equipo11.petcare.dto.BookingDetailResponse;
@@ -19,5 +22,10 @@ public interface BookingService {
 
   public BookingResponse updateStatus(Long bookingId, BookingStatus newStatus, User currentUser);
 
-  public List<BookingDetailResponse> getCurrentUserBookings(User userCurrent);
+  public Page<BookingDetailResponse> getCurrentUserBookingsPaged(
+      User currentUser,
+      BookingStatus status,
+      LocalDateTime startDate,
+      LocalDateTime endDate,
+      Pageable pageable);
 }
