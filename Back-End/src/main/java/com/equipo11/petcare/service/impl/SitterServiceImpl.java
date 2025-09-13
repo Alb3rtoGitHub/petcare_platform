@@ -122,6 +122,16 @@ public class SitterServiceImpl implements SitterService {
         return sitterRepository.existsSitterByDocumentNumber(documentNumber);
     }
 
+
+
+
+// TODO revisar updateSitter y saveSitter, mas Avalilability mañana 13/9
+
+
+
+
+
+
     @Override
     @Transactional
     public SitterFullResponseDTO updateSitter(Long id, SitterFullRequestDTO sitterFullRequestDTO) {
@@ -134,19 +144,14 @@ public class SitterServiceImpl implements SitterService {
         }
 
         // Actualizar campos básicos
-        existingSitter.setFirstName(sitterFullRequestDTO.firstName());
-        existingSitter.setLastName(sitterFullRequestDTO.lastName());
-        existingSitter.setBirthDate(sitterFullRequestDTO.birthDate());
-        existingSitter.setPhoneNumber(sitterFullRequestDTO.phoneNumber());
+
         existingSitter.setDocumentType(sitterFullRequestDTO.documentType());
         existingSitter.setDocumentNumber(sitterFullRequestDTO.documentNumber());
         existingSitter.setExperience(sitterFullRequestDTO.experience());
         existingSitter.setBio(sitterFullRequestDTO.bio());
-        existingSitter.setHourlyRate(sitterFullRequestDTO.hourlyRate());
         existingSitter.setProfilePicture(sitterFullRequestDTO.profilePicture());
         existingSitter.setIdCard(sitterFullRequestDTO.idCard());
         existingSitter.setBackgroundCheckDocument(sitterFullRequestDTO.backgroundCheckDocument());
-        existingSitter.setBackgroundCheck(sitterFullRequestDTO.backgroundCheck());
 
         if (sitterFullRequestDTO.serviceIds() != null && !sitterFullRequestDTO.serviceIds().isEmpty()) {
             Set<ServiceEntity> serviceEntitySet = new HashSet<>(
@@ -161,42 +166,32 @@ public class SitterServiceImpl implements SitterService {
     @Override
     @Transactional
     public SitterFullResponseDTO saveSitter(SitterFullRequestDTO sitterFullRequestDTO) {
-        if (sitterRepository.findSitterByEmail(sitterFullRequestDTO.email()).isPresent()) {
-            throw new BusinessException("Sitter already exists with email: " + sitterFullRequestDTO.email());
-        }
 
         if (sitterRepository.existsSitterByDocumentNumber(sitterFullRequestDTO.documentNumber())) {
             throw new BusinessException("Sitter already exists with document number: " + sitterFullRequestDTO.documentNumber());
         }
 
+        Sitter sitterToSave = sitterRepository.findSitterByDocumentNumber(sitterFullRequestDTO.documentNumber())
+                .orElseThrow(() -> new BusinessException("Sitter not found with document number: " + sitterFullRequestDTO.documentNumber()));
+
         // Convertir DTO a entidad
         Sitter sitter = Sitter.builder()
-                .email(sitterFullRequestDTO.email())
-                .password(passwordEncoder.encode(sitterFullRequestDTO.password()))
-                .firstName(sitterFullRequestDTO.firstName())
-                .lastName(sitterFullRequestDTO.lastName())
-                .birthDate(sitterFullRequestDTO.birthDate())
-                .address(sitterFullRequestDTO.address())
-                .phoneNumber(sitterFullRequestDTO.phoneNumber())
+                .firstName(sitterToSave.getFirstName())
+                .lastName(sitterToSave.getLastName())
+                .birthDate(sitterToSave.getBirthDate())
+                .address(sitterToSave.getAddress())
+                .phoneNumber(sitterToSave.getPhoneNumber())
+                .email(sitterToSave.getEmail())
                 .documentType(sitterFullRequestDTO.documentType())
                 .documentNumber(sitterFullRequestDTO.documentNumber())
                 .experience(sitterFullRequestDTO.experience())
                 .bio(sitterFullRequestDTO.bio())
-                .hourlyRate(sitterFullRequestDTO.hourlyRate())
                 .profilePicture(sitterFullRequestDTO.profilePicture())
                 .idCard(sitterFullRequestDTO.idCard())
                 .backgroundCheckDocument(sitterFullRequestDTO.backgroundCheckDocument())
-                .backgroundCheck(sitterFullRequestDTO.backgroundCheck() != null ? sitterFullRequestDTO.backgroundCheck() : false)
-                .enabled(true)
+                .availabilities(sitterFullRequestDTO.availabilities())
+                .enabled(sitterToSave.isEnabled())//
                 .build();
-
-        // Si existen servicios asignar
-        if (sitterFullRequestDTO.serviceIds() != null && !sitterFullRequestDTO.serviceIds().isEmpty()) {
-            Set<ServiceEntity> serviceEntitySet = new HashSet<>(
-                    serviceEntityRepository.findAllById(sitterFullRequestDTO.serviceIds())
-            );
-            sitter.setServiceEntitySet(serviceEntitySet);
-        }
 
         Sitter savedSitter = sitterRepository.save(sitter);
         return toFullResponseDto(savedSitter);
@@ -227,22 +222,6 @@ public class SitterServiceImpl implements SitterService {
             );
         }
 
-        // Convertir servicios a DTOs
-        Set<ServiceEntityResponseDTO> serviceEntityDTOs = new HashSet<>();
-        if (sitter.getServiceEntitySet() != null) {
-            serviceEntityDTOs = sitter.getServiceEntitySet().stream()
-                    .map(serviceEntity -> new ServiceEntityResponseDTO(
-                            serviceEntity.getId(),
-                            serviceEntity.getServiceName(),
-                            serviceEntity.getDescription(),
-                            serviceEntity.getPrice(),
-                            serviceEntity.getDuration(),
-                            serviceEntity.getActive(),
-                            serviceEntity.getSitters()
-                    ))
-                    .collect(Collectors.toSet());
-        }
-
         // Convertir disponibilidades a DTOs
         Set<AvailabilityResponseDTO> availabilityDTOs = new HashSet<>();
         if (sitter.getAvailabilities() != null) {
@@ -251,7 +230,7 @@ public class SitterServiceImpl implements SitterService {
                     .map(availability -> new AvailabilityResponseDTO(
                             availability.getId(),
                             availability.getSitter().getId(),
-                            availability.getServiceName(),
+                            availability.getServiceEntity(),
                             availability.getStartTime(),
                             availability.getEndTime(),
                             availability.getActive()))
@@ -280,15 +259,11 @@ public class SitterServiceImpl implements SitterService {
                 .experience(sitter.getExperience())
                 .enabled(sitter.isEnabled())
                 .bio(sitter.getBio())
-                .hourlyRate(sitter.getHourlyRate())
-                .rating(sitter.getRating())
                 .averageRating(sitter.getAverageRating())
                 .profilePicture(sitter.getProfilePicture())
                 .idCard(sitter.getIdCard())
+                .createdAt(sitter.getCreatedAt())
                 .backgroundCheckDocument(sitter.getBackgroundCheckDocument())
-                .backgroundCheck(sitter.getBackgroundCheck())
-                .registrationDate(sitter.getRegistrationDate())
-                .servicesEntities(serviceEntityDTOs)
                 .availabilities(availabilityDTOs)
                 .reviews(reviewDTOs)
                 .roles(Set.of(ERole.ROLE_SITTER))

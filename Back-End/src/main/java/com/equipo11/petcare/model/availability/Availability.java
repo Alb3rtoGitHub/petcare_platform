@@ -1,6 +1,6 @@
 package com.equipo11.petcare.model.availability;
 
-import com.equipo11.petcare.model.availability.enums.ServiceName;
+import com.equipo11.petcare.model.serviceentity.ServiceEntity;
 import com.equipo11.petcare.model.user.Sitter;
 import jakarta.persistence.*;
 import lombok.*;
@@ -24,9 +24,9 @@ public class Availability {
     @JoinColumn(name = "sitter_id", nullable = false)
     private Sitter sitter;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "service_name", nullable = false)
-    private ServiceName serviceName;
+    @ManyToOne
+    @JoinColumn(name = "service_entity_id", nullable = false)
+    private ServiceEntity serviceEntity;
 
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;

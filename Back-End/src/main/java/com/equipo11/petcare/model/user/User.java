@@ -62,4 +62,6 @@ public class User {
 
     @Column(nullable = false)
     private boolean deleted = false;
+
+    private String profilePicture; // URL de la foto de perfil
 }

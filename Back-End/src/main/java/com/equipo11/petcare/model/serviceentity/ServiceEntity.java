@@ -32,7 +32,4 @@ public class ServiceEntity {
     private Long duration; // en minutos?
 
     private Boolean active;
-
-    @ManyToMany(mappedBy = "serviceEntitySet")
-    private Set<Sitter> sitters = new HashSet<>();
 }
