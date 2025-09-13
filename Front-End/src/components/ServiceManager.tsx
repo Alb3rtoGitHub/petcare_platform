@@ -7,7 +7,8 @@ import { Textarea } from "./ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog"
 import { Badge } from "./ui/badge"
-import { Plus, Edit, Trash2, Clock, DollarSign, MapPin } from "lucide-react"
+import { Plus, Edit, Trash2, Clock, DollarSign, MapPin, Play, Pause } from "lucide-react"
+import { getActiveServices, formatServicePrice, getServicePrice, getServiceById } from "../services/servicesPricing.js"
 
 interface Service {
   id: string
@@ -35,7 +36,7 @@ export default function ServiceManager() {
       name: 'Paseo Relajado',
       type: 'walk',
       description: 'Paseo tranquilo por el parque con tu mascota',
-      price: 15,
+      price: getServicePrice("1"), // Usar precio del archivo compartido
       duration: '30 min',
       location: 'Parques cercanos',
       availability: ['Mañana', 'Tarde'],
@@ -46,10 +47,21 @@ export default function ServiceManager() {
       name: 'Cuidado Completo',
       type: 'home-care',
       description: 'Cuidado completo en tu hogar mientras estás fuera',
-      price: 40,
-      duration: '8 horas',
+      price: getServicePrice("2"), // Usar precio del archivo compartido
+      duration: '2 horas',
       location: 'En casa del cliente',
       availability: ['Todo el día'],
+      isActive: false
+    },
+    {
+      id: '3',
+      name: 'Hospedaje de Fin de Semana',
+      type: 'boarding',
+      description: 'Tu mascota se queda en mi casa durante el fin de semana',
+      price: getServicePrice("3"), // Usar precio del archivo compartido
+      duration: '1 noche',
+      location: 'En mi hogar',
+      availability: ['Fines de semana'],
       isActive: true
     }
   ])
@@ -98,6 +110,12 @@ export default function ServiceManager() {
 
   const handleDeleteService = (id: string) => {
     setServices(services.filter(service => service.id !== id))
+  }
+
+  const toggleServiceStatus = (id: string) => {
+    setServices(services.map(service => 
+      service.id === id ? { ...service, isActive: !service.isActive } : service
+    ))
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -202,7 +220,7 @@ export default function ServiceManager() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="price">Precio ($)</Label>
+                  <Label htmlFor="price">Precio (€)</Label>
                   <Input
                     id="price"
                     type="number"
@@ -298,6 +316,12 @@ export default function ServiceManager() {
                       <Badge variant="secondary">
                         {serviceTypes[service.type]}
                       </Badge>
+                      <Badge 
+                        variant={service.isActive ? "default" : "secondary"}
+                        className={service.isActive ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}
+                      >
+                        {service.isActive ? "Activo" : "Pausado"}
+                      </Badge>
                     </CardTitle>
                     <p className="text-muted-foreground mt-1">
                       {service.description}
@@ -326,7 +350,7 @@ export default function ServiceManager() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex items-center gap-2">
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
-                    <span>${service.price}</span>
+                    <span>{service.price}€</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-muted-foreground" />
@@ -346,6 +370,40 @@ export default function ServiceManager() {
                       </Badge>
                     ))}
                   </div>
+                </div>
+                
+                <div className="flex gap-2 mt-4 pt-4 border-t">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEditService(service)}
+                    className="flex-1"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Editar
+                  </Button>
+                  <Button
+                    variant={service.isActive ? "outline" : "default"}
+                    size="sm"
+                    onClick={() => toggleServiceStatus(service.id)}
+                    className={`flex-1 ${
+                      service.isActive 
+                        ? 'text-pink-600 border-pink-300 hover:bg-pink-50 hover:text-pink-700' 
+                        : 'bg-green-600 hover:bg-green-700 text-white'
+                    }`}
+                  >
+                    {service.isActive ? (
+                      <>
+                        <Pause className="h-4 w-4 mr-2" />
+                        Pausar
+                      </>
+                    ) : (
+                      <>
+                        <Play className="h-4 w-4 mr-2" />
+                        Activar
+                      </>
+                    )}
+                  </Button>
                 </div>
               </CardContent>
             </Card>

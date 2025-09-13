@@ -12,9 +12,17 @@ interface EmailVerificationProps {
   onBack: () => void
   onResendEmail?: () => void
   userEmail?: string
+  onNavigateToSitterProfile?: () => void
+  onNavigateToOwnerPets?: () => void
 }
 
-export default function EmailVerification({ onBack, onResendEmail, userEmail }: EmailVerificationProps) {
+export default function EmailVerification({ 
+  onBack, 
+  onResendEmail, 
+  userEmail,
+  onNavigateToSitterProfile,
+  onNavigateToOwnerPets 
+}: EmailVerificationProps) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center px-4">
       <div className="w-full max-w-md">
@@ -81,6 +89,29 @@ export default function EmailVerification({ onBack, onResendEmail, userEmail }: 
                     </Button>
                   )}
                 </div>
+              </div>
+            </div>
+
+            {/* Botones de prueba para navegación */}
+            <div className="border-t pt-4 space-y-3">
+              <p className="text-sm text-gray-500 text-center mb-3">
+                Solo para pruebas:
+              </p>
+              
+              <div className="space-y-2">
+                <Button 
+                  onClick={onNavigateToSitterProfile}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                >
+                  Continuar como Cuidador
+                </Button>
+                
+                <Button 
+                  onClick={onNavigateToOwnerPets}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                >
+                  Continuar como Dueño
+                </Button>
               </div>
             </div>
 

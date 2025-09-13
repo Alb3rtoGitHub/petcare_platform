@@ -46,10 +46,6 @@ interface OwnerRegisterForm {
   state: string
   city: string
   
-  // Identification Info
-  identificationType: string
-  identificationNumber: string
-  
   // Pets Info
   pets: Array<{
     name: string
@@ -83,10 +79,6 @@ interface SitterRegisterForm {
   state: string
   city: string
   
-  // Identification Info
-  identificationType: string
-  identificationNumber: string
-  
   // Professional Info
   experience: string
   description: string
@@ -112,6 +104,13 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [currentStep, setCurrentStep] = useState(1)
+  const [passwordRequirements, setPasswordRequirements] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false
+  })
 
   const [ownerForm, setOwnerForm] = useState<OwnerRegisterForm>({
     firstName: '',
@@ -124,8 +123,6 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
     country: '',
     state: '',
     city: '',
-    identificationType: '',
-    identificationNumber: '',
     pets: [{ name: '', type: '', breed: '', age: '', weight: '', specialNeeds: '' }],
     emergencyContact: '',
     emergencyPhone: '',
@@ -145,8 +142,6 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
     country: '',
     state: '',
     city: '',
-    identificationType: '',
-    identificationNumber: '',
     experience: '',
     description: '',
     services: [],
@@ -271,6 +266,11 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
         newForm.city = ''
       }
       
+      // Validate password when it changes
+      if (field === 'password') {
+        validatePassword(value)
+      }
+      
       return newForm
     })
   }
@@ -285,6 +285,11 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
         newForm.city = ''
       } else if (field === 'state') {
         newForm.city = ''
+      }
+      
+      // Validate password when it changes
+      if (field === 'password') {
+        validatePassword(value)
       }
       
       return newForm
@@ -330,6 +335,25 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
     }))
   }
 
+  // Función para validar la contraseña
+  const validatePassword = (password: string) => {
+    const requirements = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /\d/.test(password),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    }
+    
+    setPasswordRequirements(requirements)
+    return Object.values(requirements).every(Boolean)
+  }
+
+  // Función para verificar si la contraseña es válida
+  const isPasswordValid = (password: string) => {
+    return validatePassword(password)
+  }
+
   const validateStep = () => {
     setError('')
     
@@ -345,12 +369,12 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
           setError('Por favor completa todos los campos obligatorios')
           return false
         }
-        if (ownerForm.password !== ownerForm.confirmPassword) {
-          setError('Las contraseñas no coinciden')
+        if (!isPasswordValid(ownerForm.password)) {
+          setError('La contraseña debe tener al menos 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 carácter especial')
           return false
         }
-        if (ownerForm.password.length < 6) {
-          setError('La contraseña debe tener al menos 6 caracteres')
+        if (ownerForm.password !== ownerForm.confirmPassword) {
+          setError('Las contraseñas no coinciden')
           return false
         }
       } else if (currentStep === 2) {
@@ -364,6 +388,10 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
         if (!selectedUserType || !sitterForm.firstName || !sitterForm.lastName || !sitterForm.email || 
             !sitterForm.password || !sitterForm.phone || !sitterForm.country || !sitterForm.state || !sitterForm.city) {
           setError('Por favor completa todos los campos obligatorios')
+          return false
+        }
+        if (!isPasswordValid(sitterForm.password)) {
+          setError('La contraseña debe tener al menos 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 carácter especial')
           return false
         }
         if (sitterForm.password !== sitterForm.confirmPassword) {
@@ -515,33 +543,6 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
                       </div>
                       
                       <div className="grid md:grid-cols-2 gap-4">
-						<div>
-                          <label className="text-sm mb-2 block">Tipo de Identificación *</label>
-                          <Select 
-                            value={ownerForm.identificationType} 
-                            onValueChange={(value) => handleOwnerInputChange('identificationType', value)}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Selecciona tu tipo de identificación" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {identificationTypes.map((idType) => (
-                                <SelectItem key={idType.value} value={idType.value}>
-                                  {idType.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <label className="text-sm mb-2 block">Número de Identificación *</label>
-                          <Input
-                            value={ownerForm.identificationNumber}
-                            onChange={(e) => handleOwnerInputChange('identificationNumber', e.target.value)}
-                            placeholder="Ej: 12345678A"
-                            required
-                          />
-                        </div>
                         <div>
                           <label className="text-sm mb-2 block">Nombre *</label>
                           <Input
@@ -594,6 +595,28 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
                               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </button>
                           </div>
+                          {ownerForm.password && (
+                            <div className="mt-2 space-y-1">
+                              <p className="text-xs text-gray-600">La contraseña debe contener:</p>
+                              <div className="flex flex-wrap gap-1">
+                                <span className={`text-xs px-2 py-1 rounded ${passwordRequirements.length ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                  {passwordRequirements.length ? '✓' : '○'} 8+ caracteres
+                                </span>
+                                <span className={`text-xs px-2 py-1 rounded ${passwordRequirements.uppercase ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                  {passwordRequirements.uppercase ? '✓' : '○'} 1 mayúscula
+                                </span>
+                                <span className={`text-xs px-2 py-1 rounded ${passwordRequirements.lowercase ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                  {passwordRequirements.lowercase ? '✓' : '○'} 1 minúscula
+                                </span>
+                                <span className={`text-xs px-2 py-1 rounded ${passwordRequirements.number ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                  {passwordRequirements.number ? '✓' : '○'} 1 número
+                                </span>
+                                <span className={`text-xs px-2 py-1 rounded ${passwordRequirements.special ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                  {passwordRequirements.special ? '✓' : '○'} 1 especial
+                                </span>
+                              </div>
+                            </div>
+                          )}
                         </div>
                         <div>
                           <label className="text-sm mb-2 block">Confirmar Contraseña *</label>
@@ -678,8 +701,8 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
                             placeholder="Calle, número, código postal"
                           />
                         </div>
-                    </div>
-                      
+                      </div>
+
                       <div className="space-y-3 mt-6">
                         <div className="flex items-start space-x-2">
                           <Checkbox
@@ -940,6 +963,28 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
                               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </button>
                           </div>
+                          {sitterForm.password && (
+                            <div className="mt-2 space-y-1">
+                              <p className="text-xs text-gray-600">La contraseña debe contener:</p>
+                              <div className="flex flex-wrap gap-1">
+                                <span className={`text-xs px-2 py-1 rounded ${passwordRequirements.length ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                  {passwordRequirements.length ? '✓' : '○'} 8+ caracteres
+                                </span>
+                                <span className={`text-xs px-2 py-1 rounded ${passwordRequirements.uppercase ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                  {passwordRequirements.uppercase ? '✓' : '○'} 1 mayúscula
+                                </span>
+                                <span className={`text-xs px-2 py-1 rounded ${passwordRequirements.lowercase ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                  {passwordRequirements.lowercase ? '✓' : '○'} 1 minúscula
+                                </span>
+                                <span className={`text-xs px-2 py-1 rounded ${passwordRequirements.number ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                  {passwordRequirements.number ? '✓' : '○'} 1 número
+                                </span>
+                                <span className={`text-xs px-2 py-1 rounded ${passwordRequirements.special ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                  {passwordRequirements.special ? '✓' : '○'} 1 especial
+                                </span>
+                              </div>
+                            </div>
+                          )}
                         </div>
                         <div>
                           <label className="text-sm mb-2 block">Confirmar Contraseña *</label>
@@ -1024,35 +1069,8 @@ export default function Register({ onBack, onRegister, onShowLogin, onEmailVerif
                             placeholder="Calle, número, código postal"
                           />
                         </div>
-                        <div>
-                          <label className="text-sm mb-2 block">Tipo de Identificación *</label>
-                          <Select 
-                            value={sitterForm.identificationType} 
-                            onValueChange={(value) => handleSitterInputChange('identificationType', value)}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Selecciona tu tipo de identificación" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {identificationTypes.map((idType) => (
-                                <SelectItem key={idType.value} value={idType.value}>
-                                  {idType.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <label className="text-sm mb-2 block">Número de Identificación *</label>
-                          <Input
-                            value={sitterForm.identificationNumber}
-                            onChange={(e) => handleSitterInputChange('identificationNumber', e.target.value)}
-                            placeholder="Ej: 12345678A"
-                            required
-                          />
-                        </div>
                       </div>
-                      
+
                       <div className="space-y-3 mt-6">
                         <div className="flex items-start space-x-2">
                           <Checkbox

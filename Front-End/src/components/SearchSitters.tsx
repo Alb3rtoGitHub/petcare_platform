@@ -9,6 +9,7 @@ import { Checkbox } from "./ui/checkbox"
 import { ImageWithFallback } from "./figma/ImageWithFallback"
 import { Search, MapPin, Star, Heart, MessageSquare, Calendar, Filter, SlidersHorizontal, X, ShoppingCart, Clock } from "lucide-react"
 import BookingModal from "./BookingModal"
+import { getActiveServices, formatServicePrice } from "../services/servicesPricing.js"
 
 interface CartItem {
   id: string
@@ -72,16 +73,39 @@ export default function SearchSitters({ onBack, onBookService, isAuthenticated, 
     { value: "overnight", label: "Madrugada (0:00 - 6:00)" }
   ]
 
-  const services = [
-    "Paseos",
-    "Cuidado en casa",
-    "Visitas",
-    "Grooming",
-    "Entrenamiento",
-    "Emergencias",
-    "Transporte",
-    "Medicación"
-  ]
+  // Obtener servicios activos del archivo compartido
+  const activeServices = getActiveServices()
+  
+  const services = activeServices.map(service => service.name)
+
+  // Función para obtener el rango de precios basado en los servicios de un cuidador
+  const getPriceRangeForSitter = (sitterServices: string[]) => {
+    // Mapear nombres de servicios de la UI a nombres del sistema
+    const serviceMapping: { [key: string]: string } = {
+      "Paseo de perros": "Paseo de perros",
+      "Cuidado en casa": "Cuidado en casa", 
+      "Hospedaje nocturno": "Hospedaje nocturno",
+      "Entrenamiento": "Entrenamiento",
+      "Grooming básico": "Grooming básico"
+    }
+    
+    const prices = sitterServices.map(serviceName => {
+      const mappedServiceName = serviceMapping[serviceName] || serviceName
+      const service = activeServices.find(s => s.name === mappedServiceName)
+      return service ? service.price : 0
+    }).filter(price => price > 0)
+    
+    if (prices.length === 0) return "Consultar precio"
+    
+    const minPrice = Math.min(...prices)
+    const maxPrice = Math.max(...prices)
+    
+    if (minPrice === maxPrice) {
+      return `${minPrice.toFixed(2)}€/hora`
+    } else {
+      return `${minPrice.toFixed(2)} - ${maxPrice.toFixed(2)}€/hora`
+    }
+  }
 
   const sitters = [
     {
@@ -92,8 +116,8 @@ export default function SearchSitters({ onBack, onBookService, isAuthenticated, 
       rating: 4.9,
       reviews: 127,
       completedJobs: 243,
-      services: ["Paseos", "Cuidado en casa", "Visitas"],
-      priceRange: "15-20€/hora",
+      services: ["Paseo de perros", "Cuidado en casa"],
+      priceRange: getPriceRangeForSitter(["Paseo de perros", "Cuidado en casa"]),
       availability: "Disponible hoy",
       verified: true,
       responseTime: "En 1 hora",
@@ -110,8 +134,8 @@ export default function SearchSitters({ onBack, onBookService, isAuthenticated, 
       rating: 4.8,
       reviews: 89,
       completedJobs: 156,
-      services: ["Paseos", "Entrenamiento", "Grooming"],
-      priceRange: "18-25€/hora",
+      services: ["Paseo de perros", "Entrenamiento", "Grooming básico"],
+      priceRange: getPriceRangeForSitter(["Paseo de perros", "Entrenamiento", "Grooming básico"]),
       availability: "Disponible mañana",
       verified: true,
       responseTime: "En 30 min",
@@ -128,8 +152,8 @@ export default function SearchSitters({ onBack, onBookService, isAuthenticated, 
       rating: 5.0,
       reviews: 203,
       completedJobs: 387,
-      services: ["Cuidado en casa", "Visitas", "Emergencias"],
-      priceRange: "20-30€/hora",
+      services: ["Cuidado en casa", "Hospedaje nocturno"],
+      priceRange: getPriceRangeForSitter(["Cuidado en casa", "Hospedaje nocturno"]),
       availability: "Disponible 24/7",
       verified: true,
       responseTime: "Inmediato",
@@ -146,8 +170,8 @@ export default function SearchSitters({ onBack, onBookService, isAuthenticated, 
       rating: 4.7,
       reviews: 145,
       completedJobs: 298,
-      services: ["Paseos", "Cuidado en casa", "Transporte"],
-      priceRange: "16-22€/hora",
+      services: ["Paseo de perros", "Cuidado en casa"],
+      priceRange: getPriceRangeForSitter(["Paseo de perros", "Cuidado en casa"]),
       availability: "Disponible hoy",
       verified: true,
       responseTime: "En 2 horas",
@@ -164,8 +188,8 @@ export default function SearchSitters({ onBack, onBookService, isAuthenticated, 
       rating: 4.9,
       reviews: 76,
       completedJobs: 134,
-      services: ["Paseos", "Grooming", "Entrenamiento"],
-      priceRange: "17-24€/hora",
+      services: ["Paseo de perros", "Grooming básico", "Entrenamiento"],
+      priceRange: getPriceRangeForSitter(["Paseo de perros", "Grooming básico", "Entrenamiento"]),
       availability: "Disponible fin de semana",
       verified: true,
       responseTime: "En 45 min",

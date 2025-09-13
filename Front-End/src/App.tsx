@@ -16,9 +16,12 @@ import PaymentGateway from "./components/PaymentGateway"
 import BookingManager from "./components/BookingManager"
 import BookingCalendar from "./components/BookingCalendar"
 import EnhancedBookingCalendar from "./components/EnhancedBookingCalendar"
+import SitterProfileForm from "./components/SitterProfileForm"
+import OwnerPetsForm from "./components/OwnerPetsForm"
+import SitterRegistrationSuccess from "./components/SitterRegistrationSuccess"
 
 type UserType = 'owner' | 'sitter' | 'admin' | null
-type CurrentView = 'landing' | 'search' | 'dashboard' | 'services' | 'how-it-works' | 'help' | 'login' | 'register' | 'email-verification' | 'cart' | 'payment' | 'bookings' | 'calendar'
+type CurrentView = 'landing' | 'search' | 'dashboard' | 'services' | 'how-it-works' | 'help' | 'login' | 'register' | 'email-verification' | 'cart' | 'payment' | 'bookings' | 'calendar' | 'sitter-profile' | 'owner-pets' | 'sitter-registration-success'
 
 interface CartItem {
   id: string
@@ -284,6 +287,30 @@ export default function App() {
     // You could also show a success message or redirect to a confirmation page
   }
 
+  const handleNavigateToSitterProfile = () => {
+    navigateToView('sitter-profile')
+  }
+
+  const handleNavigateToOwnerPets = () => {
+    navigateToView('owner-pets')
+  }
+
+  const handleSitterProfileComplete = (data: any) => {
+    console.log('Perfil de cuidador completado:', data)
+    // Registrar al usuario como cuidador
+    setUserType('sitter')
+    setUserData({ ...data, userType: 'sitter' })
+    setIsAuthenticated(true)
+    // Navegar a la vista de confirmación de registro exitoso
+    navigateToView('sitter-registration-success')
+  }
+
+  const handleOwnerPetsComplete = (data: any) => {
+    console.log('Registro de mascotas completado:', data)
+    // Aquí puedes hacer el registro real del dueño
+    setCurrentView('dashboard')
+  }
+
   const renderContent = () => {
     if (currentView === 'search') {
       return (
@@ -355,6 +382,26 @@ export default function App() {
           onBack={handleGoBack}
           onResendEmail={handleResendEmail}
           userEmail={pendingUserEmail}
+          onNavigateToSitterProfile={handleNavigateToSitterProfile}
+          onNavigateToOwnerPets={handleNavigateToOwnerPets}
+        />
+      )
+    }
+
+    if (currentView === 'sitter-profile') {
+      return (
+        <SitterProfileForm 
+          onBack={handleGoBack}
+          onComplete={handleSitterProfileComplete}
+        />
+      )
+    }
+
+    if (currentView === 'owner-pets') {
+      return (
+        <OwnerPetsForm 
+          onBack={handleGoBack}
+          onComplete={handleOwnerPetsComplete}
         />
       )
     }
@@ -366,6 +413,7 @@ export default function App() {
           onProceedToPayment={handleProceedToPayment}
           cartItems={cartItems}
           onUpdateCart={handleUpdateCart}
+          onSearchSitters={handleSearchSitters}
         />
       )
     }
@@ -410,7 +458,14 @@ export default function App() {
     if (currentView === 'dashboard' && isAuthenticated) {
       switch (userType) {
         case 'owner':
-          return <OwnerDashboard userData={userData} onViewBookings={handleViewBookings} onViewCart={handleViewCart} />
+          return <OwnerDashboard 
+            userData={userData} 
+            onViewBookings={handleViewBookings} 
+            onViewCart={handleViewCart} 
+            onSearchSitters={handleSearchSitters}
+            onProceedToPayment={handleProceedToPayment}
+            onBookService={handleBookService}
+          />
         case 'sitter':
           return <SitterDashboard userData={userData} onViewBookings={handleViewBookings} />
         case 'admin':
@@ -418,6 +473,15 @@ export default function App() {
         default:
           return <LandingPage onUserTypeChange={handleUserTypeChange} onSearchSitters={handleSearchSitters} onViewServices={handleViewServices} onViewHowItWorks={handleViewHowItWorks} onShowLogin={handleShowLogin} onShowRegister={handleShowRegister} />
       }
+    }
+
+    if (currentView === 'sitter-registration-success') {
+      return (
+        <SitterRegistrationSuccess
+          onGoToDashboard={handleGoToDashboard}
+          onGoToLanding={handleBackToLanding}
+        />
+      )
     }
 
     return <LandingPage onUserTypeChange={handleUserTypeChange} onSearchSitters={handleSearchSitters} onViewServices={handleViewServices} onViewHowItWorks={handleViewHowItWorks} onShowLogin={handleShowLogin} onShowRegister={handleShowRegister} />

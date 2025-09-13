@@ -19,7 +19,6 @@ interface AdminDashboardProps {
 
 export default function AdminDashboard({ userData }: AdminDashboardProps) {
   const [showUserManagement, setShowUserManagement] = useState(false)
-  const [showServicePricing, setShowServicePricing] = useState(false)
   const [showAllReports, setShowAllReports] = useState(false)
   const [showAllFlaggedContent, setShowAllFlaggedContent] = useState(false)
   const [currentTab, setCurrentTab] = useState("reports")
@@ -28,10 +27,6 @@ export default function AdminDashboard({ userData }: AdminDashboardProps) {
     return <UserManagement onBack={() => setShowUserManagement(false)} />
   }
   
-  if (showServicePricing) {
-    return <ServicePricingManager onBack={() => setShowServicePricing(false)} />
-  }
-
   if (showAllReports) {
     return <AllReports onBack={() => setShowAllReports(false)} />
   }
@@ -347,103 +342,7 @@ export default function AdminDashboard({ userData }: AdminDashboardProps) {
           </TabsContent>
 
           <TabsContent value="services" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl">Gestión de Servicios y Precios</h2>
-              <Button onClick={() => setShowServicePricing(true)}>
-                <DollarSign className="h-4 w-4 mr-2" />
-                Gestión Completa de Precios
-              </Button>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Servicios por Horas</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Paseos</span>
-                      <span className="font-medium">10€ - 25€/h</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Cuidado en casa</span>
-                      <span className="font-medium">15€ - 30€/h</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Entrenamiento</span>
-                      <span className="font-medium">40€ - 100€/h</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Servicios por Días</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Hospedaje nocturno</span>
-                      <span className="font-medium">25€ - 60€/día</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Cuidado extendido</span>
-                      <span className="font-medium">30€ - 80€/día</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Servicios Especializados</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Grooming básico</span>
-                      <span className="font-medium">35€ - 80€</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Visita veterinaria</span>
-                      <span className="font-medium">20€ - 40€</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Transporte</span>
-                      <span className="font-medium">15€ - 35€</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Comisiones por Categoría</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-4 gap-4">
-                  <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600">Cuidado Básico</p>
-                    <p className="text-2xl font-bold text-green-600">15%</p>
-                  </div>
-                  <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600">Hospedaje</p>
-                    <p className="text-2xl font-bold text-blue-600">20%</p>
-                  </div>
-                  <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600">Especializados</p>
-                    <p className="text-2xl font-bold text-purple-600">25%</p>
-                  </div>
-                  <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600">Emergencias</p>
-                    <p className="text-2xl font-bold text-red-600">30%</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <ServicePricingManager onBack={() => setCurrentTab("reports")} />
           </TabsContent>
 
           <TabsContent value="content" className="space-y-6">

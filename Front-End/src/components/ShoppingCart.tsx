@@ -40,9 +40,10 @@ interface ShoppingCartProps {
   onProceedToPayment: (cartItems: CartItem[], total: number) => void
   cartItems: CartItem[]
   onUpdateCart: (items: CartItem[]) => void
+  onSearchSitters: () => void
 }
 
-export default function ShoppingCart({ onBack, onProceedToPayment, cartItems, onUpdateCart }: ShoppingCartProps) {
+export default function ShoppingCart({ onBack, onProceedToPayment, cartItems, onUpdateCart, onSearchSitters }: ShoppingCartProps) {
   const [items, setItems] = useState<CartItem[]>(cartItems)
 
   const updateQuantity = (itemId: string, newQuantity: number) => {
@@ -109,8 +110,8 @@ export default function ShoppingCart({ onBack, onProceedToPayment, cartItems, on
               <p className="text-gray-600 mb-6">
                 Explora nuestros servicios y añade algunos al carrito para comenzar
               </p>
-              <Button onClick={onBack}>
-                Buscar Servicios
+              <Button onClick={onSearchSitters}>
+                Buscar Cuidadores
               </Button>
             </CardContent>
           </Card>

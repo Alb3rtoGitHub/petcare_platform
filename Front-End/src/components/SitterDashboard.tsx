@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback } from "./ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import { Switch } from "./ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
-import { Calendar, Clock, DollarSign, Star, TrendingUp, CheckCircle, XCircle, MessageSquare, Settings, User } from "lucide-react"
+import { Calendar, Clock, DollarSign, Star, TrendingUp, CheckCircle, MessageSquare, Settings, User } from "lucide-react"
 import ServiceManager from "./ServiceManager"
 import ProfileManager from "./ProfileManager"
 import { useState } from "react"
@@ -16,35 +16,8 @@ interface SitterDashboardProps {
 }
 
 export default function SitterDashboard({ userData, onViewBookings }: SitterDashboardProps) {
-  const [currentTab, setCurrentTab] = useState("requests")
+  const [currentTab, setCurrentTab] = useState("schedule")
   
-  const pendingRequests = [
-    {
-      id: 1,
-      ownerName: "Ana López",
-      petName: "Max",
-      petType: "Perro",
-      service: "Paseo",
-      date: "Mañana",
-      time: "14:00 - 15:00",
-      location: "Madrid Centro",
-      price: "15€",
-      notes: "Max es muy juguetón y le encanta correr en el parque"
-    },
-    {
-      id: 2,
-      ownerName: "Pedro Martín",
-      petName: "Luna",
-      petType: "Gato",
-      service: "Cuidado en casa",
-      date: "Este fin de semana",
-      time: "Sáb-Dom completo",
-      location: "Madrid Norte",
-      price: "80€",
-      notes: "Luna necesita medicación dos veces al día"
-    }
-  ]
-
   const upcomingJobs = [
     {
       id: 1,
@@ -158,10 +131,9 @@ export default function SitterDashboard({ userData, onViewBookings }: SitterDash
         <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-6">
           <div className="flex flex-col space-y-4">
             {/* Tabs normales para desktop y tablet */}
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
-              <TabsTrigger value="requests" className="text-xs sm:text-sm">Solicitudes</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
               <TabsTrigger value="schedule" className="text-xs sm:text-sm">Programación</TabsTrigger>
-              <TabsTrigger value="services" className="text-xs sm:text-sm lg:block hidden">Servicios</TabsTrigger>
+              <TabsTrigger value="services" className="text-xs sm:text-sm">Servicios</TabsTrigger>
               <TabsTrigger value="earnings" className="text-xs sm:text-sm lg:block hidden">Ganancias</TabsTrigger>
               <TabsTrigger value="profile" className="text-xs sm:text-sm lg:block hidden">Perfil</TabsTrigger>
             </TabsList>
@@ -173,67 +145,12 @@ export default function SitterDashboard({ userData, onViewBookings }: SitterDash
                   <SelectValue placeholder="Más opciones" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="services">Servicios</SelectItem>
                   <SelectItem value="earnings">Ganancias</SelectItem>
                   <SelectItem value="profile">Perfil</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
-
-          <TabsContent value="requests" className="space-y-6">
-            <h2 className="text-xl">Solicitudes Pendientes ({pendingRequests.length})</h2>
-
-            <div className="space-y-4">
-              {pendingRequests.map((request) => (
-                <Card key={request.id}>
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-lg mb-1">{request.service} para {request.petName}</h3>
-                        <p className="text-sm text-gray-600">Propietario: {request.ownerName}</p>
-                        <div className="flex items-center space-x-4 mt-2">
-                          <span className="flex items-center text-sm text-gray-500">
-                            <Calendar className="h-4 w-4 mr-1" />
-                            {request.date}
-                          </span>
-                          <span className="flex items-center text-sm text-gray-500">
-                            <Clock className="h-4 w-4 mr-1" />
-                            {request.time}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xl text-primary mb-1">{request.price}</p>
-                        <Badge variant="secondary">{request.petType}</Badge>
-                      </div>
-                    </div>
-
-                    <div className="bg-gray-50 p-3 rounded-lg mb-4">
-                      <p className="text-sm text-gray-700">
-                        <span className="text-gray-900">Notas:</span> {request.notes}
-                      </p>
-                    </div>
-
-                    <div className="flex space-x-3">
-                      <Button className="flex-1">
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Aceptar
-                      </Button>
-                      <Button variant="outline" className="flex-1">
-                        <XCircle className="h-4 w-4 mr-2" />
-                        Declinar
-                      </Button>
-                      <Button variant="outline">
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        Mensaje
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
 
           <TabsContent value="schedule" className="space-y-6">
             <h2 className="text-xl">Próximos Trabajos</h2>

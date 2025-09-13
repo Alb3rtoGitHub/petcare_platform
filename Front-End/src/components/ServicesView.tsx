@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { Clock, DollarSign, MapPin, Star, Search, Filter, ArrowLeft, Heart, User, CheckCircle } from "lucide-react"
 import BookingModal from "./BookingModal"
+import { getActiveServices, formatServicePrice, getServicePrice } from "../services/servicesPricing.js"
 
 interface Service {
   id: string
@@ -30,14 +31,14 @@ const serviceTypes = {
   'daycare': 'Guardería'
 }
 
-// Servicios mock ampliados
+// Servicios mock que usan precios del archivo compartido
 const mockServices: Service[] = [
   {
     id: '1',
     name: 'Paseo Relajado en el Parque',
     type: 'walk',
     description: 'Paseo tranquilo por el parque con tu mascota, ideal para perros de todas las edades',
-    price: 15,
+    price: getServicePrice("1"), // Paseo de perros
     duration: '30 min',
     location: 'Parques cercanos',
     availability: ['Mañana', 'Tarde'],
@@ -51,8 +52,8 @@ const mockServices: Service[] = [
     name: 'Cuidado Premium en Casa',
     type: 'home-care',
     description: 'Cuidado completo en tu hogar con atención personalizada y actualizaciones regulares',
-    price: 45,
-    duration: '4 horas',
+    price: getServicePrice("2"), // Cuidado en casa
+    duration: '2 horas',
     location: 'En casa del cliente',
     availability: ['Mañana', 'Tarde', 'Todo el día'],
     sitterName: 'Carlos López',
@@ -65,7 +66,7 @@ const mockServices: Service[] = [
     name: 'Guardería Divertida',
     type: 'daycare',
     description: 'Cuidado grupal con actividades, socialización y mucha diversión',
-    price: 25,
+    price: getServicePrice("2"), // Usar precio de cuidado en casa
     duration: '8 horas',
     location: 'Centro de cuidado',
     availability: ['Todo el día'],
@@ -79,8 +80,8 @@ const mockServices: Service[] = [
     name: 'Hospedaje Nocturno',
     type: 'boarding',
     description: 'Tu mascota se queda en un hogar amoroso durante tu ausencia',
-    price: 35,
-    duration: 'Por noche',
+    price: getServicePrice("3"), // Hospedaje nocturno
+    duration: 'Por día',
     location: 'Casa del cuidador',
     availability: ['Todo el día', 'Fines de semana'],
     sitterName: 'Luis Rodríguez',
@@ -93,7 +94,7 @@ const mockServices: Service[] = [
     name: 'Paseo Activo',
     type: 'walk',
     description: 'Paseo energético perfecto para perros jóvenes y activos',
-    price: 18,
+    price: getServicePrice("1"), // Paseo de perros
     duration: '45 min',
     location: 'Parques y rutas',
     availability: ['Mañana', 'Tarde'],
@@ -107,8 +108,8 @@ const mockServices: Service[] = [
     name: 'Cuidado Básico',
     type: 'home-care',
     description: 'Cuidado esencial en casa con alimentación y compañía',
-    price: 30,
-    duration: '2 horas',
+    price: getServicePrice("2"), // Cuidado en casa
+    duration: '1 hora',
     location: 'En casa del cliente',
     availability: ['Mañana', 'Tarde', 'Noche'],
     sitterName: 'Pedro Morales',

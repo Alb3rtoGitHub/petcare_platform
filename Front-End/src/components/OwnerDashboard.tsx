@@ -1,20 +1,88 @@
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import { ImageWithFallback } from "./figma/ImageWithFallback"
-import { Calendar, Clock, MapPin, Star, Plus, MessageSquare, Camera, Heart, ShoppingCart, CreditCard, User, Settings } from "lucide-react"
-import ServiceBooking from "./ServiceBooking"
+import { Calendar, Clock, MapPin, Star, Plus, MessageSquare, Camera, Heart, ShoppingCart, CreditCard, User, Settings, Search, CalendarPlus } from "lucide-react"
+import BookingModal from "./BookingModal"
 import ProfileManager from "./ProfileManager"
 
 interface OwnerDashboardProps {
   userData?: any
   onViewBookings?: () => void
   onViewCart?: () => void
+  onSearchSitters?: () => void
+  onProceedToPayment?: (items: any[], total: number) => void
+  onBookService?: (service: any) => void
 }
 
-export default function OwnerDashboard({ userData, onViewBookings, onViewCart }: OwnerDashboardProps) {
+export default function OwnerDashboard({ 
+  userData, 
+  onViewBookings, 
+  onViewCart, 
+  onSearchSitters, 
+  onProceedToPayment,
+  onBookService 
+}: OwnerDashboardProps) {
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false)
+
+  // Datos de un cuidador por defecto para el modal
+  const defaultSitter = {
+    id: "default-sitter",
+    name: "Cuidador Disponible",
+    image: "https://images.unsplash.com/photo-1559198837-e3d443d28c02?w=100&h=100&fit=crop&crop=face",
+    rating: 4.8,
+    location: "Madrid Centro",
+    priceRange: "15-25€/hora",
+    services: ["Paseos", "Cuidado a domicilio", "Hospedaje"]
+  }
+
+  const handleOpenBookingModal = () => {
+    setIsBookingModalOpen(true)
+  }
+
+  const handleCloseBookingModal = () => {
+    setIsBookingModalOpen(false)
+  }
+
+  const handleBookingComplete = (bookingData: any) => {
+    console.log('Reserva completada:', bookingData)
+    setIsBookingModalOpen(false)
+  }
+
+  const handleProceedToPaymentFromModal = (bookingData: any) => {
+    console.log('Proceder al pago con datos:', bookingData)
+    
+    // Crear cartItem compatible con el formato esperado
+    const cartItem = {
+      id: bookingData.id,
+      sitterId: bookingData.sitterId,
+      sitterName: bookingData.sitterName,
+      sitterImage: bookingData.sitterImage,
+      sitterRating: 4.8, // Valor por defecto
+      service: bookingData.service,
+      date: bookingData.date,
+      startTime: bookingData.time === "Todo el día" ? "00:00" : bookingData.time,
+      endTime: bookingData.time === "Todo el día" ? "23:59" : "18:00", // Valor por defecto
+      duration: bookingData.duration,
+      pricePerHour: Math.floor(bookingData.price / bookingData.duration),
+      location: "Madrid", // Valor por defecto
+      petType: bookingData.pets?.[0]?.type || "Mascota",
+      quantity: 1,
+      specialRequests: bookingData.specialRequests
+    }
+
+    // Cerrar modal y proceder al pago
+    setIsBookingModalOpen(false)
+    
+    // Llamar a la función de pago si está disponible
+    if (onProceedToPayment) {
+      onProceedToPayment([cartItem], bookingData.price)
+    }
+  }
+
   const upcomingBookings = [
     {
       id: 1,
@@ -30,7 +98,7 @@ export default function OwnerDashboard({ userData, onViewBookings, onViewCart }:
     {
       id: 2,
       sitterName: "Carlos Rodríguez",
-      sitterImage: "https://images.unsplash.com/photo-1649160388750-26fafdcaf4eb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXJzb24lMjB3YWxraW5nJTIwbXVsdGlwbGUlMjBkb2dzfGVufDF8fHx8MTc1NjI2MjQzOXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+      sitterImage: "https://images.unsplash.com/photo-1649160388750-26fafdcaf4eb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXQzb24lMjB3YWxraW5nJTIwbXVsdGlwbGUlMjBkb2dzfGVufDF8fHx8MTc1NjI2MjQzOXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
       service: "Cuidado en casa",
       date: "Mañana",
       time: "09:00 - 17:00",
@@ -87,15 +155,23 @@ export default function OwnerDashboard({ userData, onViewBookings, onViewCart }:
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onViewCart}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onSearchSitters}>
             <CardContent className="p-6 text-center">
-              <ShoppingCart className="h-8 w-8 text-primary mx-auto mb-2" />
-              <h3 className="text-lg mb-1">Ver Carrito</h3>
-              <p className="text-sm text-gray-600">Revisa tus servicios pendientes</p>
+              <Search className="h-8 w-8 text-primary mx-auto mb-2" />
+              <h3 className="text-lg mb-1">Buscar Cuidadores</h3>
+              <p className="text-sm text-gray-600">Encuentra el cuidador perfecto</p>
             </CardContent>
           </Card>
-          
+
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={handleOpenBookingModal}>
+            <CardContent className="p-6 text-center">
+              <CalendarPlus className="h-8 w-8 text-primary mx-auto mb-2" />
+              <h3 className="text-lg mb-1">Reservar Servicio</h3>
+              <p className="text-sm text-gray-600">Agenda un nuevo servicio</p>
+            </CardContent>
+          </Card>
+
           <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onViewBookings}>
             <CardContent className="p-6 text-center">
               <Calendar className="h-8 w-8 text-primary mx-auto mb-2" />
@@ -111,14 +187,20 @@ export default function OwnerDashboard({ userData, onViewBookings, onViewCart }:
               <p className="text-sm text-gray-600">Historial de pagos y facturas</p>
             </CardContent>
           </Card>
+
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onViewCart}>
+            <CardContent className="p-6 text-center">
+              <ShoppingCart className="h-8 w-8 text-primary mx-auto mb-2" />
+              <h3 className="text-lg mb-1">Ver Carrito</h3>
+              <p className="text-sm text-gray-600">Revisa tus servicios pendientes</p>
+            </CardContent>
+          </Card>
         </div>
 
         <Tabs defaultValue="bookings" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="bookings">Reservas</TabsTrigger>
-            <TabsTrigger value="services">Servicios</TabsTrigger>
             <TabsTrigger value="pets">Mis Mascotas</TabsTrigger>
-            <TabsTrigger value="activity">Actividad</TabsTrigger>
             <TabsTrigger value="favorites">Favoritos</TabsTrigger>
             <TabsTrigger value="profile">Mi Perfil</TabsTrigger>
           </TabsList>
@@ -130,7 +212,7 @@ export default function OwnerDashboard({ userData, onViewBookings, onViewCart }:
                 <Button variant="outline" onClick={onViewBookings}>
                   Ver Todas las Reservas
                 </Button>
-                <Button>
+                <Button onClick={handleOpenBookingModal}>
                   <Plus className="h-4 w-4 mr-2" />
                   Nueva Reserva
                 </Button>
@@ -186,10 +268,6 @@ export default function OwnerDashboard({ userData, onViewBookings, onViewCart }:
             </div>
           </TabsContent>
 
-          <TabsContent value="services" className="space-y-6">
-            <ServiceBooking />
-          </TabsContent>
-
           <TabsContent value="pets" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-xl">Mis Mascotas</h2>
@@ -236,38 +314,6 @@ export default function OwnerDashboard({ userData, onViewBookings, onViewCart }:
             </div>
           </TabsContent>
 
-          <TabsContent value="activity" className="space-y-6">
-            <h2 className="text-xl">Actividad Reciente</h2>
-            
-            <div className="space-y-4">
-              {recentActivities.map((activity) => (
-                <Card key={activity.id}>
-                  <CardContent className="p-6">
-                    <div className="flex items-start space-x-4">
-                      <div className="bg-blue-100 p-2 rounded-full">
-                        {activity.type === 'photo' ? (
-                          <Camera className="h-5 w-5 text-blue-600" />
-                        ) : (
-                          <MessageSquare className="h-5 w-5 text-blue-600" />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-sm text-gray-900">{activity.sitter}</h3>
-                          <span className="text-xs text-gray-500">{activity.time}</span>
-                        </div>
-                        <p className="text-sm text-gray-600 mt-1">{activity.message}</p>
-                        <Badge variant="outline" className="mt-2 text-xs">
-                          {activity.pet}
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
           <TabsContent value="favorites" className="space-y-6">
             <h2 className="text-xl">Cuidadores Favoritos</h2>
             
@@ -275,7 +321,7 @@ export default function OwnerDashboard({ userData, onViewBookings, onViewCart }:
               <Heart className="h-12 w-12 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg text-gray-900 mb-2">No tienes favoritos aún</h3>
               <p className="text-gray-600 mb-4">Agrega cuidadores a favoritos para encontrarlos fácilmente</p>
-              <Button>Buscar Cuidadores</Button>
+              <Button onClick={onSearchSitters}>Buscar Cuidadores</Button>
             </div>
           </TabsContent>
 
@@ -283,6 +329,17 @@ export default function OwnerDashboard({ userData, onViewBookings, onViewCart }:
             <ProfileManager userData={userData} userType="owner" />
           </TabsContent>
         </Tabs>
+
+        {/* Modal de Reserva */}
+        <BookingModal
+          isOpen={isBookingModalOpen}
+          onClose={handleCloseBookingModal}
+          service="Paseos"
+          userPets={userData?.pets || pets}
+          isAuthenticated={true}
+          onBookingComplete={handleBookingComplete}
+          onProceedToPayment={handleProceedToPaymentFromModal}
+        />
       </div>
     </div>
   )

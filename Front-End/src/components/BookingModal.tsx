@@ -9,7 +9,8 @@ import { Card, CardContent } from "./ui/card"
 import { Badge } from "./ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { ImageWithFallback } from "./figma/ImageWithFallback"
-import { Calendar, Clock, MapPin, Star, Heart, X, CheckCircle, Plus, Upload, Camera } from "lucide-react"
+import { Calendar, Clock, MapPin, Star, Heart, X, CheckCircle, Plus, Upload, Camera, ChevronDown, ChevronUp, Search } from "lucide-react"
+import { getActiveServices, getServiceById, formatPriceWithCurrency, CURRENCY_TYPES } from "../services/servicesPricing.js"
 
 interface Pet {
   id: string
@@ -35,7 +36,7 @@ interface Sitter {
 interface BookingModalProps {
   isOpen: boolean
   onClose: () => void
-  sitter: Sitter
+  sitter?: Sitter
   service: string
   userPets: Pet[]
   isAuthenticated: boolean
@@ -55,17 +56,71 @@ export default function BookingModal({
   onBookingComplete,
   onProceedToPayment 
 }: BookingModalProps) {
-  // Debug: Vamos a ver qué datos llegan al modal
-  console.log('=== BOOKING MODAL PROPS DEBUG ===')
-  console.log('userPets received:', userPets)
-  console.log('userPets length:', userPets?.length)
-  console.log('userPets detailed:', JSON.stringify(userPets, null, 2))
-  
+  // Lista de cuidadores disponibles (datos de ejemplo)
+  const availableSitters: Sitter[] = [
+    {
+      id: "sitter-1",
+      name: "María González",
+      image: "https://images.unsplash.com/photo-1559198837-e3d443d28c02?w=100&h=100&fit=crop&crop=face",
+      rating: 4.9,
+      location: "Madrid Centro",
+      priceRange: "15-25€/hora",
+      services: ["Paseos", "Cuidado a domicilio", "Hospedaje"]
+    },
+    {
+      id: "sitter-2", 
+      name: "Carlos Rodríguez",
+      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
+      rating: 4.8,
+      location: "Madrid Norte",
+      priceRange: "18-30€/hora",
+      services: ["Paseos", "Cuidado a domicilio"]
+    },
+    {
+      id: "sitter-3",
+      name: "Ana Martín",
+      image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face",
+      rating: 4.7,
+      location: "Madrid Sur",
+      priceRange: "12-22€/hora",
+      services: ["Paseos", "Hospedaje"]
+    },
+    {
+      id: "sitter-4",
+      name: "Javier López",
+      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
+      rating: 4.6,
+      location: "Madrid Este",
+      priceRange: "20-35€/hora",
+      services: ["Cuidado a domicilio", "Hospedaje"]
+    },
+    {
+      id: "sitter-5",
+      name: "Laura Fernández",
+      image: "https://images.unsplash.com/photo-1494790108755-2616b9e8c8fa?w=100&h=100&fit=crop&crop=face",
+      rating: 4.5,
+      location: "Madrid Oeste",
+      priceRange: "16-28€/hora",
+      services: ["Paseos", "Hospedaje"]
+    },
+    {
+      id: "sitter-6",
+      name: "Miguel Santos",
+      image: "https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=100&h=100&fit=crop&crop=face",
+      rating: 4.4,
+      location: "Madrid Centro",
+      priceRange: "14-26€/hora",
+      services: ["Cuidado a domicilio", "Hospedaje"]
+    }
+  ]
+
+  const [selectedSitter, setSelectedSitter] = useState<Sitter | null>(sitter || null)
+  const [showSitterSelection, setShowSitterSelection] = useState(!sitter)
+  const [searchQuery, setSearchQuery] = useState("")
   const [selectedPets, setSelectedPets] = useState<string[]>([])
   const [selectedDate, setSelectedDate] = useState("")
-  const [selectedTime, setSelectedTime] = useState("")
-  const [duration, setDuration] = useState("1")
-  const [days, setDays] = useState("1")
+  const [startTime, setStartTime] = useState("")
+  const [endTime, setEndTime] = useState("")
   const [serviceType, setServiceType] = useState("Paseos")
   const [specialRequests, setSpecialRequests] = useState("")
   const [emergencyContact, setEmergencyContact] = useState("")
@@ -87,7 +142,7 @@ export default function BookingModal({
 
   const timeSlots = [
     "08:00", "09:00", "10:00", "11:00", "12:00", 
-    "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"
+    "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"
   ]
 
   const serviceTypes = [
@@ -98,19 +153,92 @@ export default function BookingModal({
 
   const petTypes = ["Perro", "Gato", "Ave", "Reptil", "Roedor", "Pez", "Otro"]
 
-  // Verificar que sitter existe y tiene priceRange antes de usarlo
-  const basePrice = sitter?.priceRange ? parseInt(sitter.priceRange.split('-')[0]) : 20
-  const selectedServiceType = serviceTypes.find(st => st.value === serviceType)
-  const isHourlyService = selectedServiceType?.unit === "horas"
-  const timeUnit = isHourlyService ? parseInt(duration) : parseInt(days)
-  const totalPrice = basePrice * timeUnit * Math.max(1, selectedPets.length)
+  // Filtrar cuidadores basado en la búsqueda
+  const filteredSitters = availableSitters.filter(sitter => {
+    const query = searchQuery.toLowerCase()
+    return (
+      sitter.name.toLowerCase().includes(query) ||
+      sitter.location.toLowerCase().includes(query) ||
+      sitter.services.some(service => service.toLowerCase().includes(query))
+    )
+  })
 
-  // Si no hay sitter, no renderizar el modal
-  if (!sitter) {
-    return null
+  // Función para calcular la duración automáticamente
+  const calculateDuration = () => {
+    if (!selectedDate || !startTime || !endTime) return 0
+
+    const selectedServiceType = serviceTypes.find(st => st.value === serviceType)
+    const isHourlyService = selectedServiceType?.unit === "horas"
+
+    if (isHourlyService) {
+      // Para servicios por horas, calcular diferencia en horas
+      const [startHour, startMin] = startTime.split(':').map(Number)
+      const [endHour, endMin] = endTime.split(':').map(Number)
+      
+      const startMinutes = startHour * 60 + startMin
+      const endMinutes = endHour * 60 + endMin
+      
+      if (endMinutes <= startMinutes) {
+        return 0 // Hora de fin debe ser posterior a hora de inicio
+      }
+      
+      const durationMinutes = endMinutes - startMinutes
+      return Math.round(durationMinutes / 60 * 100) / 100 // Redondear a 2 decimales
+    } else {
+      // Para hospedaje, si hay fecha de inicio y fin diferentes, calcular días
+      // Por ahora asumimos 1 día si no hay fecha de fin específica
+      return 1
+    }
   }
 
+  // Función para obtener el precio del servicio desde el sistema centralizado
+  const getServicePrice = (serviceName: string) => {
+    const activeServices = getActiveServices()
+    
+    // Mapear nombres de servicios de la UI a nombres del sistema
+    const serviceMapping: { [key: string]: string } = {
+      "Paseos": "Paseo de perros",
+      "Cuidado a domicilio": "Cuidado en casa", 
+      "Hospedaje": "Hospedaje nocturno"
+    }
+    
+    const mappedServiceName = serviceMapping[serviceName] || serviceName
+    const service = activeServices.find(s => s.name === mappedServiceName)
+    return service ? service.price : 20 // Precio por defecto si no se encuentra
+  }
+
+  // Calcular duración automáticamente
+  const calculatedDuration = calculateDuration()
+
+  // Obtener precio del servicio desde el sistema centralizado
+  const basePrice = getServicePrice(serviceType)
+  const selectedServiceType = serviceTypes.find(st => st.value === serviceType)
+  const isHourlyService = selectedServiceType?.unit === "horas"
+  const timeUnit = calculatedDuration || 1 // Usar duración calculada o 1 como mínimo
+  const totalPrice = basePrice * timeUnit * Math.max(1, selectedPets.length)
+
   const allPets = [...userPets, ...customPets]
+
+  // Validar que la hora de fin sea posterior a la de inicio
+  const isValidTimeRange = () => {
+    if (!startTime || !endTime) return true
+    
+    const [startHour, startMin] = startTime.split(':').map(Number)
+    const [endHour, endMin] = endTime.split(':').map(Number)
+    
+    const startMinutes = startHour * 60 + startMin
+    const endMinutes = endHour * 60 + endMin
+    
+    return endMinutes > startMinutes
+  }
+
+  const handleSitterSelect = (sitterId: string) => {
+    const sitter = availableSitters.find(s => s.id === sitterId)
+    if (sitter) {
+      setSelectedSitter(sitter)
+      setShowSitterSelection(false)
+    }
+  }
 
   const handlePetToggle = (petId: string) => {
     setSelectedPets(prev => {
@@ -165,7 +293,12 @@ export default function BookingModal({
       return
     }
 
-    if (!selectedPets.length || !selectedDate || (isHourlyService && !selectedTime)) {
+    if (!selectedPets.length || !selectedDate || (isHourlyService && (!startTime || !endTime))) {
+      return
+    }
+
+    // Validar que el rango de horas sea válido para servicios por horas
+    if (isHourlyService && !isValidTimeRange()) {
       return
     }
 
@@ -177,13 +310,15 @@ export default function BookingModal({
 
     const bookingData = {
       id: `booking-${Date.now()}`,
-      sitterId: sitter.id,
-      sitterName: sitter.name,
-      sitterImage: sitter.image,
+      sitterId: selectedSitter?.id || "",
+      sitterName: selectedSitter?.name || "",
+      sitterImage: selectedSitter?.image || "",
       service: serviceType,
       pets: selectedPetObjects,
       date: selectedDate,
-      time: isHourlyService ? selectedTime : "Todo el día",
+      startTime: isHourlyService ? startTime : "Todo el día",
+      endTime: isHourlyService ? endTime : "Todo el día",
+      time: isHourlyService ? `${startTime} - ${endTime}` : "Todo el día",
       duration: timeUnit,
       serviceUnit: selectedServiceType?.unit,
       price: totalPrice,
@@ -209,9 +344,8 @@ export default function BookingModal({
     setStep(1)
     setSelectedPets([])
     setSelectedDate("")
-    setSelectedTime("")
-    setDuration("1")
-    setDays("1")
+    setStartTime("")
+    setEndTime("")
     setServiceType("Paseos")
     setSpecialRequests("")
     setEmergencyContact("")
@@ -264,29 +398,125 @@ export default function BookingModal({
           </DialogHeader>
 
           <div className="space-y-6">
-            {/* Información del cuidador */}
+            {/* Selección/Información del cuidador */}
             <Card>
               <CardContent className="p-4">
-                <div className="flex items-center space-x-4">
-                  <Avatar className="h-16 w-16">
-                    <AvatarImage src={sitter.image} alt={sitter.name} />
-                    <AvatarFallback>{sitter.name.slice(0, 2)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <h3 className="text-lg">{sitter.name}</h3>
-                    <div className="flex items-center text-sm text-gray-600 mb-1">
-                      <Star className="h-4 w-4 text-yellow-400 mr-1" />
-                      {sitter.rating}
+                {!selectedSitter || showSitterSelection ? (
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <Label className="text-base">Selecciona tu cuidador</Label>
+                      {selectedSitter && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setShowSitterSelection(false)}
+                        >
+                          <ChevronUp className="h-4 w-4 mr-1" />
+                          Confirmar Selección
+                        </Button>
+                      )}
                     </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      {sitter.location}
+                    
+                    {/* Campo de búsqueda */}
+                    <div className="relative mb-4">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        placeholder="Buscar por nombre, ubicación o servicio..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                    
+                    <div className="grid gap-3 max-h-80 overflow-y-auto">
+                      {filteredSitters.length > 0 ? (
+                        filteredSitters.map((sitter) => (
+                          <Card 
+                            key={sitter.id}
+                            className={`cursor-pointer transition-all ${
+                              selectedSitter?.id === sitter.id 
+                                ? 'ring-2 ring-primary bg-primary/5' 
+                                : 'hover:shadow-md'
+                            }`}
+                            onClick={() => handleSitterSelect(sitter.id)}
+                          >
+                            <CardContent className="p-3">
+                              <div className="flex items-center space-x-3">
+                                <Avatar className="h-10 w-10">
+                                  <AvatarImage src={sitter.image} alt={sitter.name} />
+                                  <AvatarFallback>{sitter.name.slice(0, 2)}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1">
+                                  <h4 className="text-sm font-medium">{sitter.name}</h4>
+                                  <div className="flex items-center text-xs text-gray-600 mb-1">
+                                    <Star className="h-3 w-3 text-yellow-400 mr-1" />
+                                    {sitter.rating}
+                                    <span className="mx-2">•</span>
+                                    <MapPin className="h-3 w-3 mr-1" />
+                                    {sitter.location}
+                                  </div>
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                    {sitter.services.map((service, index) => (
+                                      <Badge key={service} variant="secondary" className="text-xs">
+                                        {service}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="flex-shrink-0">
+                                  {selectedSitter?.id === sitter.id && (
+                                    <CheckCircle className="h-5 w-5 text-primary" />
+                                  )}
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p className="text-sm">No se encontraron cuidadores con "{searchQuery}"</p>
+                          <p className="text-xs mt-1">Intenta con otros términos de búsqueda</p>
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg text-primary mt-1">{sitter.priceRange}</p>
+                ) : (
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <Label className="text-base">Cuidador seleccionado</Label>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setShowSitterSelection(true)}
+                      >
+                        <ChevronDown className="h-4 w-4 mr-1" />
+                        Cambiar Cuidador
+                      </Button>
+                    </div>
+                    
+                    <div className="flex items-center space-x-4">
+                      <Avatar className="h-16 w-16">
+                        <AvatarImage src={selectedSitter.image} alt={selectedSitter.name} />
+                        <AvatarFallback>{selectedSitter.name.slice(0, 2)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <h3 className="text-lg">{selectedSitter.name}</h3>
+                        <div className="flex items-center text-sm text-gray-600 mb-1">
+                          <Star className="h-4 w-4 text-yellow-400 mr-1" />
+                          {selectedSitter.rating}
+                        </div>
+                        <div className="flex items-center text-sm text-gray-600">
+                          <MapPin className="h-4 w-4 mr-1" />
+                          {selectedSitter.location}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg text-primary">{selectedSitter.priceRange}</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 
@@ -363,64 +593,87 @@ export default function BookingModal({
               </div>
             </div>
 
-            {/* Fecha y duración */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="date">Fecha</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                />
+            {/* Fecha y horarios */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="date">Fecha del servicio</Label>
+                  <Input
+                    id="date"
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                
+                {isHourlyService && (
+                  <div>
+                    <Label className="text-sm text-gray-600">
+                      Duración: {calculatedDuration > 0 ? `${calculatedDuration} horas` : 'Selecciona horarios'}
+                    </Label>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {!isValidTimeRange() && startTime && endTime && (
+                        <span className="text-red-500">La hora de fin debe ser posterior a la de inicio</span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
               
               {isHourlyService && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="startTime">Hora de inicio</Label>
+                    <Select value={startTime} onValueChange={setStartTime}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Inicio" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeSlots.map((time) => (
+                          <SelectItem key={time} value={time}>
+                            {time}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="endTime">Hora de fin</Label>
+                    <Select value={endTime} onValueChange={setEndTime}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Fin" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeSlots.map((time) => (
+                          <SelectItem key={time} value={time}>
+                            {time}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+              
+              {!isHourlyService && (
                 <div>
-                  <Label htmlFor="time">Hora</Label>
-                  <Select value={selectedTime} onValueChange={setSelectedTime}>
+                  <Label htmlFor="days">Duración del hospedaje</Label>
+                  <Select value="1" onValueChange={() => {}}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {timeSlots.map((time) => (
-                        <SelectItem key={time} value={time}>
-                          {time}
+                      {[1, 2, 3, 4, 5, 6, 7, 14, 21, 30].map((day) => (
+                        <SelectItem key={day} value={day.toString()}>
+                          {day} {day === 1 ? 'día/noche' : 'días/noches'}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
               )}
-
-              <div>
-                <Label htmlFor="duration">
-                  {isHourlyService ? "Duración (horas)" : "Duración (días/noches)"}
-                </Label>
-                <Select 
-                  value={isHourlyService ? duration : days} 
-                  onValueChange={isHourlyService ? setDuration : setDays}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {isHourlyService 
-                      ? [1, 2, 3, 4, 6, 8].map((hours) => (
-                          <SelectItem key={hours} value={hours.toString()}>
-                            {hours} {hours === 1 ? 'hora' : 'horas'}
-                          </SelectItem>
-                        ))
-                      : [1, 2, 3, 4, 5, 6, 7, 14, 21, 30].map((day) => (
-                          <SelectItem key={day} value={day.toString()}>
-                            {day} {day === 1 ? 'día/noche' : 'días/noches'}
-                          </SelectItem>
-                        ))
-                    }
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
 
             {/* Contacto de emergencia */}
@@ -477,7 +730,7 @@ export default function BookingModal({
               <Button 
                 onClick={handleSubmit}
                 className="flex-1"
-                disabled={!selectedPets.length || !selectedDate || (isHourlyService && !selectedTime) || isProcessing}
+                disabled={!selectedPets.length || !selectedDate || (isHourlyService && (!startTime || !endTime)) || isProcessing}
               >
                 {isProcessing ? "Procesando..." : "Continuar a Pago"}
               </Button>
