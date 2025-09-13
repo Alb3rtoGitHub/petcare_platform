@@ -12,45 +12,46 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class PetServiceImpl implements PetService{
-    private final PetRepository petRepository;
+public class PetServiceImpl implements PetService {
+  private final PetRepository petRepository;
 
-    @Override
-    public PetResponseDTO addpet(PetAddRequestDTO request) {
-        return null;
+  @Override
+  public PetResponseDTO addpet(PetAddRequestDTO request) {
+    return null;
+  }
+
+  @Override
+  public PetResponseDTO updatePet(PetUpdateRequestDTO request) {
+    return null;
+  }
+
+  @Override
+  public void deletePet(PetDeleteRequestDTO request) {
+
+  }
+
+  @Override
+  public boolean belongsToOwner(Long petId, Long OwnerId) {
+    return petRepository.findById(petId)
+        .map(Pet::getOwner)
+        .map(owner -> owner.getId().equals(OwnerId))
+        .orElse(false);
+  }
+
+  @Override
+  public void validatePetExists(Long petId) {
+    if (petId == null || !petRepository.existsById(petId)) {
+      throw new ValidationException("La mascota no existe");
     }
+  }
 
-    @Override
-    public PetResponseDTO updatePet(PetUpdateRequestDTO request) {
-        return null;
+  @Override
+  public Pet validatePetBelongsToOwner(Long petId, Long ownerId) {
+    Pet pet = petRepository.findById(petId)
+        .orElseThrow(() -> new ValidationException("La mascota no existe"));
+    if (pet.getOwner() == null || !pet.getOwner().getId().equals(ownerId)) {
+      throw new ValidationException("La mascota no pertenece al propietario indicado");
     }
-
-    @Override
-    public void deletePet(PetDeleteRequestDTO request) {
-
-    }
-
-    @Override
-    public boolean belongsToOwner(Long petId, Long OwnerId) {
-        return petRepository.findById(petId)
-                .map(Pet::getOwner)
-                .map(owner -> owner.getId().equals(OwnerId))
-                .orElse(false);
-    }
-
-    @Override
-    public void validatePetExists(Long petId) {
-        if (petId == null || !petRepository.existsById(petId)) {
-            throw new ValidationException("La mascota no existe");
-        }
-    }
-
-    @Override
-    public void validatePetBelongsToOwner(Long petId, Long ownerId) {
-        Pet pet = petRepository.findById(petId)
-                .orElseThrow(() -> new ValidationException("La mascota no existe"));
-        if (pet.getOwner() == null || !pet.getOwner().getId().equals(ownerId)) {
-            throw new ValidationException("La mascota no pertenece al propietario indicado");
-        }
-    }
+    return pet;
+  }
 }

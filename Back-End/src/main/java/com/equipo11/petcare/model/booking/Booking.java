@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import com.equipo11.petcare.model.serviceentity.ServiceEntity;
 import jakarta.persistence.*;
-import org.hibernate.annotations.UuidGenerator;
 
 import com.equipo11.petcare.model.Pet;
 import com.equipo11.petcare.model.user.Owner;

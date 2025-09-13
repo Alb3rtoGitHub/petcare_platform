@@ -1,6 +1,13 @@
 package com.equipo11.petcare.validator;
 
+import java.time.LocalDateTime;
+
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Component;
+
 import com.equipo11.petcare.dto.BookingCreateRequest;
+import com.equipo11.petcare.enums.ApiError;
+import com.equipo11.petcare.exception.PetcareException;
 import com.equipo11.petcare.model.booking.Booking;
 import com.equipo11.petcare.model.booking.BookingStatus;
 import com.equipo11.petcare.model.user.User;
@@ -8,13 +15,9 @@ import com.equipo11.petcare.model.user.enums.ERole;
 import com.equipo11.petcare.service.PetService;
 import com.equipo11.petcare.service.ServiceEntityService;
 import com.equipo11.petcare.service.SitterService;
+
 import jakarta.validation.ValidationException;
-
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.stereotype.Component;
-
-import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
@@ -30,7 +33,9 @@ public class BookingValidator {
    * @throws ValidationException si alguna de las validaciones falla
    */
   public void validateBookingRequest(BookingCreateRequest request, User currentUser) {
-
+    if (currentUser == null) {
+      throw new AccessDeniedException("El usuario no está autenticado");
+    }
     validateBasicRequirements(request);
     validateBookingDates(request.startDateTime(), request.endDateTime());
     validateOwnershipAndPermissions(request, currentUser);
@@ -44,7 +49,8 @@ public class BookingValidator {
     if (request == null) {
       throw new ValidationException("La solicitud no puede ser nula");
     }
-    if (request.petId() == null || request.ownerId() == null || request.sitterId() == null) {
+
+    if (request.petId() == null || request.sitterId() == null) {
       throw new ValidationException("Los IDs de mascota, propietario y cuidador son obligatorios");
     }
   }
@@ -79,12 +85,11 @@ public class BookingValidator {
 
     // Para propietarios
     if (isOwner(currentUser)) {
-      petService.validatePetBelongsToOwner(request.petId(), request.ownerId());
-      validateOwnerIsCurrentUser(request.ownerId(), currentUser.getId());
+      petService.validatePetBelongsToOwner(request.petId(), currentUser.getId());
       return;
     }
 
-    throw new AccessDeniedException("No tienes permisos para crear reservas");
+    throw new PetcareException(ApiError.FORBIDDEN_BOOKING_CREATION);
 
   }
 
@@ -92,12 +97,6 @@ public class BookingValidator {
   private void validateSitterAndServices(BookingCreateRequest request) {
     sitterService.validateSitter(request.sitterId());
     serviceService.validateServices(request.serviceIds());
-  }
-
-  private void validateOwnerIsCurrentUser(Long ownerId, Long currentUserId) {
-    if (!ownerId.equals(currentUserId)) {
-      throw new AccessDeniedException("El propietario no coincide con el usuario autenticado");
-    }
   }
 
   // Validaciones de cambio de estado
@@ -182,6 +181,9 @@ public class BookingValidator {
   }
 
   private boolean hasRole(User user, ERole role) {
+    if (user == null) {
+      throw new AccessDeniedException("El Usuario no esta autenticado");
+    }
     return user.getRoles().stream()
         .anyMatch(r -> r.getName() == role);
   }

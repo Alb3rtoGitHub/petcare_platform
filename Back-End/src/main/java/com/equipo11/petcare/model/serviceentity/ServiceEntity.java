@@ -1,10 +1,12 @@
 package com.equipo11.petcare.model.serviceentity;
 
 import java.math.BigDecimal;
-import java.util.UUID;
+import java.util.HashSet;
+import java.util.Set;
 
+import com.equipo11.petcare.model.ServiceName;
+import com.equipo11.petcare.model.user.Sitter;
 import jakarta.persistence.*;
-import org.hibernate.annotations.UuidGenerator;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,9 +23,19 @@ public class ServiceEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-  private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, unique = true)
+    private ServiceName serviceName;
+
   private String description;
+
   private BigDecimal basePrice;
+
   private Long duration;
+
   private Boolean isActive;
+
+    @ManyToMany(mappedBy = "serviceEntitySet")
+    private Set<Sitter> sitters = new HashSet<>();
 }

@@ -1,5 +1,7 @@
 package com.equipo11.petcare.model.booking;
 
+import java.util.Locale;
+
 public enum BookingStatus {
   PENDING("pendiente"),
   CONFIRMED("confirmado"),
@@ -24,11 +26,12 @@ public enum BookingStatus {
     if (value == null) {
       throw new IllegalArgumentException("El estado no puede ser nul");
     }
-    String upperCase = value.trim().toUpperCase();
+    String lowerCase = value.trim().toLowerCase();
     for (BookingStatus status : BookingStatus.values()) {
-      if (status.name().equalsIgnoreCase(upperCase) || status.label.equalsIgnoreCase(value.trim())) {
-        return status;
-      }
+        if (status.name().equalsIgnoreCase(lowerCase) ||
+                status.label.toLowerCase().equals(lowerCase)) {
+            return status;
+        }
     }
     throw new IllegalArgumentException("El estado no valido " + value);
   }

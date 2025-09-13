@@ -37,10 +37,9 @@ class BookingControllerTest {
 
     // Configuración de la solicitud de reserva
     solicitudCreacion = new BookingCreateRequest(
-        1L, // idCliente
-        2L, // idCuidador
-        3L, // idDireccion
-        List.of(10L), // idsMascotas
+        2L, // idSitter
+        3L,
+        List.of(10L),
         fechaInicio,
         fechaFin,
         "Tratar con cuidado");

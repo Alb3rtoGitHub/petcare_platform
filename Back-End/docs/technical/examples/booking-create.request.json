@@ -1,0 +1,9 @@
+{
+  "ownerId": 2,
+  "sitterId": 1,
+  "petId": 1,
+  "serviceIds": [3],
+  "startDateTime": "2025-09-11T10:00:00",
+  "endDateTime": "2025-09-12T12:00:00",
+  "specialInstructions": "No darle pollo"
+}

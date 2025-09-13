@@ -2,6 +2,8 @@ package com.equipo11.petcare.service;
 
 import java.util.List;
 
+import com.equipo11.petcare.model.serviceentity.ServiceEntity;
+
 public interface ServiceEntityService {
-  void validateServices(List<Long> serviceIds);
+  List<ServiceEntity> validateServices(List<Long> serviceIds);
 }
