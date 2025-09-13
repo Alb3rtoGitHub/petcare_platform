@@ -2,11 +2,14 @@ package com.equipo11.petcare.service.impl;
 
 import com.equipo11.petcare.dto.AvailabilityRequestDTO;
 import com.equipo11.petcare.dto.AvailabilityResponseDTO;
+import com.equipo11.petcare.dto.ServiceEntityResponseDTO;
 import com.equipo11.petcare.exception.BusinessException;
 import com.equipo11.petcare.model.availability.Availability;
-import com.equipo11.petcare.model.availability.enums.ServiceName;
+import com.equipo11.petcare.model.serviceentity.ServiceEntity;
+import com.equipo11.petcare.model.serviceentity.enums.ServiceName;
 import com.equipo11.petcare.model.user.Sitter;
 import com.equipo11.petcare.repository.AvailabilityRepository;
+import com.equipo11.petcare.repository.ServiceEntityRepository;
 import com.equipo11.petcare.service.AvailabilityService;
 import com.equipo11.petcare.service.SitterService;
 import jakarta.transaction.Transactional;
@@ -23,20 +26,25 @@ public class AvailabilityServiceImpl implements AvailabilityService {
 
     private final AvailabilityRepository availabilityRepository;
     private final SitterService sitterService;
+    private final ServiceEntityRepository serviceEntityRepository;
 
-    public AvailabilityServiceImpl(AvailabilityRepository availabilityRepository, SitterService sitterService) {
+    public AvailabilityServiceImpl(AvailabilityRepository availabilityRepository, SitterService sitterService, ServiceEntityRepository serviceEntityRepository) {
         this.availabilityRepository = availabilityRepository;
         this.sitterService = sitterService;
+        this.serviceEntityRepository = serviceEntityRepository;
     }
 
     @Override
     public AvailabilityResponseDTO createAvailability(Long sitterId, AvailabilityRequestDTO availabilityRequestDTO) {
-        System.out.println("Id" + sitterId);
         Sitter sitter = sitterService.findSitterById(sitterId)
                 .orElseThrow(() -> new BusinessException("Sitter not found"));
 
         dateValidation(availabilityRequestDTO.startTime(), availabilityRequestDTO.endTime());
         durationValidation(availabilityRequestDTO.serviceName(), availabilityRequestDTO.startTime(), availabilityRequestDTO.endTime());
+
+        // Buscar el ServiceEntity por su nombre
+        ServiceEntity serviceEntity = serviceEntityRepository.findByServiceName(availabilityRequestDTO.serviceName())
+                .orElseThrow(() -> new BusinessException("Service not found: " + availabilityRequestDTO.serviceName()));
 
         // Verificar solapamiento de servicios
         List<Availability> overlappingAvailabilities = availabilityRepository.findOverlappingAvailabilities(
@@ -51,7 +59,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
 
         Availability availability = Availability.builder()
                 .sitter(sitter)
-                .serviceName(availabilityRequestDTO.serviceName())
+                .serviceEntity(serviceEntity)
                 .startTime(availabilityRequestDTO.startTime())
                 .endTime(availabilityRequestDTO.endTime())
                 .active(true)
@@ -124,13 +132,23 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     }
 
     private AvailabilityResponseDTO toResponse(Availability availability) {
+        ServiceEntity serviceEntity = availability.getServiceEntity();
+        ServiceEntityResponseDTO serviceEntityResponseDTO = serviceEntity != null ? new ServiceEntityResponseDTO(
+                serviceEntity.getId(),
+                serviceEntity.getServiceName(),
+                serviceEntity.getDescription(),
+                serviceEntity.getPrice(),
+                serviceEntity.getDuration(),
+                Boolean.TRUE.equals(serviceEntity.getActive())
+        ) : null;
+
         return new AvailabilityResponseDTO(
                 availability.getId(),
-                availability.getSitter().getId(),
-                availability.getServiceName(),
+                availability.getSitter() != null ? availability.getSitter().getId() : null,
+                serviceEntityResponseDTO,
                 availability.getStartTime(),
                 availability.getEndTime(),
-                availability.getActive()
+                Boolean.TRUE.equals(availability.getActive())
         );
     }
 }

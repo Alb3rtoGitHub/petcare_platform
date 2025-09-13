@@ -1,6 +1,6 @@
 package com.equipo11.petcare.dto;
 
-import com.equipo11.petcare.model.availability.enums.ServiceName;
+import com.equipo11.petcare.model.serviceentity.enums.ServiceName;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 

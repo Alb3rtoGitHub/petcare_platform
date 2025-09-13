@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 public record AvailabilityResponseDTO(
         Long id,
         Long sitterId,
-        ServiceEntity serviceEntity,
+        ServiceEntityResponseDTO serviceEntityResponseDTO,
         LocalDateTime startTime,
         LocalDateTime endTime,
         boolean active
