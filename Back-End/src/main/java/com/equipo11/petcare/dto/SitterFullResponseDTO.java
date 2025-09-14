@@ -14,7 +14,6 @@ public record SitterFullResponseDTO(
         String email,
         String firstName,
         String lastName,
-        LocalDate birthDate,
         AddressDTO address,
         String phoneNumber,
         String documentType,

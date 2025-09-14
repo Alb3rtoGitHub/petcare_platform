@@ -34,7 +34,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public UserResponseDTO updateUser(Long id, UpdateUserRequestDTO request) {
         User user = securityService.verifyUserOrToken(id);
         user.setPhoneNumber(request.phoneNumber());

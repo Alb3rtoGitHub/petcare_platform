@@ -6,17 +6,19 @@ import com.equipo11.petcare.enums.ApiError;
 import com.equipo11.petcare.exception.PetcareException;
 import com.equipo11.petcare.service.StorageService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 
+@Service
 public class StorageServiceImpl implements StorageService {
 
     private final Cloudinary cloudinary;
 
-    public StorageServiceImpl(@Value("${cluidinary.cloud-name}") String cloudName,
+    public StorageServiceImpl(@Value("${cloudinary.cloud-name}") String cloudName,
                               @Value("${cloudinary.api-key}") String apiKey,
                               @Value("${cloudinary.api-secret}") String apiSecret) {
         this.cloudinary = new Cloudinary(ObjectUtils.asMap(
