@@ -255,7 +255,6 @@ public class SitterServiceImpl implements SitterService {
         sitter.setEmail(existingUser.getEmail());
         sitter.setPassword(existingUser.getPassword());
         sitter.setPhoneNumber(existingUser.getPhoneNumber());
-        sitter.setBirthDate(existingUser.getBirthDate());
         sitter.setAddress(existingUser.getAddress());
         sitter.setEnabled(false);
         
@@ -356,7 +355,6 @@ public class SitterServiceImpl implements SitterService {
                 .email(sitter.getEmail())
                 .firstName(sitter.getFirstName())
                 .lastName(sitter.getLastName())
-                .birthDate(sitter.getBirthDate())
                 .address(addressDTO)
                 .phoneNumber(sitter.getPhoneNumber())
                 .documentType(sitter.getDocumentType())

@@ -2,9 +2,8 @@ package com.equipo11.petcare.controller;
 
 import com.equipo11.petcare.dto.UpdateUserRequestDTO;
 import com.equipo11.petcare.dto.UserResponseDTO;
-import com.equipo11.petcare.service.StorageService;
+import com.equipo11.petcare.service.UserProfileService;
 import com.equipo11.petcare.service.UserService;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -17,13 +16,13 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController {
 
     private final UserService userService;
-    private final StorageService storageService;
+    private final UserProfileService userProfileService;
 
 
     public UserController(UserService userService,
-                          StorageService storageService) {
+                          UserProfileService userProfileService) {
         this.userService = userService;
-        this.storageService = storageService;
+        this.userProfileService = userProfileService;
     }
 
     @GetMapping("/{id}")
@@ -40,18 +39,7 @@ public class UserController {
                                                       @Valid @RequestPart UpdateUserRequestDTO request,
                                                       @RequestPart(value = "file", required = false) MultipartFile file
     ){
-        var playload = request;
-        if (file != null && !file.isEmpty()) {
-            String url = storageService.uploadImage(file, "users");
-            playload = new UpdateUserRequestDTO(
-                    request.phoneNumber(),
-                    request.firstName(),
-                    request.lastName(),
-                    request.address(),
-                    url);
-
-        }
-        UserResponseDTO response = userService.updateUser(id, playload);
+        UserResponseDTO response = userProfileService.updateUser(id, request, file);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
