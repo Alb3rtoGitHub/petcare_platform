@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface JpaSitterRepository  extends JpaRepository<Sitter, Long> {
+public interface SitterRepository extends JpaRepository<Sitter, Long> {
     Page<Sitter> findByAddressCityIdAndEnabledTrue(Long cityId, Pageable pageable);
     Page<Sitter> findAllByEnabledTrue(Pageable pageable);
 

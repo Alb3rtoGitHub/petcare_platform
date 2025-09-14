@@ -3,12 +3,11 @@ package com.equipo11.petcare.model.booking;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 import com.equipo11.petcare.model.serviceentity.ServiceEntity;
 import jakarta.persistence.*;
 
-import com.equipo11.petcare.model.Pet;
+import com.equipo11.petcare.model.pet.Pet;
 import com.equipo11.petcare.model.user.Owner;
 import com.equipo11.petcare.model.user.Sitter;
 

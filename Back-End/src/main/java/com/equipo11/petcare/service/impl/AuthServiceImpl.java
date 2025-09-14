@@ -1,4 +1,4 @@
-package com.equipo11.petcare.service;
+package com.equipo11.petcare.service.impl;
 
 import com.equipo11.petcare.dto.AuthResponseDTO;
 import com.equipo11.petcare.dto.AuthRequestDTO;
@@ -12,6 +12,8 @@ import com.equipo11.petcare.model.user.enums.ERole;
 import com.equipo11.petcare.repository.RoleRepository;
 import com.equipo11.petcare.repository.UserRepository;
 import com.equipo11.petcare.security.jwt.TokenGenerator;
+import com.equipo11.petcare.service.AddressService;
+import com.equipo11.petcare.service.AuthService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,7 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Service
-public class AuthServiceImpl implements AuthService{
+public class AuthServiceImpl implements AuthService {
 
     private final AuthenticationManager authManager;
     private final UserRepository userRepo;

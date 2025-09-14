@@ -1,7 +1,7 @@
 package com.equipo11.petcare.repository;
 
-import com.equipo11.petcare.model.ServiceName;
-import com.equipo11.petcare.model.Availability;
+import com.equipo11.petcare.model.serviceentity.enums.ServiceName;
+import com.equipo11.petcare.model.availability.Availability;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,7 +11,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface AvailabilityRespository extends JpaRepository<Availability, Long>{
+public interface AvailabilityRepository extends JpaRepository<Availability, Long>{
+
         List<Availability> findBySitterId(Long sitterId);
     @Query("SELECT a FROM Availability a WHERE a.sitter.id = :sitterId " +
             "AND a.active = true " +

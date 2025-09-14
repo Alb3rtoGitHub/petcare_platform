@@ -1,11 +1,12 @@
-package com.equipo11.petcare.service;
+package com.equipo11.petcare.service.impl;
 
 import com.equipo11.petcare.dto.PetAddRequestDTO;
 import com.equipo11.petcare.dto.PetDeleteRequestDTO;
 import com.equipo11.petcare.dto.PetResponseDTO;
 import com.equipo11.petcare.dto.PetUpdateRequestDTO;
-import com.equipo11.petcare.model.Pet;
+import com.equipo11.petcare.model.pet.Pet;
 import com.equipo11.petcare.repository.PetRepository;
+import com.equipo11.petcare.service.PetService;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

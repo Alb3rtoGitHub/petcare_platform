@@ -1,5 +1,6 @@
-package com.equipo11.petcare.model;
+package com.equipo11.petcare.model.availability;
 
+import com.equipo11.petcare.model.serviceentity.enums.ServiceName;
 import com.equipo11.petcare.model.user.Sitter;
 import jakarta.persistence.*;
 import lombok.*;

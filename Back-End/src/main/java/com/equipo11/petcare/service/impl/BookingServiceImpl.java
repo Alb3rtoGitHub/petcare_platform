@@ -22,10 +22,9 @@ import com.equipo11.petcare.model.booking.BookingStatus;
 import com.equipo11.petcare.model.user.Owner;
 import com.equipo11.petcare.model.user.Sitter;
 import com.equipo11.petcare.model.user.User;
-import com.equipo11.petcare.repository.JpaBookingRepository;
-import com.equipo11.petcare.repository.AvailabilityRespository;
+import com.equipo11.petcare.repository.BookingRepository;
+import com.equipo11.petcare.repository.AvailabilityRepository;
 import com.equipo11.petcare.service.BookingService;
-import com.equipo11.petcare.service.PetServiceImpl;
 import com.equipo11.petcare.service.SitterService;
 import com.equipo11.petcare.validator.BookingValidator;
 
@@ -35,14 +34,14 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
-  private final JpaBookingRepository bookingRepository;
+  private final BookingRepository bookingRepository;
   private final SitterService sitterService;
   private final PetServiceImpl petService;
   private final ConversionService conversionService;
   private final BookingCreateRequestMapper bookingCreateRequestMapper;
   private final BookingValidator bookingValidator;
   private final BookingResponseMapper bookingResponseMapper;
-  private final AvailabilityRespository sitterAvailabilityRespository;
+  private final AvailabilityRepository sitterAvailabilityRespository;
 
   @Override
   public void checkAvailability(BookingCreateRequest request) {

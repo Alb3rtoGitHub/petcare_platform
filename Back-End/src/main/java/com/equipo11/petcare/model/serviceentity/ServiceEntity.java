@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.equipo11.petcare.model.ServiceName;
+import com.equipo11.petcare.model.serviceentity.enums.ServiceName;
 import com.equipo11.petcare.model.user.Sitter;
 import jakarta.persistence.*;
 

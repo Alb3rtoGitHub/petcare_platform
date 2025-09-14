@@ -1,5 +1,7 @@
-package com.equipo11.petcare.model;
+package com.equipo11.petcare.model.pet;
 
+import com.equipo11.petcare.model.pet.enums.ESize;
+import com.equipo11.petcare.model.pet.enums.ESpecies;
 import com.equipo11.petcare.model.user.Owner;
 import jakarta.persistence.*;
 import lombok.*;

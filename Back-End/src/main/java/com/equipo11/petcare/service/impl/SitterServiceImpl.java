@@ -1,11 +1,11 @@
 package com.equipo11.petcare.service.impl;
 
-import com.equipo11.petcare.model.Availability;
+import com.equipo11.petcare.model.availability.Availability;
 import com.equipo11.petcare.model.user.Sitter;
 import com.equipo11.petcare.model.user.User;
 import com.equipo11.petcare.model.user.enums.ERole;
-import com.equipo11.petcare.repository.AvailabilityRespository;
-import com.equipo11.petcare.repository.JpaSitterRepository;
+import com.equipo11.petcare.repository.AvailabilityRepository;
+import com.equipo11.petcare.repository.SitterRepository;
 import com.equipo11.petcare.repository.UserRepository;
 import com.equipo11.petcare.service.SitterService;
 import jakarta.validation.ValidationException;
@@ -20,8 +20,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SitterServiceImpl implements SitterService {
   private final UserRepository userRepository;
-  private final JpaSitterRepository jpaSitterRepository;
-  private final AvailabilityRespository jpaSitterAvailabilityRespository;
+  private final SitterRepository jpaSitterRepository;
+  private final AvailabilityRepository jpaSitterAvailabilityRespository;
 
   @Override
   public boolean hasAvailableSchedule(Long sitterId, LocalDateTime start, LocalDateTime end) {
