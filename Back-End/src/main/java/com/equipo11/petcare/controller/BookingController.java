@@ -52,8 +52,8 @@ public class BookingController {
   @GetMapping
   public ResponseEntity<Page<BookingDetailResponse>> getBookingsUser(
       @RequestParam(required = false) BookingStatus status,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE.TIME) LocalDateTime startDate,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE.TIME) LocalDateTime endDate,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
       @PageableDefault(size = 14, sort = "createdAt") Pageable pageable,
       @AuthenticationPrincipal String email) {
 
