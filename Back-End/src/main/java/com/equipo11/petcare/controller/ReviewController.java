@@ -2,7 +2,6 @@ package com.equipo11.petcare.controller;
 
 import com.equipo11.petcare.dto.ReviewDTO;
 import com.equipo11.petcare.service.ReviewService;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +21,6 @@ public class ReviewController {
     }
 
     @PostMapping
-    @Transactional
     public ResponseEntity<ReviewDTO> createReview(@RequestBody @Valid ReviewDTO request) {
         var response = reviewService.createReview(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
