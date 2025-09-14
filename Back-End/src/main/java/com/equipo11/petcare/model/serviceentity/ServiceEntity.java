@@ -1,13 +1,8 @@
 package com.equipo11.petcare.model.serviceentity;
 
-import com.equipo11.petcare.model.availability.enums.ServiceName;
-import com.equipo11.petcare.model.user.Sitter;
+import com.equipo11.petcare.model.serviceentity.enums.ServiceName;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Table(name = "service_entities")
@@ -32,7 +27,4 @@ public class ServiceEntity {
     private Long duration; // en minutos?
 
     private Boolean active;
-
-    @ManyToMany(mappedBy = "serviceEntitySet")
-    private Set<Sitter> sitters = new HashSet<>();
 }

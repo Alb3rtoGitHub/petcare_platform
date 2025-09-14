@@ -7,6 +7,7 @@ import com.equipo11.petcare.repository.UserRepository;
 import com.equipo11.petcare.security.SecurityService;
 import com.equipo11.petcare.service.AddressService;
 import com.equipo11.petcare.service.UserService;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -38,7 +39,7 @@ public class UserServiceImpl implements UserService {
         user.setPhoneNumber(request.phoneNumber());
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
-        user.setBirthDate(request.birthdate());
+        user.setProfilePicture(request.profilePicture());
         user.setAddress(addressService.updateAddress(id, request.address()));
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
@@ -46,6 +47,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void deleteUser(Long id) {
         User user = securityService.verifyUserOrToken(id);
         user.setDeleted(true);

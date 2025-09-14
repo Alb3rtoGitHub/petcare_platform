@@ -3,7 +3,7 @@ package com.equipo11.petcare.service.impl;
 import com.equipo11.petcare.dto.ServiceEntityRequestDTO;
 import com.equipo11.petcare.dto.ServiceEntityResponseDTO;
 import com.equipo11.petcare.exception.BusinessException;
-import com.equipo11.petcare.model.availability.enums.ServiceName;
+import com.equipo11.petcare.model.serviceentity.enums.ServiceName;
 import com.equipo11.petcare.model.serviceentity.ServiceEntity;
 import com.equipo11.petcare.repository.ServiceEntityRepository;
 import com.equipo11.petcare.service.ServiceEntityService;
@@ -56,7 +56,6 @@ public class SeviceEntityServiceImpl implements ServiceEntityService {
                 .price(serviceEntityRequestDTO.price())
                 .duration(serviceEntityRequestDTO.duration())
                 .active(serviceEntityRequestDTO.active())
-                .sitters(serviceEntityRequestDTO.sitters())
                 .build();
         ServiceEntity savedServiceEntity = serviceEntityRepository.save(serviceEntity);
         return toResponse(savedServiceEntity);
@@ -72,7 +71,6 @@ public class SeviceEntityServiceImpl implements ServiceEntityService {
         existingServiceEntity.setPrice(serviceEntityRequestDTO.price());
         existingServiceEntity.setDuration(serviceEntityRequestDTO.duration());
         existingServiceEntity.setActive(serviceEntityRequestDTO.active());
-        existingServiceEntity.setSitters(serviceEntityRequestDTO.sitters());
 
         ServiceEntity updatedExistingServiceEntity = serviceEntityRepository.save(existingServiceEntity);
         return toResponse(updatedExistingServiceEntity);
@@ -94,8 +92,7 @@ public class SeviceEntityServiceImpl implements ServiceEntityService {
                 serviceEntity.getDescription(),
                 serviceEntity.getPrice(),
                 serviceEntity.getDuration(),
-                serviceEntity.getActive(),
-                serviceEntity.getSitters()
+                serviceEntity.getActive()
         );
     }
 }

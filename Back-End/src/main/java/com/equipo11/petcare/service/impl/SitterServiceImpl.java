@@ -2,25 +2,26 @@ package com.equipo11.petcare.service.impl;
 
 import com.equipo11.petcare.dto.*;
 import com.equipo11.petcare.exception.BusinessException;
+import com.equipo11.petcare.model.availability.Availability;
 import com.equipo11.petcare.model.review.Review;
 import com.equipo11.petcare.model.serviceentity.ServiceEntity;
+import com.equipo11.petcare.model.user.Role;
 import com.equipo11.petcare.model.user.Sitter;
+import com.equipo11.petcare.model.user.User;
 import com.equipo11.petcare.model.user.enums.ERole;
-import com.equipo11.petcare.repository.ServiceEntityRepository;
-import com.equipo11.petcare.repository.SitterRepository;
+import com.equipo11.petcare.repository.*;
 import com.equipo11.petcare.service.SitterService;
-import jakarta.transaction.Transactional;
+import java.util.Collections;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,12 +29,14 @@ public class SitterServiceImpl implements SitterService {
 
     private final SitterRepository sitterRepository;
     private final ServiceEntityRepository serviceEntityRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final AvailabilityRepository availabilityRepository;
 
-    public SitterServiceImpl(SitterRepository sitterRepository, ServiceEntityRepository serviceEntityRepository, PasswordEncoder passwordEncoder) {
+    public SitterServiceImpl(SitterRepository sitterRepository, ServiceEntityRepository serviceEntityRepository, UserRepository userRepository, AvailabilityRepository availabilityRepository) {
         this.sitterRepository = sitterRepository;
         this.serviceEntityRepository = serviceEntityRepository;
-        this.passwordEncoder = passwordEncoder;
+        this.userRepository = userRepository;
+        this.availabilityRepository = availabilityRepository;
     }
 
     @Override
@@ -124,35 +127,91 @@ public class SitterServiceImpl implements SitterService {
 
     @Override
     @Transactional
+    public SitterFullResponseDTO updateSitterApproval(Long id, boolean approved) {
+        Sitter sitter = sitterRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Sitter not found with id: " + id));
+        sitter.setEnabled(approved);
+        Sitter updatedSitter = sitterRepository.save(sitter);
+        return toFullResponseDto(updatedSitter);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<SitterFullResponseDTO> findSittersByApprovalStatus(boolean approved) {
+        List<Sitter> sitters = sitterRepository.findSittersByEnabled(approved);
+        return sitters.stream()
+                .map(this::toFullResponseDto)
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional
+    public SitterFullResponseDTO updateSitterRating(Long id) {
+        Sitter sitter = sitterRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Sitter not found with id: " + id));
+        
+        sitter.updateAverageRating();
+        Sitter updatedSitter = sitterRepository.save(sitter);
+        
+        return toFullResponseDto(updatedSitter);
+    }
+
+    @Override
+    @Transactional
     public SitterFullResponseDTO updateSitter(Long id, SitterFullRequestDTO sitterFullRequestDTO) {
         Sitter existingSitter = sitterRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("Sitter not found with id: " + id));
 
         if (!existingSitter.getDocumentNumber().equals(sitterFullRequestDTO.documentNumber()) &&
-            sitterRepository.existsSitterByDocumentNumber(sitterFullRequestDTO.documentNumber())) {
+                sitterRepository.existsSitterByDocumentNumber(sitterFullRequestDTO.documentNumber())) {
             throw new BusinessException("Sitter already exists with document number: " + sitterFullRequestDTO.documentNumber());
         }
 
         // Actualizar campos básicos
-        existingSitter.setFirstName(sitterFullRequestDTO.firstName());
-        existingSitter.setLastName(sitterFullRequestDTO.lastName());
-        existingSitter.setBirthDate(sitterFullRequestDTO.birthDate());
-        existingSitter.setPhoneNumber(sitterFullRequestDTO.phoneNumber());
         existingSitter.setDocumentType(sitterFullRequestDTO.documentType());
         existingSitter.setDocumentNumber(sitterFullRequestDTO.documentNumber());
         existingSitter.setExperience(sitterFullRequestDTO.experience());
         existingSitter.setBio(sitterFullRequestDTO.bio());
-        existingSitter.setHourlyRate(sitterFullRequestDTO.hourlyRate());
         existingSitter.setProfilePicture(sitterFullRequestDTO.profilePicture());
         existingSitter.setIdCard(sitterFullRequestDTO.idCard());
         existingSitter.setBackgroundCheckDocument(sitterFullRequestDTO.backgroundCheckDocument());
-        existingSitter.setBackgroundCheck(sitterFullRequestDTO.backgroundCheck());
 
-        if (sitterFullRequestDTO.serviceIds() != null && !sitterFullRequestDTO.serviceIds().isEmpty()) {
-            Set<ServiceEntity> serviceEntitySet = new HashSet<>(
-                    serviceEntityRepository.findAllById(sitterFullRequestDTO.serviceIds())
+        // Actualizar disponibilidades
+        if (sitterFullRequestDTO.availabilities() != null) {
+            // Eliminar disponibilidades existentes que no estén en la nueva lista
+            Set<Long> existingAvailabilityIds = existingSitter.getAvailabilities().stream()
+                    .map(Availability::getId)
+                    .collect(Collectors.toSet());
+
+            Set<Long> newAvailabilityIds = sitterFullRequestDTO.availabilities().stream()
+                    .map(Availability::getId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+
+            // Eliminar las que ya no están
+            existingSitter.getAvailabilities().removeIf(av ->
+                    av.getId() != null && !newAvailabilityIds.contains(av.getId())
             );
-            existingSitter.setServiceEntitySet(serviceEntitySet);
+
+            // Agregar o actualizar las nuevas disponibilidades
+            for (Availability availability : sitterFullRequestDTO.availabilities()) {
+                if (availability.getId() == null) {
+                    // Nueva disponibilidad
+                    availability.setSitter(existingSitter);
+                    existingSitter.getAvailabilities().add(availability);
+                } else {
+                    // Actualizar existente
+                    availabilityRepository.findById(availability.getId())
+                            .ifPresent(existingAvail -> {
+                                existingAvail.setStartTime(availability.getStartTime());
+                                existingAvail.setEndTime(availability.getEndTime());
+                                existingAvail.setStartTime(availability.getStartTime());
+                                existingAvail.setEndTime(availability.getEndTime());
+                                existingAvail.setServiceEntity(availability.getServiceEntity());
+                                availabilityRepository.save(existingAvail);
+                            });
+                }
+            }
         }
         Sitter updatedSitter = sitterRepository.save(existingSitter);
         return toFullResponseDto(updatedSitter);
@@ -161,44 +220,69 @@ public class SitterServiceImpl implements SitterService {
     @Override
     @Transactional
     public SitterFullResponseDTO saveSitter(SitterFullRequestDTO sitterFullRequestDTO) {
-        if (sitterRepository.findSitterByEmail(sitterFullRequestDTO.email()).isPresent()) {
-            throw new BusinessException("Sitter already exists with email: " + sitterFullRequestDTO.email());
-        }
-
+        // Verificar si ya existe un sitter con el mismo número de documento
         if (sitterRepository.existsSitterByDocumentNumber(sitterFullRequestDTO.documentNumber())) {
-            throw new BusinessException("Sitter already exists with document number: " + sitterFullRequestDTO.documentNumber());
+            throw new BusinessException("Ya existe un cuidador con el número de documento: " + sitterFullRequestDTO.documentNumber());
         }
 
-        // Convertir DTO a entidad
-        Sitter sitter = Sitter.builder()
-                .email(sitterFullRequestDTO.email())
-                .password(passwordEncoder.encode(sitterFullRequestDTO.password()))
-                .firstName(sitterFullRequestDTO.firstName())
-                .lastName(sitterFullRequestDTO.lastName())
-                .birthDate(sitterFullRequestDTO.birthDate())
-                .address(sitterFullRequestDTO.address())
-                .phoneNumber(sitterFullRequestDTO.phoneNumber())
-                .documentType(sitterFullRequestDTO.documentType())
-                .documentNumber(sitterFullRequestDTO.documentNumber())
-                .experience(sitterFullRequestDTO.experience())
-                .bio(sitterFullRequestDTO.bio())
-                .hourlyRate(sitterFullRequestDTO.hourlyRate())
-                .profilePicture(sitterFullRequestDTO.profilePicture())
-                .idCard(sitterFullRequestDTO.idCard())
-                .backgroundCheckDocument(sitterFullRequestDTO.backgroundCheckDocument())
-                .backgroundCheck(sitterFullRequestDTO.backgroundCheck() != null ? sitterFullRequestDTO.backgroundCheck() : false)
-                .enabled(true)
-                .build();
+        // Obtener el usuario autenticado actual
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalName = authentication.getName();
+        
+        // Buscar el usuario autenticado
+        User existingUser = userRepository.findByEmail(currentPrincipalName)
+                .orElseThrow(() -> new BusinessException("No se pudo encontrar la información del usuario autenticado"));
 
-        // Si existen servicios asignar
-        if (sitterFullRequestDTO.serviceIds() != null && !sitterFullRequestDTO.serviceIds().isEmpty()) {
-            Set<ServiceEntity> serviceEntitySet = new HashSet<>(
-                    serviceEntityRepository.findAllById(sitterFullRequestDTO.serviceIds())
-            );
-            sitter.setServiceEntitySet(serviceEntitySet);
+        // Verificar que el usuario tenga el rol ROLE_SITTER
+        boolean isSitter = existingUser.getRoles().stream()
+                .anyMatch(role -> role.getName() == ERole.ROLE_SITTER);
+                
+        if (!isSitter) {
+            throw new BusinessException("El usuario no tiene permisos para registrarse como cuidador");
         }
 
+        // Verificar que el usuario no sea ya un sitter
+        if (existingUser instanceof Sitter) {
+            throw new BusinessException("Este usuario ya está registrado como cuidador");
+        }
+
+        // Crear el sitter a partir del usuario existente
+        Sitter sitter = new Sitter();
+        // Copiar propiedades del usuario
+        sitter.setId(existingUser.getId());
+        sitter.setFirstName(existingUser.getFirstName());
+        sitter.setLastName(existingUser.getLastName());
+        sitter.setEmail(existingUser.getEmail());
+        sitter.setPassword(existingUser.getPassword());
+        sitter.setPhoneNumber(existingUser.getPhoneNumber());
+        sitter.setAddress(existingUser.getAddress());
+        sitter.setEnabled(false);
+        
+        // Set the SITTER role
+        Role sitterRole = new Role();
+        sitterRole.setName(ERole.ROLE_SITTER);
+        sitter.setRoles(Collections.singleton(sitterRole));
+
+        // Establecer propiedades específicas del sitter
+        sitter.setDocumentType(sitterFullRequestDTO.documentType());
+        sitter.setDocumentNumber(sitterFullRequestDTO.documentNumber());
+        sitter.setExperience(sitterFullRequestDTO.experience());
+        sitter.setBio(sitterFullRequestDTO.bio());
+        sitter.setProfilePicture(sitterFullRequestDTO.profilePicture());
+        sitter.setIdCard(sitterFullRequestDTO.idCard());
+        sitter.setBackgroundCheckDocument(sitterFullRequestDTO.backgroundCheckDocument());
+
+        // Guardar el sitter
         Sitter savedSitter = sitterRepository.save(sitter);
+
+        // Procesar las disponibilidades si existen
+        if (sitterFullRequestDTO.availabilities() != null && !sitterFullRequestDTO.availabilities().isEmpty()) {
+            for (Availability availability : sitterFullRequestDTO.availabilities()) {
+                availability.setSitter(savedSitter);
+                availabilityRepository.save(availability);
+            }
+        }
+
         return toFullResponseDto(savedSitter);
     }
 
@@ -227,36 +311,35 @@ public class SitterServiceImpl implements SitterService {
             );
         }
 
-        // Convertir servicios a DTOs
-        Set<ServiceEntityResponseDTO> serviceEntityDTOs = new HashSet<>();
-        if (sitter.getServiceEntitySet() != null) {
-            serviceEntityDTOs = sitter.getServiceEntitySet().stream()
-                    .map(serviceEntity -> new ServiceEntityResponseDTO(
-                            serviceEntity.getId(),
-                            serviceEntity.getServiceName(),
-                            serviceEntity.getDescription(),
-                            serviceEntity.getPrice(),
-                            serviceEntity.getDuration(),
-                            serviceEntity.getActive(),
-                            serviceEntity.getSitters()
-                    ))
-                    .collect(Collectors.toSet());
-        }
-
         // Convertir disponibilidades a DTOs
-        Set<AvailabilityResponseDTO> availabilityDTOs = new HashSet<>();
-        if (sitter.getAvailabilities() != null) {
-            availabilityDTOs = sitter.getAvailabilities()
-                    .stream()
-                    .map(availability -> new AvailabilityResponseDTO(
+        Set<AvailabilityResponseDTO> availabilityDTOs = sitter.getAvailabilities() == null
+                ? new HashSet<>()
+                : sitter.getAvailabilities().stream()
+                .filter(Objects::nonNull)
+                .map(availability -> {
+                    // Mapeo seguro de ServiceEntity a ServiceEntityResponseDTO
+                    ServiceEntity service = availability.getServiceEntity();
+                    ServiceEntityResponseDTO serviceDTO = service != null
+                            ? new ServiceEntityResponseDTO(
+                            service.getId(),
+                            service.getServiceName(),
+                            service.getDescription(),
+                            service.getPrice(),
+                            service.getDuration(),
+                            Boolean.TRUE.equals(service.getActive())
+                    )
+                            : null;
+
+                    return new AvailabilityResponseDTO(
                             availability.getId(),
-                            availability.getSitter().getId(),
-                            availability.getServiceName(),
+                            availability.getSitter() != null ? availability.getSitter().getId() : null,
+                            serviceDTO,
                             availability.getStartTime(),
                             availability.getEndTime(),
-                            availability.getActive()))
-                    .collect(Collectors.toSet());
-        }
+                            Boolean.TRUE.equals(availability.getActive())
+                    );
+                })
+                .collect(Collectors.toSet());
 
         // Convertir reviews a DTOs
         Set<ReviewDTO> reviewDTOs = new HashSet<>();
@@ -272,7 +355,6 @@ public class SitterServiceImpl implements SitterService {
                 .email(sitter.getEmail())
                 .firstName(sitter.getFirstName())
                 .lastName(sitter.getLastName())
-                .birthDate(sitter.getBirthDate())
                 .address(addressDTO)
                 .phoneNumber(sitter.getPhoneNumber())
                 .documentType(sitter.getDocumentType())
@@ -280,15 +362,11 @@ public class SitterServiceImpl implements SitterService {
                 .experience(sitter.getExperience())
                 .enabled(sitter.isEnabled())
                 .bio(sitter.getBio())
-                .hourlyRate(sitter.getHourlyRate())
-                .rating(sitter.getRating())
                 .averageRating(sitter.getAverageRating())
                 .profilePicture(sitter.getProfilePicture())
                 .idCard(sitter.getIdCard())
+                .createdAt(sitter.getCreatedAt())
                 .backgroundCheckDocument(sitter.getBackgroundCheckDocument())
-                .backgroundCheck(sitter.getBackgroundCheck())
-                .registrationDate(sitter.getRegistrationDate())
-                .servicesEntities(serviceEntityDTOs)
                 .availabilities(availabilityDTOs)
                 .reviews(reviewDTOs)
                 .roles(Set.of(ERole.ROLE_SITTER))

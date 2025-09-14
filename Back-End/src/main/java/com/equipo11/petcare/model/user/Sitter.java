@@ -10,7 +10,6 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -26,20 +25,20 @@ import java.util.Set;
 @SuperBuilder
 public class Sitter extends User {
 
-    @Column(name = "document_type", nullable = false)
+    @Column(name = "document_type")
     private String documentType;
 
-    @Column(name = "document_number", nullable = false, unique = true)
+    @Column(name = "document_number")
     private String documentNumber;
 
     @Column(nullable = false)
-    private boolean enabled = false;
+    private boolean enabled = false; // Verificación por Admin
 
     @Column(columnDefinition = "TEXT")
     private String experience;
 
     @Column(columnDefinition = "TEXT")
-    private String bio;
+    private String bio; // About Me
 
     @OneToMany(mappedBy = "sitter", cascade = CascadeType.ALL,
             orphanRemoval = true, fetch = FetchType.LAZY)
@@ -48,28 +47,9 @@ public class Sitter extends User {
     @Column(name = "average_rating")
     private Double averageRating = 0.0;
 
-    @Column(name = "hourly_rate", precision = 10)
-    private Double hourlyRate; // Tarifa por hora del servicio
-
-    @Column(columnDefinition = "DOUBLE DEFAULT 0.0")
-    private Double rating = 0.0; // Calificación promedio
-
-    private String profilePicture; // URL de la foto de perfil
-
     private String idCard; // URL del documento
 
     private String backgroundCheckDocument; // URL del documento de antecedentes
-
-    private Boolean backgroundCheck = false; // Verificación de antecedentes
-
-    @Column(name = "registration_date", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime registrationDate = LocalDateTime.now();
-
-    @ManyToMany
-    @JoinTable(name = "sitter_service_entity",
-            joinColumns = @JoinColumn(name = "sitter_id"),
-            inverseJoinColumns = @JoinColumn(name = "service_entity_id"))
-    private Set<ServiceEntity> serviceEntitySet = new HashSet<>();
 
     @OneToMany(mappedBy = "sitter", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Availability> availabilities = new HashSet<>();
@@ -87,12 +67,14 @@ public class Sitter extends User {
 
     // Métodos de ayuda
     public void addService(ServiceEntity serviceEntity) {
-        this.serviceEntitySet.add(serviceEntity);
-        serviceEntity.getSitters().add(this);
+        this.availabilities.add(Availability.builder()
+                .sitter(this)
+                .serviceEntity(serviceEntity)
+                .build());
     }
 
     public void removeService(ServiceEntity serviceEntity) {
-        this.serviceEntitySet.remove(serviceEntity);
-        serviceEntity.getSitters().remove(this);
+        this.availabilities.removeIf(availability ->
+                availability.getServiceEntity().equals(serviceEntity));
     }
 }

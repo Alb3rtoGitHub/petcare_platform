@@ -2,7 +2,7 @@ package com.equipo11.petcare.service;
 
 import com.equipo11.petcare.dto.ServiceEntityRequestDTO;
 import com.equipo11.petcare.dto.ServiceEntityResponseDTO;
-import com.equipo11.petcare.model.availability.enums.ServiceName;
+import com.equipo11.petcare.model.serviceentity.enums.ServiceName;
 
 import java.util.List;
 

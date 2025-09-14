@@ -1,9 +1,6 @@
 package com.equipo11.petcare.dto;
 
-import com.equipo11.petcare.model.availability.enums.ServiceName;
-import com.equipo11.petcare.model.user.Sitter;
-
-import java.util.Set;
+import com.equipo11.petcare.model.serviceentity.enums.ServiceName;
 
 public record ServiceEntityResponseDTO(
         Long id,
@@ -11,6 +8,5 @@ public record ServiceEntityResponseDTO(
         String description,
         Double price,
         Long duration,
-        Boolean active,
-        Set<Sitter> sitters
+        Boolean active
 ) {}

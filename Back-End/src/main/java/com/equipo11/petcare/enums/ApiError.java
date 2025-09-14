@@ -31,7 +31,8 @@ public enum ApiError {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "Usuario no encontrado"),
     PET_NOT_OWNED_BY_USER(HttpStatus.FORBIDDEN, "La mascota no pertenece a ese usuario"),
     CLAIM_NOT_FOUND(HttpStatus.NOT_FOUND, "Reclamo no encontrado"),
-    CLAIM_OWNER_MISMATCH(HttpStatus.UNAUTHORIZED, "No puedes crear un reclamo para servicio no vinculado");
+    CLAIM_OWNER_MISMATCH(HttpStatus.UNAUTHORIZED, "No puedes crear un reclamo para servicio no vinculado"),
+    FILE_SAVING_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "Fallo el guardado del archivo");
 
 
     private final HttpStatus httpStatus;

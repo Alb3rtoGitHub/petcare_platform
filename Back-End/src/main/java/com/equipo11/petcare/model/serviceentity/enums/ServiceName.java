@@ -1,4 +1,4 @@
-package com.equipo11.petcare.model.availability.enums;
+package com.equipo11.petcare.model.serviceentity.enums;
 
 public enum ServiceName {
     WALKING,

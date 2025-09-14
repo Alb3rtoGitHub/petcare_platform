@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -103,5 +104,27 @@ public class SitterController {
     ) {
         sitterService.removeService(sitterId, serviceEntityId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/approval")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<SitterFullResponseDTO> updateSitterApproval(
+            @PathVariable Long id,
+            @RequestParam boolean approved) {
+        SitterFullResponseDTO updatedSitter = sitterService.updateSitterApproval(id, approved);
+        return new ResponseEntity<>(updatedSitter, HttpStatus.OK);
+    }
+
+    @GetMapping("/pending-approval")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<SitterFullResponseDTO>> getPendingApprovalSitters() {
+        List<SitterFullResponseDTO> pendingSitters = sitterService.findSittersByApprovalStatus(false);
+        return new ResponseEntity<>(pendingSitters, HttpStatus.OK);
+    }
+
+    @PostMapping("/{id}/update-rating")
+    public ResponseEntity<SitterFullResponseDTO> updateSitterRating(@PathVariable Long id) {
+        SitterFullResponseDTO updatedSitter = sitterService.updateSitterRating(id);
+        return new ResponseEntity<>(updatedSitter, HttpStatus.OK);
     }
 }

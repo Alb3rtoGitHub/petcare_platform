@@ -24,7 +24,6 @@ public class PetController {
 
     //TODO: generar la respuesta de acuerdo a lo que indique el front
     @PostMapping("/{ownerId}")
-    @Transactional
     public ResponseEntity<?> createPets(@PathVariable Long ownerId,
                                         @RequestBody @Valid List<PetAddRequestDTO> petsList) {
         var response = petService.createPets(ownerId, petsList);
@@ -45,7 +44,6 @@ public class PetController {
     }
 
     @PutMapping("/{petId}")
-    @Transactional
     public ResponseEntity<PetResponseDTO> updatePet(@PathVariable Long petId,
                                                     @RequestBody @Valid PetUpdateRequestDTO petDTO){
         var pet = petService.updatePet(petId, petDTO);

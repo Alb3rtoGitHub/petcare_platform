@@ -11,6 +11,7 @@ import java.util.Optional;
 
 public interface SitterService {
     Optional<Sitter> findSitterById(Long id);
+
     Page<SitterResponseDTO> getSitters(Long cityId,
                                        int page,
                                        int size,
@@ -20,11 +21,24 @@ public interface SitterService {
     );
 
     List<SitterFullResponseDTO> findAllSitters();
+
     SitterFullResponseDTO findSitterByUserId(Long userId);
+
     SitterFullResponseDTO saveSitter(SitterFullRequestDTO sitterFullRequestDTO);
+
     SitterFullResponseDTO updateSitter(Long id, SitterFullRequestDTO sitterFullRequestDTO);
+
     void deleteSitter(Long id);
+
     SitterFullResponseDTO addService(Long sitterId, Long serviceEntityId);
+
     void removeService(Long sitterId, Long serviceEntityId);
+
     boolean existsSitterByDocumentNumber(String documentNumber);
+
+    SitterFullResponseDTO updateSitterApproval(Long id, boolean approved);
+
+    List<SitterFullResponseDTO> findSittersByApprovalStatus(boolean approved);
+
+    SitterFullResponseDTO updateSitterRating(Long id);
 }

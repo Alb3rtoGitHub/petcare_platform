@@ -6,7 +6,6 @@ import com.equipo11.petcare.dto.ClaimResponseDTO;
 import com.equipo11.petcare.dto.ClaimUpdateRequestDTO;
 import com.equipo11.petcare.model.claim.enums.ClaimState;
 import com.equipo11.petcare.service.ClaimService;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +24,6 @@ public class ClaimController {
     }
 
     @PostMapping
-    @Transactional
     public ResponseEntity<ClaimResponseDTO> createClaim(
             @Valid @RequestBody ClaimCreateRequestDTO request
             ) {
@@ -52,7 +50,6 @@ public class ClaimController {
     }
 
     @PutMapping
-    @Transactional
     public ResponseEntity<ClaimResponseDTO> updateClaim(
             @Valid @RequestBody ClaimUpdateRequestDTO request) {
         var response = claimService.updateState(request);

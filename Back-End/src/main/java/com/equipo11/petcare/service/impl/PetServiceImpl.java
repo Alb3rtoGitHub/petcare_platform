@@ -13,6 +13,7 @@ import com.equipo11.petcare.security.SecurityService;
 import com.equipo11.petcare.security.jwt.TokenParser;
 import com.equipo11.petcare.service.PetService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public class PetServiceImpl implements PetService {
     }
 
     @Override
+    @Transactional
     public PetResponseDTO createPets(Long ownerId,
                                      List<PetAddRequestDTO> pets) {
         if (pets.isEmpty()) {
@@ -84,6 +86,7 @@ public class PetServiceImpl implements PetService {
     }
 
     @Override
+    @Transactional
     public PetResponseDTO updatePet(Long petId,
                                     PetUpdateRequestDTO petDTO) {
         var pet = findPet(petId);
@@ -108,6 +111,7 @@ public class PetServiceImpl implements PetService {
     }
 
     @Override
+    @Transactional
     public void deletePet(Long petId) {
         var pet = findPet(petId);
         var owner = securityService.userAuthenticate();

@@ -2,7 +2,7 @@ package com.equipo11.petcare.controller;
 
 import com.equipo11.petcare.dto.ServiceEntityRequestDTO;
 import com.equipo11.petcare.dto.ServiceEntityResponseDTO;
-import com.equipo11.petcare.model.availability.enums.ServiceName;
+import com.equipo11.petcare.model.serviceentity.enums.ServiceName;
 import com.equipo11.petcare.service.ServiceEntityService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

@@ -2,21 +2,27 @@ package com.equipo11.petcare.controller;
 
 import com.equipo11.petcare.dto.UpdateUserRequestDTO;
 import com.equipo11.petcare.dto.UserResponseDTO;
+import com.equipo11.petcare.service.UserProfileService;
 import com.equipo11.petcare.service.UserService;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/user")
 public class UserController {
 
     private final UserService userService;
+    private final UserProfileService userProfileService;
 
-    public UserController(UserService userService) {
+
+    public UserController(UserService userService,
+                          UserProfileService userProfileService) {
         this.userService = userService;
+        this.userProfileService = userProfileService;
     }
 
     @GetMapping("/{id}")
@@ -25,16 +31,19 @@ public class UserController {
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
-    @PutMapping("/{id}")
-    @Transactional
+    @PutMapping(value = "/{id}", consumes = {
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.MULTIPART_FORM_DATA_VALUE
+    })
     public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long id,
-                                                      @Valid @RequestBody UpdateUserRequestDTO request){
-        UserResponseDTO response = userService.updateUser(id, request);
+                                                      @Valid @RequestPart UpdateUserRequestDTO request,
+                                                      @RequestPart(value = "file", required = false) MultipartFile file
+    ){
+        UserResponseDTO response = userProfileService.updateUser(id, request, file);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @DeleteMapping("{id}")
-    @Transactional
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return new ResponseEntity<>("Usuario eliminado", HttpStatus.OK);
