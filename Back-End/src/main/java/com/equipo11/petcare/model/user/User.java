@@ -36,9 +36,6 @@ public class User {
     @Column(nullable = false, length = 30)
     private String lastName;
 
-    @Column(nullable = false)
-    private LocalDate birthDate;
-
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "address_id", unique = true, nullable = false)
     private Address address;
@@ -63,5 +60,6 @@ public class User {
     @Column(nullable = false)
     private boolean deleted = false;
 
+    @Column(name = "profile_image_url")
     private String profilePicture; // URL de la foto de perfil
 }

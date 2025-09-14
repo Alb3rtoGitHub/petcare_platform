@@ -10,7 +10,7 @@ public record UserResponseDTO(
         String phoneNumber,
         String firstName,
         String lastName,
-        LocalDate birthdate,
+        String profilePicture,
         AddressDTO address
 ) {
     public UserResponseDTO(User user) {
@@ -18,7 +18,7 @@ public record UserResponseDTO(
                 user.getPhoneNumber(),
                 user.getFirstName(),
                 user.getLastName(),
-                user.getBirthDate(),
+                user.getProfilePicture(),
                 AddressDTO.builder()
                         .countryCode(user.getAddress().getCity().getRegion().getCountry().getCountryCode())
                         .region(user.getAddress().getCity().getRegion().getName())

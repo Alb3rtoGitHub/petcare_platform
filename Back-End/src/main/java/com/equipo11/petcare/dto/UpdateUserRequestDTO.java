@@ -16,12 +16,10 @@ public record UpdateUserRequestDTO(
         @NotBlank(message = "El apellido no puede estar vacío")
         String lastName,
 
-        @NotNull(message = "La fecha de nacimiento es obligatoria")
-        @JsonFormat(pattern = "yyyy-MM-dd")
-        LocalDate birthdate,
-
         @NotNull(message = "La dirección es obligatoria")
         @Valid
-        AddressDTO address
+        AddressDTO address,
+
+        String profilePicture
 ) {
 }

@@ -9,6 +9,7 @@ import com.equipo11.petcare.model.booking.BookingStatus;
 import com.equipo11.petcare.repository.JpaBookingRepository;
 import com.equipo11.petcare.repository.ReviewRepository;
 import com.equipo11.petcare.service.ReviewService;
+import jakarta.transaction.Transactional;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    @Transactional
     public ReviewDTO createReview(ReviewDTO request) {
         Booking booking = fetchBooking(request.bookingId());
         bookingEnsureCompleted(booking);

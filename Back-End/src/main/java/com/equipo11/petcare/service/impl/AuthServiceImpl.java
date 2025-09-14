@@ -104,7 +104,6 @@ public class AuthServiceImpl implements AuthService {
                             .password(passwordEncoder.encode(request.password()))
                             .firstName(request.firstName())
                             .lastName(request.lastName())
-                            .birthDate(request.birthdate())
                             .phoneNumber(request.phoneNumber())
                             .address(address)
                             .roles(roles)
@@ -116,7 +115,6 @@ public class AuthServiceImpl implements AuthService {
                             .password(passwordEncoder.encode(request.password()))
                             .firstName(request.firstName())
                             .lastName(request.lastName())
-                            .birthDate(request.birthdate())
                             .phoneNumber(request.phoneNumber())
                             .address(address)
                             .roles(roles)
@@ -141,6 +139,7 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
+    @Transactional
     public String validateEmail(String token) {
         String response;
         var verificationToken = verificationTokenRepo.findByToken(token)

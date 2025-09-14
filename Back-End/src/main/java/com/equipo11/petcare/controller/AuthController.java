@@ -28,7 +28,6 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    @Transactional
     public ResponseEntity<String> registerUser(@Valid @RequestBody RegisterRequestDTO request) {
         authService.registerUser(request);
         return new ResponseEntity<>("Usuario creado", HttpStatus.CREATED);
@@ -36,7 +35,6 @@ public class AuthController {
 
 
     @GetMapping("/confirm")
-    @Transactional
     public RedirectView confirmEmail(@RequestParam String token){
         var response = authService.validateEmail(token);
         return new RedirectView(response);
