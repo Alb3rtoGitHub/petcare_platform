@@ -236,7 +236,6 @@ public class SitterServiceImpl implements SitterService {
     }
 
     @Override
-    @Transactional
     public SitterFullResponseDTO saveSitterDocuments(SitterPatchRequestDTO sitterPatchRequestDTO) {
         // Buscar el usuario autenticado
         User existingUser = securityService.userAuthenticate();
@@ -256,9 +255,12 @@ public class SitterServiceImpl implements SitterService {
         sitter.setDocumentNumber(sitterPatchRequestDTO.documentNumber());
         sitter.setExperience(sitterPatchRequestDTO.experience());
         sitter.setBio(sitterPatchRequestDTO.bio());
-        sitter.setProfilePicture(sitterPatchRequestDTO.profilePicture());
-        sitter.setIdCard(sitterPatchRequestDTO.idCard());
-        sitter.setBackgroundCheckDocument(sitterPatchRequestDTO.backgroundCheckDocument());
+        if (sitterPatchRequestDTO.profilePicture() != null)
+            sitter.setProfilePicture(sitterPatchRequestDTO.profilePicture());
+        if (sitterPatchRequestDTO.idCard() != null)
+            sitter.setIdCard(sitterPatchRequestDTO.idCard());
+        if (sitterPatchRequestDTO.backgroundCheckDocument() != null)
+            sitter.setBackgroundCheckDocument(sitterPatchRequestDTO.backgroundCheckDocument());
 
         // Guardar el sitter
         Sitter savedSitter = sitterRepository.save(sitter);

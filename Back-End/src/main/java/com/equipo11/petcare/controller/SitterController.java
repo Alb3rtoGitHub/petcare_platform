@@ -9,6 +9,7 @@ import com.equipo11.petcare.service.SitterService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -72,9 +73,9 @@ public class SitterController {
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PatchMapping
+    @PatchMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SitterFullResponseDTO> loadSitterDocuments(
-            @Valid @RequestBody SitterPatchRequestDTO sitterPatchRequestDTO,
+            @RequestPart("data") @Valid SitterPatchRequestDTO sitterPatchRequestDTO,
             @RequestPart(value = "profilePicture", required = false)MultipartFile profilePicture,
             @RequestPart(value = "idCard", required = false)MultipartFile idCard,
             @RequestPart(value = "backgroundCheckDocument", required = false)MultipartFile backgroundCheckDocument
@@ -84,7 +85,7 @@ public class SitterController {
                 profilePicture,
                 idCard,
                 backgroundCheckDocument);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
