@@ -2,6 +2,7 @@ package com.equipo11.petcare.service;
 
 import com.equipo11.petcare.dto.SitterFullRequestDTO;
 import com.equipo11.petcare.dto.SitterFullResponseDTO;
+import com.equipo11.petcare.dto.SitterPatchRequestDTO;
 import com.equipo11.petcare.dto.SitterResponseDTO;
 import com.equipo11.petcare.model.user.Sitter;
 import org.springframework.data.domain.Page;
@@ -24,7 +25,7 @@ public interface SitterService {
 
     SitterFullResponseDTO findSitterByUserId(Long userId);
 
-    SitterFullResponseDTO saveSitter(SitterFullRequestDTO sitterFullRequestDTO);
+    SitterFullResponseDTO saveSitterDocuments(SitterPatchRequestDTO sitterPatchRequestDTO);
 
     SitterFullResponseDTO updateSitter(Long id, SitterFullRequestDTO sitterFullRequestDTO);
 

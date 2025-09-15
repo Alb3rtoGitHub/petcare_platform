@@ -6,7 +6,7 @@ import com.equipo11.petcare.exception.PetcareException;
 import com.equipo11.petcare.model.review.Review;
 import com.equipo11.petcare.model.booking.Booking;
 import com.equipo11.petcare.model.booking.BookingStatus;
-import com.equipo11.petcare.repository.JpaBookingRepository;
+import com.equipo11.petcare.repository.BookingRepository;
 import com.equipo11.petcare.repository.ReviewRepository;
 import com.equipo11.petcare.service.ReviewService;
 import jakarta.transaction.Transactional;
@@ -16,10 +16,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class ReviewServiceImpl implements ReviewService {
 
-    private final JpaBookingRepository bookingRepository;
+    private final BookingRepository bookingRepository;
     private final ReviewRepository reviewRepository;
 
-    public ReviewServiceImpl(JpaBookingRepository bookingRepository,
+    public ReviewServiceImpl(BookingRepository bookingRepository,
                              ReviewRepository reviewRepository) {
         this.bookingRepository = bookingRepository;
         this.reviewRepository = reviewRepository;
