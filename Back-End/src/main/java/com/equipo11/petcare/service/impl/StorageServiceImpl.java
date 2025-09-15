@@ -2,7 +2,7 @@ package com.equipo11.petcare.service.impl;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import com.equipo11.petcare.enums.ApiError;
+import com.equipo11.petcare.exception.enums.ApiError;
 import com.equipo11.petcare.exception.PetcareException;
 import com.equipo11.petcare.service.StorageService;
 import org.springframework.beans.factory.annotation.Value;

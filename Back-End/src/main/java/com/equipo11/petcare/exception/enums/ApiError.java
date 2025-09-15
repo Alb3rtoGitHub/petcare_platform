@@ -1,4 +1,4 @@
-package com.equipo11.petcare.enums;
+package com.equipo11.petcare.exception.enums;
 
 import org.springframework.http.HttpStatus;
 
