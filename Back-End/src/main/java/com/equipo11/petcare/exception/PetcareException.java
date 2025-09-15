@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 
-import com.equipo11.petcare.enums.ApiError;
+import com.equipo11.petcare.exception.enums.ApiError;
 
 public class PetcareException extends RuntimeException {
     private HttpStatus status;

@@ -10,7 +10,9 @@ import com.equipo11.petcare.model.user.User;
 import com.equipo11.petcare.model.user.enums.ERole;
 import com.equipo11.petcare.repository.*;
 import com.equipo11.petcare.security.SecurityService;
+import com.equipo11.petcare.security.email.EmailProperties;
 import com.equipo11.petcare.service.AddressService;
+import com.equipo11.petcare.service.EmailService;
 import com.equipo11.petcare.service.SitterService;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
@@ -30,17 +32,23 @@ public class SitterServiceImpl implements SitterService {
     private final AvailabilityRepository availabilityRepository;
     private final SecurityService securityService;
     private final AddressService addressService;
+    private final EmailService emailService;
+    private final String from;
 
     public SitterServiceImpl(SitterRepository sitterRepository,
                              ServiceEntityRepository serviceEntityRepository,
                              AvailabilityRepository availabilityRepository,
                              SecurityService securityService,
-                             AddressService addressService) {
+                             AddressService addressService,
+                             EmailService emailService,
+                             EmailProperties prop) {
         this.sitterRepository = sitterRepository;
         this.serviceEntityRepository = serviceEntityRepository;
         this.availabilityRepository = availabilityRepository;
         this.securityService = securityService;
         this.addressService = addressService;
+        this.emailService = emailService;
+        this.from = prop.getFrom();
     }
 
     @Override
@@ -136,6 +144,11 @@ public class SitterServiceImpl implements SitterService {
                 .orElseThrow(() -> new BusinessException("Sitter not found with id: " + id));
         sitter.setEnabled(approved);
         Sitter updatedSitter = sitterRepository.save(sitter);
+        String subjet = "Fuiste aprobado como cuidador en PetCare";
+        String text = "¡Felicitaciones, " + sitter.getFirstName() +
+                "!\nFuiste aprobado para ofrecer tus servicios como cuidador en nuestra plataforma.\n" +
+                "Saludos, Equipo de PetCare.\n";
+        emailService.sendEmail(sitter.getEmail(), subjet, text);
         return toFullResponseDto(updatedSitter);
     }
     
@@ -236,7 +249,6 @@ public class SitterServiceImpl implements SitterService {
     }
 
     @Override
-    @Transactional
     public SitterFullResponseDTO saveSitterDocuments(SitterPatchRequestDTO sitterPatchRequestDTO) {
         // Buscar el usuario autenticado
         User existingUser = securityService.userAuthenticate();
@@ -256,13 +268,23 @@ public class SitterServiceImpl implements SitterService {
         sitter.setDocumentNumber(sitterPatchRequestDTO.documentNumber());
         sitter.setExperience(sitterPatchRequestDTO.experience());
         sitter.setBio(sitterPatchRequestDTO.bio());
-        sitter.setProfilePicture(sitterPatchRequestDTO.profilePicture());
-        sitter.setIdCard(sitterPatchRequestDTO.idCard());
-        sitter.setBackgroundCheckDocument(sitterPatchRequestDTO.backgroundCheckDocument());
+        if (sitterPatchRequestDTO.profilePicture() != null)
+            sitter.setProfilePicture(sitterPatchRequestDTO.profilePicture());
+        if (sitterPatchRequestDTO.idCard() != null)
+            sitter.setIdCard(sitterPatchRequestDTO.idCard());
+        if (sitterPatchRequestDTO.backgroundCheckDocument() != null)
+            sitter.setBackgroundCheckDocument(sitterPatchRequestDTO.backgroundCheckDocument());
 
         // Guardar el sitter
         Sitter savedSitter = sitterRepository.save(sitter);
 
+        String subjet = "Recibimos tus documentos.";
+        String text = "¡Hola, " + sitter.getFirstName() +
+                "!\nRecibimos la documentación requerida para calificar como cuidador en nuestra plataforma.\n" +
+                "Tendras noticias nuestras muy pronto.\n" +
+                "Saludos, Equipo de PetCare.\n";
+        emailService.sendEmail(sitter.getEmail(), subjet, text);
+        emailService.sendEmail(from, "nueva documentación!", "Hay un nuevo sitter para revisar.");
         return toFullResponseDto(savedSitter);
     }
 
