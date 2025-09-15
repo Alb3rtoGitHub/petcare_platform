@@ -26,10 +26,10 @@ public class SitterDocumentsServiceImpl implements SitterDocumentsService {
                                                  MultipartFile profilePicture,
                                                  MultipartFile idCard,
                                                  MultipartFile backgroundCheckDocument) {
-        var payload = request;
-        String urlProfilePicture = storageService.uploadFile(profilePicture, "users");
-        String urlIdCard = storageService.uploadFile(idCard, "sitters");
-        String urlBackgroundCheckDocument = storageService.uploadFile(backgroundCheckDocument, "sitters");
+
+        String urlProfilePicture = uploadIfPresent(profilePicture, "users");
+        String urlIdCard = uploadIfPresent(idCard, "sitters");
+        String urlBackgroundCheckDocument = uploadIfPresent(backgroundCheckDocument, "sitters");
 
         var newRequest =  new SitterPatchRequestDTO(
                 request.documentType(),
