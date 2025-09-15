@@ -36,7 +36,7 @@ public class UserController {
             MediaType.MULTIPART_FORM_DATA_VALUE
     })
     public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long id,
-                                                      @Valid @RequestPart UpdateUserRequestDTO request,
+                                                      @Valid @RequestPart("data") UpdateUserRequestDTO request,
                                                       @RequestPart(value = "file", required = false) MultipartFile file
     ){
         UserResponseDTO response = userProfileService.updateUser(id, request, file);

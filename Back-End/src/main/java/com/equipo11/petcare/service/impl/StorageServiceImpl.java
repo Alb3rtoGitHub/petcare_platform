@@ -29,12 +29,17 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public String uploadImage(MultipartFile file, String folder) {
+    public String uploadFile(MultipartFile file, String folder) {
         try {
             String original = file.getOriginalFilename();
             String ext = original != null && original.contains(".")
                     ? original.substring(original.lastIndexOf('.') + 1)
                     : "jpg";
+
+            String mimeType = file.getContentType();
+            String resourceType = determineResourceType(mimeType);
+
+
             String publicId = folder + "/" + UUID.randomUUID();
 
             Map<?,?> result = cloudinary.uploader().upload(
@@ -43,13 +48,19 @@ public class StorageServiceImpl implements StorageService {
                             "folder", folder,
                             "public_id", publicId,
                             "overwrite", true,
-                            "resource_type", "image"
-
+                            "resource_type", resourceType
                     )
             );
             return result.get("secure_url").toString();
         } catch (IOException e) {
             throw new PetcareException(ApiError.FILE_SAVING_FAILED);
         }
+    }
+
+    private String determineResourceType(String mimeType) {
+        if (mimeType == null) return "auto";
+        if (mimeType.startsWith("image/")) return "image";
+        if (mimeType.equals("application/pdf")) return "raw";
+        return "auto";
     }
 }

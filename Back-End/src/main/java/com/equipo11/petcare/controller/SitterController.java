@@ -4,6 +4,7 @@ import com.equipo11.petcare.dto.SitterFullRequestDTO;
 import com.equipo11.petcare.dto.SitterFullResponseDTO;
 import com.equipo11.petcare.dto.SitterPatchRequestDTO;
 import com.equipo11.petcare.dto.SitterResponseDTO;
+import com.equipo11.petcare.service.SitterDocumentsService;
 import com.equipo11.petcare.service.SitterService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -19,9 +21,12 @@ import java.util.List;
 public class SitterController {
 
     private final SitterService sitterService;
+    private final SitterDocumentsService sitterDocumentsService;
 
-    public SitterController(SitterService sitterService) {
+    public SitterController(SitterService sitterService,
+                            SitterDocumentsService sitterDocumentsService) {
         this.sitterService = sitterService;
+        this.sitterDocumentsService = sitterDocumentsService;
     }
 
     @GetMapping
@@ -68,11 +73,18 @@ public class SitterController {
     }
 
     @PatchMapping
-    public ResponseEntity<SitterFullResponseDTO> createSitter(
-            @Valid @RequestBody SitterPatchRequestDTO sitterPatchRequestDTO
-    ) {
-        SitterFullResponseDTO createdSitter = sitterService.saveSitterDocuments(sitterPatchRequestDTO);
-        return new ResponseEntity<>(createdSitter, HttpStatus.CREATED);
+    public ResponseEntity<SitterFullResponseDTO> loadSitterDocuments(
+            @Valid @RequestBody SitterPatchRequestDTO sitterPatchRequestDTO,
+            @RequestPart(value = "profilePicture", required = false)MultipartFile profilePicture,
+            @RequestPart(value = "idCard", required = false)MultipartFile idCard,
+            @RequestPart(value = "backgroundCheckDocument", required = false)MultipartFile backgroundCheckDocument
+            ) {
+        SitterFullResponseDTO response = sitterDocumentsService.loadCredentials(
+                sitterPatchRequestDTO,
+                profilePicture,
+                idCard,
+                backgroundCheckDocument);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")

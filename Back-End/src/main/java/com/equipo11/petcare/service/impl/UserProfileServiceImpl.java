@@ -27,7 +27,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     public UserResponseDTO updateUser(Long id, UpdateUserRequestDTO request, MultipartFile file) {
         var payload = request;
         if (file != null && !file.isEmpty()) {
-            String url = storageService.uploadImage(file, "users");
+            String url = storageService.uploadFile(file, "users");
             payload = new UpdateUserRequestDTO(
                     request.phoneNumber(),
                     request.firstName(),
