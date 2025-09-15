@@ -1,0 +1,26 @@
+package com.equipo11.petcare.dto;
+
+import jakarta.validation.constraints.*;
+import lombok.Builder;
+
+@Builder
+public record SitterPatchRequestDTO(
+
+        @NotBlank(message = "Document type is required")
+        String documentType,
+
+        @NotBlank(message = "Document number is required")
+        String documentNumber,
+
+        String experience,
+
+        String bio,
+
+        String profilePicture,
+
+        @NotBlank(message = "ID card is required")
+        String idCard,
+
+        String backgroundCheckDocument
+) {}
+
