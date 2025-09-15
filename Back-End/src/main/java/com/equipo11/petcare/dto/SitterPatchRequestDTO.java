@@ -1,16 +1,10 @@
 package com.equipo11.petcare.dto;
 
-import com.equipo11.petcare.model.availability.Availability;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 
-import java.util.Set;
-
 @Builder
-public record SitterFullRequestDTO(
-
-        UpdateUserRequestDTO updateUserRequestDTO,
+public record SitterPatchRequestDTO(
 
         @NotBlank(message = "Document type is required")
         String documentType,
@@ -22,11 +16,11 @@ public record SitterFullRequestDTO(
 
         String bio,
 
+        String profilePicture,
+
         @NotBlank(message = "ID card is required")
         String idCard,
 
-        String backgroundCheckDocument,
+        String backgroundCheckDocument
+) {}
 
-        @Valid
-        Set<Availability> availabilities
-    ) {}

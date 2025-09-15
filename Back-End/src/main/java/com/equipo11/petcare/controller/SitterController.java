@@ -2,6 +2,7 @@ package com.equipo11.petcare.controller;
 
 import com.equipo11.petcare.dto.SitterFullRequestDTO;
 import com.equipo11.petcare.dto.SitterFullResponseDTO;
+import com.equipo11.petcare.dto.SitterPatchRequestDTO;
 import com.equipo11.petcare.dto.SitterResponseDTO;
 import com.equipo11.petcare.service.SitterService;
 import jakarta.validation.Valid;
@@ -66,11 +67,11 @@ public class SitterController {
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PostMapping
+    @PatchMapping
     public ResponseEntity<SitterFullResponseDTO> createSitter(
-            @Valid @RequestBody SitterFullRequestDTO sitterFullRequestDTO
+            @Valid @RequestBody SitterPatchRequestDTO sitterPatchRequestDTO
     ) {
-        SitterFullResponseDTO createdSitter = sitterService.saveSitter(sitterFullRequestDTO);
+        SitterFullResponseDTO createdSitter = sitterService.saveSitterDocuments(sitterPatchRequestDTO);
         return new ResponseEntity<>(createdSitter, HttpStatus.CREATED);
     }
 

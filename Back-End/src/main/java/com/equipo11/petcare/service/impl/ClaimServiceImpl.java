@@ -9,7 +9,7 @@ import com.equipo11.petcare.model.booking.Booking;
 import com.equipo11.petcare.model.claim.Claim;
 import com.equipo11.petcare.model.claim.enums.ClaimState;
 import com.equipo11.petcare.repository.ClaimRepository;
-import com.equipo11.petcare.repository.JpaBookingRepository;
+import com.equipo11.petcare.repository.BookingRepository;
 import com.equipo11.petcare.security.SecurityService;
 import com.equipo11.petcare.service.ClaimService;
 import com.equipo11.petcare.service.EmailService;
@@ -18,17 +18,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-
 @Service
 public class ClaimServiceImpl implements ClaimService {
 
-    private final JpaBookingRepository bookingRepository;
+    private final BookingRepository bookingRepository;
     private final ClaimRepository claimRepository;
     private final SecurityService securityService;
     private final EmailService emailService;
 
-    public ClaimServiceImpl(JpaBookingRepository bookingRepository,
+    public ClaimServiceImpl(BookingRepository bookingRepository,
                             ClaimRepository claimRepository,
                             SecurityService securityService,
                             EmailService emailService) {

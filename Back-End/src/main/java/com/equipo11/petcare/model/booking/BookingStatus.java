@@ -2,7 +2,6 @@ package com.equipo11.petcare.model.booking;
 
 public enum BookingStatus {
     PENDING("pendiente"),
-    CONFIRMED("confirmado"),
     IN_PROGRESS("en progreso"),
     COMPLETED("completado"),
     CANCELLED("cancelado");
@@ -22,7 +21,7 @@ public enum BookingStatus {
     public static BookingStatus fromValue(String value) {
         // Compara por label o nombre del enum e ignora mayúsculas
         if (value == null) {
-            throw new IllegalArgumentException("El estado no puede ser nul");
+            throw new IllegalArgumentException("El estado no puede ser null");
         }
         String upperCase = value.trim().toUpperCase();
         for (BookingStatus status : BookingStatus.values()) {
