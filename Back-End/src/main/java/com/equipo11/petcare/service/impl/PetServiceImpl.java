@@ -3,16 +3,13 @@ package com.equipo11.petcare.service.impl;
 import com.equipo11.petcare.dto.PetAddRequestDTO;
 import com.equipo11.petcare.dto.PetResponseDTO;
 import com.equipo11.petcare.dto.PetUpdateRequestDTO;
-import com.equipo11.petcare.enums.ApiError;
+import com.equipo11.petcare.exception.enums.ApiError;
 import com.equipo11.petcare.exception.PetcareException;
 import com.equipo11.petcare.model.pet.Pet;
 import com.equipo11.petcare.model.user.Owner;
 import com.equipo11.petcare.repository.PetRepository;
-import com.equipo11.petcare.repository.UserRepository;
 import com.equipo11.petcare.security.SecurityService;
-import com.equipo11.petcare.security.jwt.TokenParser;
 import com.equipo11.petcare.service.PetService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 

@@ -3,7 +3,7 @@ package com.equipo11.petcare.service.impl;
 import com.equipo11.petcare.dto.AuthResponseDTO;
 import com.equipo11.petcare.dto.AuthRequestDTO;
 import com.equipo11.petcare.dto.RegisterRequestDTO;
-import com.equipo11.petcare.enums.ApiError;
+import com.equipo11.petcare.exception.enums.ApiError;
 import com.equipo11.petcare.exception.PetcareException;
 import com.equipo11.petcare.model.address.Address;
 import com.equipo11.petcare.model.user.Owner;

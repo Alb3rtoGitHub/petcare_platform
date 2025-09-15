@@ -5,7 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
-import com.equipo11.petcare.enums.ApiError;
+import com.equipo11.petcare.exception.enums.ApiError;
 import com.equipo11.petcare.exception.PetcareException;
 import com.equipo11.petcare.security.jwt.JwtProperties;
 import com.equipo11.petcare.security.jwt.TokenParser;
