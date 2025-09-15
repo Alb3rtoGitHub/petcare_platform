@@ -10,10 +10,10 @@ import com.equipo11.petcare.model.user.User;
 import com.equipo11.petcare.model.user.enums.ERole;
 import com.equipo11.petcare.repository.*;
 import com.equipo11.petcare.security.SecurityService;
+import com.equipo11.petcare.security.email.EmailProperties;
 import com.equipo11.petcare.service.AddressService;
 import com.equipo11.petcare.service.EmailService;
 import com.equipo11.petcare.service.SitterService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -40,14 +40,15 @@ public class SitterServiceImpl implements SitterService {
                              AvailabilityRepository availabilityRepository,
                              SecurityService securityService,
                              AddressService addressService,
-                             EmailService emailService, String from) {
+                             EmailService emailService,
+                             EmailProperties prop) {
         this.sitterRepository = sitterRepository;
         this.serviceEntityRepository = serviceEntityRepository;
         this.availabilityRepository = availabilityRepository;
         this.securityService = securityService;
         this.addressService = addressService;
         this.emailService = emailService;
-        this.from = from;
+        this.from = prop.getFrom();
     }
 
     @Override
