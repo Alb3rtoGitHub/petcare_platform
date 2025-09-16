@@ -52,9 +52,9 @@ public interface BookingResponseMapper extends Converter<Booking, BookingRespons
   // ServiceEntity -> ServiceDetailResponse
   @Mapping(source = "serviceName", target = "serviceName")
   @Mapping(source = "description", target = "description")
-  @Mapping(source = "basePrice", target = "basePrice")
+  @Mapping(source = "price", target = "price")
   @Mapping(source = "duration", target = "duration")
-  @Mapping(source = "isActive", target = "isActive")
+  @Mapping(source = "active", target = "active")
   ServiceDetailResponse toServiceDetailResponse(ServiceEntity service);
 
   @Named("fullName")

@@ -14,6 +14,7 @@ import com.equipo11.petcare.security.jwt.TokenParser;
 import com.equipo11.petcare.service.PetService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import jakarta.validation.ValidationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

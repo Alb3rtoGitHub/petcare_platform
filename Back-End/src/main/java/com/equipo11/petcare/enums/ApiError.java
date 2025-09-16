@@ -32,7 +32,10 @@ public enum ApiError {
     PET_NOT_OWNED_BY_USER(HttpStatus.FORBIDDEN, "La mascota no pertenece a ese usuario"),
     CLAIM_NOT_FOUND(HttpStatus.NOT_FOUND, "Reclamo no encontrado"),
     CLAIM_OWNER_MISMATCH(HttpStatus.UNAUTHORIZED, "No puedes crear un reclamo para servicio no vinculado"),
-    FILE_SAVING_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "Fallo el guardado del archivo");
+    FILE_SAVING_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "Fallo el guardado del archivo"),
+    FORBIDDEN_BOOKING_CREATION(HttpStatus.FORBIDDEN,
+            "No tienes permisos para crear reservas. Solo los propietarios pueden crear reservas"),
+    PET_OVERLAPPING_BOOKING(HttpStatus.CONFLICT, "La mascota ya tiene una reserva programada para este horario");
 
 
     private final HttpStatus httpStatus;

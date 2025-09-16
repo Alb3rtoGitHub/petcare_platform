@@ -6,8 +6,8 @@ public record ServiceDetailResponse(
     Long id,
     String serviceName,
     String description,
-    BigDecimal basePrice,
+    Double price,
     Long duration,
-    Boolean isActive) {
+    Boolean active) {
 
 }

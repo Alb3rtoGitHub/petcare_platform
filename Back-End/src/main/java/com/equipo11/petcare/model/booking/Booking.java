@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.equipo11.petcare.model.review.Review;
 import com.equipo11.petcare.model.serviceentity.ServiceEntity;
 import jakarta.persistence.*;
 

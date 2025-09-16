@@ -1,8 +1,12 @@
 package com.equipo11.petcare.model.serviceentity;
 
 import com.equipo11.petcare.model.serviceentity.enums.ServiceName;
+import com.equipo11.petcare.model.user.Sitter;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "service_entities")

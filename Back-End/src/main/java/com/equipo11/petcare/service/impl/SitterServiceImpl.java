@@ -11,7 +11,12 @@ import com.equipo11.petcare.model.user.User;
 import com.equipo11.petcare.model.user.enums.ERole;
 import com.equipo11.petcare.repository.*;
 import com.equipo11.petcare.service.SitterService;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Collections;
+
+import jakarta.validation.ValidationException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -381,7 +386,7 @@ public class SitterServiceImpl implements SitterService {
   @Override
   public boolean hasAvailableSchedule(Long sitterId, LocalDateTime start, LocalDateTime end) {
     // Logica para validar si esta disponible
-    List<Availability> availabilities = jpaSitterAvailabilityRespository.findBySitterId(sitterId);
+    List<Availability> availabilities = availabilityRepository.findBySitterId(sitterId);
 
     return availabilities.stream().anyMatch(av -> !start.isBefore(av.getStartTime()) && !end.isAfter(av.getEndTime()));
     // return false;
@@ -405,7 +410,7 @@ public class SitterServiceImpl implements SitterService {
 
   @Override
   public Sitter findById(Long sitterId) {
-    Sitter sitter = jpaSitterRepository.findById(sitterId).orElseThrow(() -> new RuntimeException("Sitter not found"));
+    Sitter sitter = sitterRepository.findById(sitterId).orElseThrow(() -> new RuntimeException("Sitter not found"));
     return sitter;
   }
 }

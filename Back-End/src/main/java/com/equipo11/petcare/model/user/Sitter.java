@@ -51,6 +51,12 @@ public class Sitter extends User {
 
     private String backgroundCheckDocument; // URL del documento de antecedentes
 
+    @ManyToMany
+    @JoinTable(name = "sitter_service_entity",
+            joinColumns = @JoinColumn(name = "sitter_id"),
+            inverseJoinColumns = @JoinColumn(name = "service_entity_id"))
+    private Set<ServiceEntity> serviceEntitySet = new HashSet<>();
+
     @OneToMany(mappedBy = "sitter", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Availability> availabilities = new HashSet<>();
 
