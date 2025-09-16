@@ -51,8 +51,8 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getBookingsByUser(userId, page, size, sortBy));
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<BookingResponseDTO> updateBooking(@PathVariable Long id, @RequestBody @Valid BookingStatus status) {
+    @PatchMapping("/{id}/{status}")
+    public ResponseEntity<BookingResponseDTO> updateBooking(@PathVariable Long id, @PathVariable @Valid BookingStatus status) {
         var response = bookingService.updateBooking(id, status);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

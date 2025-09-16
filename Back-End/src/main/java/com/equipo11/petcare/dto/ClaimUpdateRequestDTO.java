@@ -7,8 +7,7 @@ import jakarta.validation.constraints.NotNull;
 public record ClaimUpdateRequestDTO(
         @NotNull
         Long claimId,
-        @NotBlank
+        @NotNull
         ClaimState newState,
         String determination
-) {
-}
+) {}

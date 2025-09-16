@@ -34,7 +34,7 @@ public class Claim {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ClaimState state = ClaimState.OPEN;
+    private ClaimState state;
 
     @Column(name = "create_at", nullable = false)
     private LocalDateTime createdAt;
@@ -47,6 +47,7 @@ public class Claim {
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
+        state = ClaimState.OPEN;
     }
 
     @PreUpdate
