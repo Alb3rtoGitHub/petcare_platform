@@ -31,7 +31,7 @@ public class ServiceEntityController {
         return ResponseEntity.ok(serviceEntityService.findServiceEntityById(id));
     }
 
-    @GetMapping("/seviceName/{serviceName}")
+    @GetMapping("/serviceName/{serviceName}")
     public ResponseEntity<ServiceEntityResponseDTO> getServiceEntityByServiceName(@PathVariable ServiceName serviceName) {
         return ResponseEntity.ok(serviceEntityService.findServiceEntityByName(serviceName));
     }
