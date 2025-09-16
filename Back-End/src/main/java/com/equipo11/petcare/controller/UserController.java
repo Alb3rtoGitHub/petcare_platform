@@ -31,15 +31,15 @@ public class UserController {
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
-    @PutMapping(value = "/{id}", consumes = {
-            MediaType.APPLICATION_JSON_VALUE,
+    @PutMapping(value = "/{id}", consumes =
             MediaType.MULTIPART_FORM_DATA_VALUE
-    })
-    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long id,
-                                                      @Valid @RequestPart("data") UpdateUserRequestDTO request,
-                                                      @RequestPart(value = "file", required = false) MultipartFile file
+    )
+    public ResponseEntity<UserResponseDTO> updateUser(
+            @PathVariable Long id,
+            @Valid @RequestPart("data") UpdateUserRequestDTO data,
+            @RequestPart(value = "file", required = false) MultipartFile file
     ){
-        UserResponseDTO response = userProfileService.updateUser(id, request, file);
+        UserResponseDTO response = userProfileService.updateUser(id, data, file);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
