@@ -2,7 +2,11 @@ package com.equipo11.petcare.service.impl;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
+import com.cloudinary.Api;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -122,7 +126,8 @@ public class BookingServiceImpl implements BookingService {
     return conversionService.convert(bookingUpdate, BookingResponse.class);
   }
 
-  public Page<BookingDetailResponse> getCurrentUserBookingsPaged(
+
+    public Page<BookingDetailResponse> getCurrentUserBookingsPaged(
       User currentUser,
       BookingStatus status,
       LocalDateTime startDate,
@@ -151,4 +156,48 @@ public class BookingServiceImpl implements BookingService {
 
     return bookings.map(bookingResponseMapper::toDetailResponse);
   }
+
+  @Override
+    public List<BookingDetailResponse> getAllBookings(){
+     return bookingResponseMapper.toDetailResponseList(
+             bookingRepository.findAllByOrderByCreatedAtDesc()
+     );
+    }
+
+    @Override
+    public void deletedBooking(Long bookingId, User currentUser) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new PetcareException(ApiError.RESOURCE_NOT_FOUND));
+
+        // Verificar que sea el dueño de la reserva o admin
+        if (!currentUser.getRoles().equals("ROLE_ADMIN") &&
+                !isBookingOwner(booking, currentUser)) {
+            throw new AccessDeniedException("No tienes permiso para eliminar esta reserva");
+        }
+
+        if (!BookingStatus.CANCELLED.equals(booking.getStatus())) {
+            throw new IllegalStateException("Solo se pueden eliminar reservas en estado CANCELADO");
+        }
+
+        bookingRepository.deleteById(bookingId);
+    }
+
+    private boolean isBookingOwner(Booking booking, User user) {
+        return (user instanceof Owner && booking.getOwner().getId().equals(user.getId())) ||
+                (user instanceof Sitter && booking.getSitter().getId().equals(user.getId()));
+
+
+    }
+
+        /*Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new PetcareException(ApiError.RESOURCE_NOT_FOUND));
+
+        if (!BookingStatus.CANCELLED.equals(booking.getStatus())) {
+            throw new IllegalStateException("Solo se pueden eliminar reservas en estado CANCELADO");
+        }
+
+        bookingRepository.deleteById(bookingId);
+
+         */
+
 }

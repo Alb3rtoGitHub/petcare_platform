@@ -2,6 +2,7 @@ package com.equipo11.petcare.validator;
 
 import java.time.LocalDateTime;
 
+import com.equipo11.petcare.model.user.Role;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
@@ -77,6 +78,8 @@ public class BookingValidator {
   }
 
   private void validateOwnershipAndPermissions(BookingCreateRequest request, User currentUser) {
+      System.out.println("User roles: " + currentUser.getRoles().stream().map(Role::getName).toList());
+      System.out.println("User ID: " + currentUser.getId());
     // Para administradores
     if (isAdmin(currentUser)) {
       petService.validatePetExists(request.petId());
@@ -85,12 +88,12 @@ public class BookingValidator {
 
     // Para propietarios
     if (isOwner(currentUser)) {
+        System.out.println("Es owner, validando mascota...");
       petService.validatePetBelongsToOwner(request.petId(), currentUser.getId());
       return;
     }
 
     throw new PetcareException(ApiError.FORBIDDEN_BOOKING_CREATION);
-
   }
 
   // validaciones de cuidador y servicios

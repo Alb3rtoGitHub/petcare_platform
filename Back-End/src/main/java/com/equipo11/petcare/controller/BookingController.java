@@ -38,31 +38,32 @@ public class BookingController {
     this.userRepository = userRepository;
   }
 
-  // @GetMapping
-  // @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OWNER')") // Solo admin y
-  // public ResponseEntity<List<BookingDetailResponse>>
-  // getAllBookings(@AuthenticationPrincipal String email) {
-  // User currentUser = userRepository.findByEmail(email)
-  // .orElseThrow(() -> new AccessDeniedException("Usuario no autenticado"));
-  // List<BookingDetailResponse> bookings =
-  // bookingService.getCurrentUserBookings(currentUser);
-  // return ResponseEntity.status(HttpStatus.OK).body(bookings);
-  // }
+  @GetMapping("admin")
+   @PreAuthorize("hasRole('ROLE_ADMIN')") // Solo admin y
+  public ResponseEntity<List<BookingDetailResponse>> getAllBookingsAdmin(@AuthenticationPrincipal String email) {
+
+    User currentUser = getCurrentUser(email);
+    List<BookingDetailResponse> bookings = bookingService.getAllBookings();
+    return ResponseEntity.status(HttpStatus.OK).body(bookings);
+  }
 
   @GetMapping
+  @PreAuthorize("hasAnyRole('ROLE_OWNER','ROLE_SITTER')")
   public ResponseEntity<Page<BookingDetailResponse>> getBookingsUser(
       @RequestParam(required = false) BookingStatus status,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
-      @PageableDefault(size = 14, sort = "createdAt") Pageable pageable,
+      @PageableDefault(size = 1, sort = "createdAt") Pageable pageable,
       @AuthenticationPrincipal String email) {
 
-    User currentUser = userRepository.findByEmail(email)
-        .orElseThrow(() -> new AccessDeniedException("Usuario no autenticado"));
+    User currentUser = getCurrentUser(email);
 
-    Page<BookingDetailResponse> bookings = bookingService.getCurrentUserBookingsPaged(currentUser, status, startDate,
-        endDate, pageable);
-    return ResponseEntity.status(HttpStatus.OK).body(bookings);
+    return ResponseEntity.ok(bookingService.getCurrentUserBookingsPaged(
+            currentUser,
+            status,
+            startDate,
+            endDate,
+            pageable));
   }
 
   @PostMapping
@@ -70,8 +71,7 @@ public class BookingController {
   // owners pueden crear reservas
   public ResponseEntity<BookingResponse> addBooking(@Valid @RequestBody BookingCreateRequest request,
       @AuthenticationPrincipal String email) {
-    User currentUser = userRepository.findByEmail(email)
-        .orElseThrow(() -> new AccessDeniedException("Usuario no autenticado"));
+    User currentUser = getCurrentUser(email);
 
     System.out.println("userr currentUser " + currentUser.getEmail());
 
@@ -91,5 +91,16 @@ public class BookingController {
 
     var updateBooking = bookingService.updateStatus(bookingId, statusRequest.getBookingStatus(), currentUser);
     return ResponseEntity.status(HttpStatus.OK).body(updateBooking);
+  }
+
+  private User getCurrentUser(String email) {
+      return userRepository.findByEmail(email).orElseThrow(() -> new AccessDeniedException("Usuario no autenticado"));
+  }
+
+  @DeleteMapping("/{bookingId}")
+  public ResponseEntity<?> deleteBooking(@PathVariable Long bookingId, @AuthenticationPrincipal String email) {
+      User currentUser = getCurrentUser(email);
+      bookingService.deletedBooking(bookingId,currentUser);
+     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 }

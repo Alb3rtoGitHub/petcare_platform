@@ -1,6 +1,7 @@
 spring:
-  aplilcation:
+  application:
     name: petcare
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -10,6 +11,7 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+
 jwt:
   secret: ${JWT_SECRET:123456}
   expiration-ms: 10800000

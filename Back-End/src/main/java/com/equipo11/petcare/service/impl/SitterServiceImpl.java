@@ -400,10 +400,15 @@ public class SitterServiceImpl implements SitterService {
 
   @Override
   public void validateSitter(Long sitterId) {
-    User user = userRepository.findById(sitterId)
+
+      User user = userRepository.findById(sitterId)
         .orElseThrow(() -> new ValidationException("El cuidador no existe"));
-    boolean isSitter = user.getRoles().stream().anyMatch(r -> r.getName() == ERole.ROLE_SITTER);
-    if (!isSitter) {
+    boolean isSitter = user.getRoles().stream().anyMatch(r -> r.getName().equals(ERole.ROLE_SITTER));
+      System.out.println("Role names: " + user.getRoles().stream()
+              .map(r -> r.getName())
+              .collect(Collectors.toList()));
+
+      if (!isSitter) {
       throw new ValidationException("El usuario especificado no es un cuidador válido");
     }
   }
