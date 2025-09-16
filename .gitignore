@@ -81,6 +81,38 @@ Back-End/tmp/
 Back-End/logs/
 Back-End/*.log
 
+# Dependencias
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+.pnpm-debug.log
+
+# Entornos
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build
+dist/
+build/
+out/
+.next/
+
+# IDE
+.DS_Store
+.idea/
+*.swp
+*.swo
+.vscode/
+*.log
+
+# Sistema
+Thumbs.db
+Desktop.ini
+
 # ===================================
 # DEVELOPMENT TOOLS
 # ===================================
