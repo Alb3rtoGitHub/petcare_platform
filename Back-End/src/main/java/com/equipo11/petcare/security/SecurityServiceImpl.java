@@ -53,9 +53,11 @@ public class SecurityServiceImpl implements SecurityService{
                 .getContext()
                 .getAuthentication();
 
-        UserDetails user = (UserDetails) auth.getPrincipal();
-        return userRepository.findByEmail(user.getUsername())
+        String email = (String) auth.getPrincipal();
+
+        return userRepository.findByEmail(email)
                 .orElseThrow(() -> new PetcareException(ApiError.UNAUTHORIZED));
+
     }
 }
 
