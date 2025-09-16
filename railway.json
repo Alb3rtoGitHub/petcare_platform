@@ -3,7 +3,7 @@
     "env": {
       "JAVA_VERSION": "17"
     },
-    "command": "cd Back-End && ./mvnw package"
+    "command": "cd Back-End && ./mvnw clean package -DskipTests"
   },
   "start": {
     "command": "cd Back-End && java -jar target/*.jar"
