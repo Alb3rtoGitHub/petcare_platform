@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.view.RedirectView;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -27,15 +28,15 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    @Transactional
-    public ResponseEntity<AuthResponseDTO> registerUser(@Valid @RequestBody RegisterRequestDTO request) {
-        System.out.println("aca estamos-1");
-        AuthResponseDTO response = authService.registerUser(request);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    public ResponseEntity<String> registerUser(@Valid @RequestBody RegisterRequestDTO request) {
+        authService.registerUser(request);
+        return new ResponseEntity<>("Usuario creado", HttpStatus.CREATED);
     }
 
-    @DeleteMapping
-    public void test() {
-        System.out.println("test");
+
+    @GetMapping("/confirm")
+    public RedirectView confirmEmail(@RequestParam String token){
+        var response = authService.validateEmail(token);
+        return new RedirectView(response);
     }
 }

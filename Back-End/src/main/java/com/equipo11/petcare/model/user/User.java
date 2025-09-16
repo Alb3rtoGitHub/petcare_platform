@@ -36,11 +36,8 @@ public class User {
     @Column(nullable = false, length = 30)
     private String lastName;
 
-    @Column(nullable = false)
-    private LocalDate birthDate;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "address_id", nullable = false)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "address_id", unique = true, nullable = false)
     private Address address;
 
     @Column(nullable = false, length = 20)
@@ -57,4 +54,12 @@ public class User {
 
     private LocalDateTime updatedAt;
 
+    @Column(nullable = false)
+    private boolean verified = false;
+
+    @Column(nullable = false)
+    private boolean deleted = false;
+
+    @Column(name = "profile_image_url")
+    private String profilePicture; // URL de la foto de perfil
 }

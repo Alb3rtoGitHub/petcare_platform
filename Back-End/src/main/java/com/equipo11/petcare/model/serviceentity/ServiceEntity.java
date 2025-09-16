@@ -1,41 +1,33 @@
 package com.equipo11.petcare.model.serviceentity;
 
-import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Set;
-
 import com.equipo11.petcare.model.serviceentity.enums.ServiceName;
-import com.equipo11.petcare.model.user.Sitter;
 import jakarta.persistence.*;
+import lombok.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-@AllArgsConstructor
-@NoArgsConstructor
+@Entity
+@Table(name = "service_entities")
 @Getter
 @Setter
-@Entity
-@Table(name = "services")
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ServiceEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, unique = true)
-    private ServiceName serviceName;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, unique = true)
+  private ServiceName serviceName;
 
   private String description;
 
-  private BigDecimal basePrice;
+  private Double price;
 
-  private Long duration;
+  private Long duration; // en minutos?
 
-  private Boolean isActive;
+  private Boolean active;
 
-    @ManyToMany(mappedBy = "serviceEntitySet")
-    private Set<Sitter> sitters = new HashSet<>();
+  @ManyToMany(mappedBy = "serviceEntitySet")
+  private Set<Sitter> sitters = new HashSet<>();
 }

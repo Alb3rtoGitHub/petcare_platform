@@ -1,5 +1,6 @@
 package com.equipo11.petcare.model.address;
 
+import com.equipo11.petcare.model.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,15 +17,15 @@ public class Address {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "street_name", nullable = false)
-    private String streetName;
-
-    @Column(name = "street_number", nullable = false)
-    private String streetNumber;
+    @Column(name = "street_address", nullable = false)
+    private String streetAddress;
 
     private String unit;
 
     @ManyToOne
     @JoinColumn(name = "city_id", nullable = false)
     private City city;
+
+    @OneToOne(mappedBy = "address", fetch = FetchType.LAZY)
+    private User user;
 }

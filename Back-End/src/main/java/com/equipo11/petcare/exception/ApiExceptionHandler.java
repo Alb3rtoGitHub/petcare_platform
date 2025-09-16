@@ -24,37 +24,37 @@ import com.equipo11.petcare.enums.ApiError;
 @RestControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
-  /**
-   * Maneja las instancias de PetcareException lanzadas por la aplicación.
-   * 
-   * @param e       La excepción PetcareException que fue lanzada
-   * @param request La solicitud web actual
-   * @return ResponseEntity conteniendo los detalles del error y el estado HTTP
-   *         apropiado
-   */
-  @ExceptionHandler(PetcareException.class)
-  public ResponseEntity<ErrorDTO> duplicateResource(PetcareException e, WebRequest request) {
-    return ResponseEntity.status(e.getStatus()).body(new ErrorDTO(e.getDescription(), e.getReasons()));
-  }
-
-  /**
-   * Maneja los errores de validación para los cuerpos de las solicitudes.
-   * Convierte los errores de validación en una respuesta de error estructurada.
-   *
-   * @param ex      La excepción MethodArgumentNotValidException que fue lanzada
-   * @param headers Los encabezados que se escribirán en la respuesta
-   * @param status  El estado de respuesta seleccionado
-   * @param request La solicitud actual
-   * @return ResponseEntity conteniendo los detalles de los errores de validación
-   */
-  @Override
-  protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-      HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-    List<String> reasons = new ArrayList<>();
-    for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-      reasons.add(String.format("%s - %s", error.getField(), error.getDefaultMessage()));
+    /**
+     * Maneja las instancias de PetcareException lanzadas por la aplicación.
+     *
+     * @param e       La excepción PetcareException que fue lanzada
+     * @param request La solicitud web actual
+     * @return ResponseEntity conteniendo los detalles del error y el estado HTTP
+     *         apropiado
+     */
+    @ExceptionHandler(PetcareException.class)
+    public ResponseEntity<ErrorDTO> duplicateResource(PetcareException e, WebRequest request) {
+        return ResponseEntity.status(e.getStatus()).body(new ErrorDTO(e.getDescription(), e.getReasons()));
     }
-    return ResponseEntity.status(ApiError.VALIDATION_ERROR.getHttpStatus())
-        .body(new ErrorDTO(ApiError.VALIDATION_ERROR.getMessage(), reasons));
-  }
+
+    /**
+     * Maneja los errores de validación para los cuerpos de las solicitudes.
+     * Convierte los errores de validación en una respuesta de error estructurada.
+     *
+     * @param ex      La excepción MethodArgumentNotValidException que fue lanzada
+     * @param headers Los encabezados que se escribirán en la respuesta
+     * @param status  El estado de respuesta seleccionado
+     * @param request La solicitud actual
+     * @return ResponseEntity conteniendo los detalles de los errores de validación
+     */
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+                                                                  HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        List<String> reasons = new ArrayList<>();
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            reasons.add(String.format("%s - %s", error.getField(), error.getDefaultMessage()));
+        }
+        return ResponseEntity.status(ApiError.VALIDATION_ERROR.getHttpStatus())
+                .body(new ErrorDTO(ApiError.VALIDATION_ERROR.getMessage(), reasons));
+    }
 }

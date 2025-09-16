@@ -1,15 +1,21 @@
 package com.equipo11.petcare.model.availability;
 
-import com.equipo11.petcare.model.serviceentity.enums.ServiceName;
+import com.equipo11.petcare.model.serviceentity.ServiceEntity;
 import com.equipo11.petcare.model.user.Sitter;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Entity @Getter @Setter
-@Table(name = "sitter_availability")
+@Entity
+@Table(name = "availabilities")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Availability {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,14 +24,14 @@ public class Availability {
     @JoinColumn(name = "sitter_id", nullable = false)
     private Sitter sitter;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "service_name", nullable = false)
-    private ServiceName serviceName;
+    @ManyToOne
+    @JoinColumn(name = "service_entity_id", nullable = false)
+    private ServiceEntity serviceEntity;
 
-    @Column(name = "start_date", nullable = false)
+    @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
-    @Column(name = "end_date", nullable = false)
+    @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
     @Column(nullable = false)

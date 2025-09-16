@@ -62,5 +62,9 @@ public class Booking {
   @PrePersist
   protected void onCreate() {
     createdAt = LocalDateTime.now();
+
   }
+
+  @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
+  private Review review;
 }

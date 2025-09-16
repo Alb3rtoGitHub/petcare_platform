@@ -13,11 +13,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@EnableMethodSecurity
 public class SecurityConfig {
 
     private static final String API_V1 = "/api/v1";
@@ -43,9 +41,16 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authRequest ->
                         authRequest
-                                .requestMatchers(HttpMethod.POST, API_V1 + "/auth/register").permitAll()
-                                .requestMatchers(HttpMethod.POST, API_V1 + "/auth").permitAll()
-                                .requestMatchers(HttpMethod.DELETE, API_V1 +"/auth").hasAuthority("ROLE_ADMIN")
+                                .requestMatchers(HttpMethod.POST, API_V1 + "/auth/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, API_V1 + "/auth/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, API_V1 + "/sitters/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, API_V1 + "/pet/**").hasAuthority("ROLE_OWNER")
+                                .requestMatchers(HttpMethod.PUT, API_V1 + "/pet/**").hasAuthority("ROLE_OWNER")
+                                .requestMatchers(HttpMethod.DELETE, API_V1 + "/pet/**").hasAuthority("ROLE_OWNER")
+                                .requestMatchers(HttpMethod.POST, API_V1 + "/reviews/**").hasAuthority("ROLE_OWNER")
+                                .requestMatchers(HttpMethod.POST, API_V1 + "/claims/**").hasAuthority("ROLE_OWNER")
+                                .requestMatchers(HttpMethod.PUT, API_V1 + "/claims/**").hasAuthority("ROLE_ADMIN")
+                                .requestMatchers(HttpMethod.GET, API_V1 + "/claims/**").hasAnyAuthority("ROLE_OWNER", "ROLE_ADMIN")
                                 .anyRequest().authenticated())
                 .sessionManagement(sessionManager ->
                         sessionManager
