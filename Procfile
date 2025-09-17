@@ -1,1 +1,0 @@
-web: cd Back-End && java -jar target/*.jar

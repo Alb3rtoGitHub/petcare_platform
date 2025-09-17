@@ -1,13 +1,7 @@
 {
   "build": {
-    "builder": "NIXPACKS",
-    "buildCommand": "cd Back-End && ./mvnw package -DskipTests"
+    "workdir": "Back-End"
   },
-  "deploy": {
-    "startCommand": "cd Back-End && java -jar target/*.jar",
-    "healthcheckPath": "/",
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10
-  }
+  "start": "./mvnw spring-boot:run"
 }
 
