@@ -1,7 +1,12 @@
 {
   "build": {
-    "builder": "java",
-    "workdir": "Back-End"
+    "builder": "shell",
+    "buildCommand": "cd Back-End && ./mvnw package -DskipTests"
   },
-  "start": "./mvnw spring-boot:run"
+  "deploy": {
+    "startCommand": "cd Back-End && java -jar target/*.jar",
+    "healthcheckPath": "/",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
 }

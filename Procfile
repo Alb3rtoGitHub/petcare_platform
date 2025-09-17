@@ -1,0 +1,1 @@
+web: cd Back-End && ./mvnw spring-boot:run
