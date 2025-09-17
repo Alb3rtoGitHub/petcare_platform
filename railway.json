@@ -1,6 +1,6 @@
 {
   "build": {
-    "builder": "java",
+    "builder": "NIXPACKS",
     "buildCommand": "cd Back-End && ./mvnw package -DskipTests"
   },
   "deploy": {
@@ -10,3 +10,4 @@
     "restartPolicyMaxRetries": 10
   }
 }
+
