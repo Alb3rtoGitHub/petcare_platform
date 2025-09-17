@@ -293,10 +293,11 @@ public class SitterServiceImpl implements SitterService {
                 .id(sitter.getId())
                 .firstName(sitter.getFirstName())
                 .lastName(sitter.getLastName())
-                .rating(sitter.getAverageRating())
-                .cityId(sitter.getAddress() != null && sitter.getAddress().getCity() != null
-                        ? sitter.getAddress().getCity().getId()
+                .averageRating(sitter.getAverageRating())
+                .cityName(sitter.getAddress() != null && sitter.getAddress().getCity() != null
+                        ? sitter.getAddress().getCity().getName()
                         : null)
+                .profilePicture(sitter.getProfilePicture())
                 .build();
     }
 

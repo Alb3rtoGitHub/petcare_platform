@@ -54,6 +54,9 @@ public class Sitter extends User {
     @OneToMany(mappedBy = "sitter", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Availability> availabilities = new HashSet<>();
 
+    @PostLoad
+    @PrePersist
+    @PreUpdate
     public void updateAverageRating() {
         if (this.reviews == null || this.reviews.isEmpty()) {
             this.averageRating = 0.0;
