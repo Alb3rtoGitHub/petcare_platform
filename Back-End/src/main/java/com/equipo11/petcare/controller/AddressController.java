@@ -27,14 +27,14 @@ public class AddressController {
         return ResponseEntity.ok(addressService.getAllCountries());
     }
 
-    @GetMapping("/regions/{countryCode}")
+    @GetMapping("/{countryCode}/regions")
     public ResponseEntity<List<RegionResponseDTO>> getAllRegionsByCountry(
             @PathVariable String countryCode
     ) {
         return ResponseEntity.ok(addressService.getAllRegionsByCountry(countryCode));
     }
 
-    @GetMapping("/cities/{regionId}")
+    @GetMapping("/{regionId}/cities")
     public ResponseEntity<List<CityResponseDTO>> getAllCitiesByRegion(
             @PathVariable Long regionId
     ) {
