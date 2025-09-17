@@ -1,7 +1,0 @@
-{
-  "build": {
-    "workdir": "Back-End"
-  },
-  "start": "./mvnw spring-boot:run"
-}
-
