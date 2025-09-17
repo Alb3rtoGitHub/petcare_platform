@@ -79,7 +79,7 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public List<CountryResponseDTO> getAllCountries() {
-        List<Country> countries = countryRepo.findAll();
+        var countries = countryRepo.findAll();
         return countries.stream()
                 .map(country -> new CountryResponseDTO(country.getName(), country.getCountryCode()))
                 .collect(Collectors.toList());

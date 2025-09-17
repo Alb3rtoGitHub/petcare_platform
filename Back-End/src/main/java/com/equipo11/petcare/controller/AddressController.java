@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/addresses")
+@RequestMapping("/api/v1/addresses")
 public class AddressController {
 
     private final AddressService addressService;
