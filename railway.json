@@ -1,11 +1,7 @@
 {
   "build": {
-    "env": {
-      "JAVA_VERSION": "17"
-    },
-    "command": "cd Back-End && ./mvnw clean package -DskipTests"
+    "builder": "java",
+    "workdir": "Back-End"
   },
-  "start": {
-    "command": "cd Back-End && java -jar target/*.jar"
-  }
+  "start": "./mvnw spring-boot:run"
 }
