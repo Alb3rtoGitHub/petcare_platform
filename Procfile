@@ -1,1 +1,1 @@
-web: cd Back-End && ./mvnw spring-boot:run
+web: cd Back-End && java -jar target/*.jar
