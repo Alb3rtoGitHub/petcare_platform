@@ -37,8 +37,7 @@ public class BookingController {
     public ResponseEntity<Page<BookingResponseDTO>> getAllBookings(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "startDateTime") String sortBy
-    ) {
+            @RequestParam(defaultValue = "startDateTime") String sortBy) {
         return ResponseEntity.ok(bookingService.getAllBookings(page, size, sortBy));
     }
 
@@ -51,8 +50,18 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getBookingsByUser(userId, page, size, sortBy));
     }
 
+    @GetMapping("/sitter/{sitterId}")
+    public ResponseEntity<Page<BookingResponseDTO>> getBookingsBySitter(
+            @PathVariable Long sitterId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "startDateTime") String sortBy) {
+        return ResponseEntity.ok(bookingService.getBookingsBySitter(sitterId, page, size, sortBy));
+    }
+
     @PatchMapping("/{id}/{status}")
-    public ResponseEntity<BookingResponseDTO> updateBooking(@PathVariable Long id, @PathVariable @Valid BookingStatus status) {
+    public ResponseEntity<BookingResponseDTO> updateBooking(@PathVariable Long id,
+            @PathVariable @Valid BookingStatus status) {
         var response = bookingService.updateBooking(id, status);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

@@ -23,85 +23,99 @@ import java.util.stream.Collectors;
 @Service
 public class AddressServiceImpl implements AddressService {
 
-    private final CountryRepository countryRepo;
-    private final RegionRepository regionRepo;
-    private final CityRepository cityRepo;
-    private final AddressRepository addressRepo;
+        private final CountryRepository countryRepo;
+        private final RegionRepository regionRepo;
+        private final CityRepository cityRepo;
+        private final AddressRepository addressRepo;
 
-    public AddressServiceImpl(CountryRepository countryRepo,
-                              RegionRepository regionRepo,
-                              CityRepository cityRepo,
-                              AddressRepository addressRepo) {
-        this.countryRepo = countryRepo;
-        this.regionRepo = regionRepo;
-        this.cityRepo = cityRepo;
-        this.addressRepo = addressRepo;
-    }
-
-    @Override
-    public Address resolveAddress(AddressDTO dto) {
-
-        Country country = countryRepo.findById(dto.countryCode())
-                .orElseThrow(() -> new PetcareException(ApiError.COUNTRY_NOT_FOUND));
-
-        Region region = regionRepo.findByNameAndCountry(dto.region(), country)
-                .orElseThrow(() -> new PetcareException(ApiError.REGION_NOT_FOUND));
-
-        City city = cityRepo.findByNameAndRegion(dto.city(), region)
-                .orElseThrow(() -> new PetcareException(ApiError.CITY_NOT_FOUND));
-
-        return Address.builder()
-                .city(city)
-                .streetAddress(dto.streetAddress())
-                .unit(dto.unit())
-                .build();
-    }
-
-    @Override
-    public Address updateAddress(Long userId, AddressDTO dto) {
-        Address address = addressRepo.findByUserId(userId);
-        if (address == null) {
-            throw new PetcareException(ApiError.RESOURCE_NOT_FOUND);
+        public AddressServiceImpl(CountryRepository countryRepo,
+                        RegionRepository regionRepo,
+                        CityRepository cityRepo,
+                        AddressRepository addressRepo) {
+                this.countryRepo = countryRepo;
+                this.regionRepo = regionRepo;
+                this.cityRepo = cityRepo;
+                this.addressRepo = addressRepo;
         }
 
-        Address normalizeNewAddress = resolveAddress(dto);
-        address.setCity(normalizeNewAddress.getCity());
-        address.setStreetAddress(dto.streetAddress());
-        address.setUnit(normalizeNewAddress.getUnit());
-        addressRepo.save(address);
-        return address;
+        @Override
+        public Address resolveAddress(AddressDTO dto) {
+
+                System.out.println("[DEBUG] resolveAddress - countryCode: '" + dto.countryCode() + "', region: '"
+                                + dto.region() + "', city: '" + dto.city() + "'");
+
+                Country country = countryRepo.findById(dto.countryCode())
+                                .orElseThrow(() -> {
+                                        System.out.println("[ERROR] País no encontrado: '" + dto.countryCode() + "'");
+                                        return new PetcareException(ApiError.COUNTRY_NOT_FOUND);
+                                });
+
+                Region region = regionRepo.findByNameAndCountry(dto.region(), country)
+                                .orElseThrow(() -> {
+                                        System.out.println("[ERROR] Región no encontrada: '" + dto.region()
+                                                        + "' para país: '" + country.getCountryCode() + "'");
+                                        return new PetcareException(ApiError.REGION_NOT_FOUND);
+                                });
+
+                City city = cityRepo.findByNameAndRegion(dto.city(), region)
+                                .orElseThrow(() -> {
+                                        System.out.println("[ERROR] Ciudad no encontrada: '" + dto.city()
+                                                        + "' para región: '" + region.getName() + "'");
+                                        return new PetcareException(ApiError.CITY_NOT_FOUND);
+                                });
+
+                return Address.builder()
+                                .city(city)
+                                .streetAddress(dto.streetAddress())
+                                .unit(dto.unit())
+                                .build();
         }
 
-    @Override
-    public Address createAddress(Address address) {
-        return addressRepo.save(address);
-    }
+        @Override
+        public Address updateAddress(Long userId, AddressDTO dto) {
+                Address address = addressRepo.findByUserId(userId);
+                if (address == null) {
+                        throw new PetcareException(ApiError.RESOURCE_NOT_FOUND);
+                }
 
-    @Override
-    public List<CountryResponseDTO> getAllCountries() {
-        var countries = countryRepo.findAll();
-        return countries.stream()
-                .map(country -> new CountryResponseDTO(country.getName(), country.getCountryCode()))
-                .collect(Collectors.toList());
-    }
+                Address normalizeNewAddress = resolveAddress(dto);
+                address.setCity(normalizeNewAddress.getCity());
+                address.setStreetAddress(dto.streetAddress());
+                address.setUnit(normalizeNewAddress.getUnit());
+                addressRepo.save(address);
+                return address;
+        }
 
-    @Override
-    public List<RegionResponseDTO> getAllRegionsByCountry(String countryCode) {
-        Country country = countryRepo.findById(countryCode)
-                .orElseThrow(() -> new PetcareException(ApiError.COUNTRY_NOT_FOUND));
-        List<Region> regions = regionRepo.findAllByCountryCountryCode(country.getCountryCode());
-        return regions.stream()
-                .map(region -> new RegionResponseDTO(region.getId(), region.getName()))
-                .collect(Collectors.toList());
-    }
+        @Override
+        public Address createAddress(Address address) {
+                return addressRepo.save(address);
+        }
 
-    @Override
-    public List<CityResponseDTO> getAllCitiesByRegion(Long regionId) {
-        Region region = regionRepo.findById(regionId)
-                .orElseThrow(() -> new PetcareException(ApiError.REGION_NOT_FOUND));
-        List<City> cities = cityRepo.findAllByRegion(region);
-        return cities.stream()
-                .map(city -> new CityResponseDTO(city.getId(), city.getName()))
-                .collect(Collectors.toList());
-    }
+        @Override
+        public List<CountryResponseDTO> getAllCountries() {
+                var countries = countryRepo.findAll();
+                return countries.stream()
+                                .map(country -> new CountryResponseDTO(country.getName(), country.getCountryCode()))
+                                .collect(Collectors.toList());
+        }
+
+        @Override
+        public List<RegionResponseDTO> getAllRegionsByCountry(String countryCode) {
+                Country country = countryRepo.findById(countryCode)
+                                .orElseThrow(() -> new PetcareException(ApiError.COUNTRY_NOT_FOUND));
+                List<Region> regions = regionRepo.findAllByCountryCountryCode(country.getCountryCode());
+                return regions.stream()
+                                .map(region -> new RegionResponseDTO(region.getId(), region.getName()))
+                                .collect(Collectors.toList());
+        }
+
+        @Override
+        public List<CityResponseDTO> getAllCitiesByRegion(Long regionId) {
+                Region region = regionRepo.findById(regionId)
+                                .orElseThrow(() -> new PetcareException(ApiError.REGION_NOT_FOUND));
+                List<City> cities = cityRepo.findAllByRegion(region);
+                return cities.stream()
+                                .map(city -> new CityResponseDTO(city.getId(), city.getName()))
+                                .collect(Collectors.toList());
+        }
 }

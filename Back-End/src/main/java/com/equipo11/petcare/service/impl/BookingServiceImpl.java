@@ -38,8 +38,9 @@ public class BookingServiceImpl implements BookingService {
     private final EmailService emailService;
 
     public BookingServiceImpl(SitterService sitterService,
-                              SecurityService securityService,
-                              ServiceEntityRepository serviceEntityRepository, BookingRepository bookingRepository, EmailService emailService) {
+            SecurityService securityService,
+            ServiceEntityRepository serviceEntityRepository, BookingRepository bookingRepository,
+            EmailService emailService) {
         this.sitterService = sitterService;
         this.securityService = securityService;
         this.serviceEntityRepository = serviceEntityRepository;
@@ -75,7 +76,8 @@ public class BookingServiceImpl implements BookingService {
                 .serviceEntity(serviceEntity)
                 .startDateTime(bookingRequestDTO.startDateTime())
                 .endDateTime(bookingRequestDTO.endDateTime())
-                .totalPrice(serviceEntity.getPrice() * Duration.between(bookingRequestDTO.startDateTime(), bookingRequestDTO.endDateTime()).toHours())
+                .totalPrice(serviceEntity.getPrice() * Duration
+                        .between(bookingRequestDTO.startDateTime(), bookingRequestDTO.endDateTime()).toHours())
                 .specialInstructions(bookingRequestDTO.specialInstructions())
                 .build();
 
@@ -85,7 +87,6 @@ public class BookingServiceImpl implements BookingService {
 
         return toResponse(booking);
     }
-
 
     @Override
     @Transactional
@@ -117,8 +118,7 @@ public class BookingServiceImpl implements BookingService {
     public Page<BookingResponseDTO> getAllBookings(
             int page,
             int size,
-            String sortBy
-    ) {
+            String sortBy) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
 
@@ -172,6 +172,13 @@ public class BookingServiceImpl implements BookingService {
                 .status(booking.getStatus())
                 .createdAt(booking.getCreatedAt())
                 .build();
+    }
+
+    @Override
+    public Page<BookingResponseDTO> getBookingsBySitter(Long sitterId, int page, int size, String sortBy) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+        Page<Booking> bookings = bookingRepository.findBySitterId(sitterId, pageable);
+        return bookings.map(this::toResponse);
     }
 
     private void sendBookingConfirmationEmail(Owner owner, Sitter sitter, Booking booking) {

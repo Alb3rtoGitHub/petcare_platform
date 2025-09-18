@@ -8,9 +8,16 @@ import org.springframework.data.domain.Pageable;
 
 public interface BookingService {
     BookingResponseDTO createBooking(BookingRequestDTO bookingRequestDTO);
+
     BookingResponseDTO updateBooking(Long id, BookingStatus status);
+
     void deleteBooking(Long id);
+
     BookingResponseDTO getBooking(Long id);
+
     Page<BookingResponseDTO> getAllBookings(int page, int size, String sortBy);
+
     Page<BookingResponseDTO> getBookingsByUser(Long userId, int page, int size, String sortBy);
+
+    Page<BookingResponseDTO> getBookingsBySitter(Long sitterId, int page, int size, String sortBy);
 }

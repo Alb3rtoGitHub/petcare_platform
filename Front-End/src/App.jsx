@@ -17,6 +17,7 @@ import OwnerDashboard from "./pages/owner/OwnerDashboard.jsx";
 import SitterDashboard from "./pages/sitter/SitterDashboard.jsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
 import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
+import { NotificationProvider } from "./components/NotificationProvider.jsx";
 import { jwtDecode } from "jwt-decode";
 
 function ProtectedRoute({ children, roles }) {
@@ -148,66 +149,68 @@ export default function App() {
     location.pathname.includes("/sitter");
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-white">
-        {!hideNavbar && <NewNavbar />}
-        <div className="w-full">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
+      <NotificationProvider>
+        <div className="min-h-screen bg-white">
+          {!hideNavbar && <NewNavbar />}
+          <div className="w-full">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
 
-            {/* Rutas de registro con detección automática */}
-            <Route
-              path="/Register"
-              element={<SimpleRegisterRouter startStep={1} />}
-            />
-            <Route
-              path="/Register/pets"
-              element={<SimpleRegisterRouter startStep={2} />}
-            />
+              {/* Rutas de registro con detección automática */}
+              <Route
+                path="/Register"
+                element={<SimpleRegisterRouter startStep={1} />}
+              />
+              <Route
+                path="/Register/pets"
+                element={<SimpleRegisterRouter startStep={2} />}
+              />
 
-            {/* Rutas específicas para casos donde quieras forzar el tipo */}
-            <Route
-              path="/Register/owner"
-              element={
-                <PetOwnerRegistration
-                  startStep={1}
-                  initialUserType="pet-owner"
-                />
-              }
-            />
-            <Route
-              path="/Register/sitter"
-              element={
-                <PetOwnerRegistration
-                  startStep={1}
-                  initialUserType="caregiver"
-                />
-              }
-            />
+              {/* Rutas específicas para casos donde quieras forzar el tipo */}
+              <Route
+                path="/Register/owner"
+                element={
+                  <PetOwnerRegistration
+                    startStep={1}
+                    initialUserType="pet-owner"
+                  />
+                }
+              />
+              <Route
+                path="/Register/sitter"
+                element={
+                  <PetOwnerRegistration
+                    startStep={1}
+                    initialUserType="caregiver"
+                  />
+                }
+              />
 
-            <Route path="/owner/book" element={<BookService />} />
-            <Route path="/owner/bookings" element={<OwnerBookings />} />
+              <Route path="/owner/book" element={<BookService />} />
+              <Route path="/owner/bookings" element={<OwnerBookings />} />
 
-            {/* Nuevas rutas agregadas para owner-dashboard y sitter-dashboard */}
-            <Route path="/owner-dashboard" element={<OwnerDashboard />} />
-            <Route path="/sitter-dashboard" element={<SitterDashboard />} />
+              {/* Nuevas rutas agregadas para owner-dashboard y sitter-dashboard */}
+              <Route path="/owner-dashboard" element={<OwnerDashboard />} />
+              <Route path="/sitter-dashboard" element={<SitterDashboard />} />
 
-            {/* Ruta existente para sitter se puede mantener o eliminar si no se necesita */}
-            <Route path="/sitter" element={<SitterDashboard />} />
+              {/* Ruta existente para sitter se puede mantener o eliminar si no se necesita */}
+              <Route path="/sitter" element={<SitterDashboard />} />
 
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute roles={["admin"]}>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute roles={["admin"]}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
         </div>
-      </div>
+      </NotificationProvider>
     </AuthProvider>
   );
 }

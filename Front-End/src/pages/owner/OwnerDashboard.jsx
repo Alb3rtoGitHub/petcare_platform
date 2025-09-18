@@ -9,6 +9,8 @@ import {
   Search,
   BookOpen,
   Star,
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
 import OwnerNavbar from "../../components/OwnerNavbar.jsx";
 import { Link } from "react-router-dom";
@@ -19,51 +21,201 @@ import ReceiptModal from "../../components/modals/ReceiptModal.jsx";
 import DetailsModal from "../../components/modals/DetailsModal.jsx";
 import AddPetModal from "../../components/modals/AddPetModal.jsx";
 import EditPetModal from "../../components/modals/EditPetModal.jsx";
+import { useAuth } from "../../context/AuthContext.jsx";
+import PetService from "../../services/PetService.js";
+import BookingService from "../../services/BookingService.js";
+import UserService from "../../services/UserService.js";
+import { showNotification } from "../../components/NotificationProvider.jsx";
 
 export default function OwnerDashboard() {
+  const { user } = useAuth();
   const [activeSection, setActiveSection] = useState("reservas");
+
+  // Estados para datos
+  const [pets, setPets] = useState([]);
+  const [reservas, setReservas] = useState([]);
+  const [previousReservas, setPreviousReservas] = useState([]);
+  const [loading, setLoading] = useState({
+    pets: false,
+    reservas: false,
+    general: false,
+  });
+  const [error, setError] = useState({
+    pets: null,
+    reservas: null,
+    general: null,
+  });
+
   // Estados para modales
-  const [openReservationModal, setOpenReservationModal] = useState(false);
   const [openRatingModal, setOpenRatingModal] = useState(false);
   const [openCancelModal, setOpenCancelModal] = useState(false);
   const [openReceiptModal, setOpenReceiptModal] = useState(false);
   const [openDetailsModal, setOpenDetailsModal] = useState(false);
-  const [pets, setPets] = useState([]);
   const [openAddPet, setOpenAddPet] = useState(false);
   const [openEditPet, setOpenEditPet] = useState(false);
   const [editingPet, setEditingPet] = useState(null);
+
   // Info para modales
   const [selectedReserva, setSelectedReserva] = useState(null);
   const [selectedCuidador, setSelectedCuidador] = useState(null);
 
-  // Mock data para mascotas favoritas
-  const myPets = [
-    {
-      id: 1,
-      name: "Max",
-      type: "Perro",
-      breed: "Golden Retriever",
-      age: "3 años",
-      image: "/api/placeholder/300/200",
-    },
-    {
-      id: 2,
-      name: "Luna",
-      type: "Gato",
-      breed: "Siamés",
-      age: "2 años",
-      image: "/api/placeholder/300/200",
-    },
-  ];
-
+  // Cargar datos iniciales y configurar polling
   useEffect(() => {
-    setPets(myPets);
-  }, []);
+    if (user?.id) {
+      loadPets();
+      loadBookings();
+
+      // Polling cada 30 segundos para actualizar reservas
+      const interval = setInterval(() => {
+        if (activeSection === "reservas") {
+          loadBookings(true); // silent = true para no mostrar loading
+        }
+      }, 30000);
+
+      return () => clearInterval(interval);
+    }
+  }, [user, activeSection]);
+
+  // Cargar mascotas del owner
+  const loadPets = async () => {
+    try {
+      setLoading((prev) => ({ ...prev, pets: true }));
+      setError((prev) => ({ ...prev, pets: null }));
+
+      const petsData = await PetService.getAllPetsByOwner(user.id);
+      const formattedPets = petsData.map((pet) =>
+        PetService.formatPetForDisplay(pet)
+      );
+      setPets(formattedPets);
+    } catch (error) {
+      console.error("Error cargando mascotas:", error);
+      setError((prev) => ({ ...prev, pets: error.message }));
+    } finally {
+      setLoading((prev) => ({ ...prev, pets: false }));
+    }
+  };
+
+  // Cargar reservas del owner
+  const loadBookings = async (silent = false) => {
+    try {
+      if (!silent) {
+        setLoading((prev) => ({ ...prev, reservas: true }));
+      }
+      setError((prev) => ({ ...prev, reservas: null }));
+
+      const bookingsData = await BookingService.getBookingsByUser(user.id);
+      const formattedBookings = bookingsData.content
+        ? bookingsData.content.map(formatBookingForDisplay)
+        : [];
+
+      // Detectar cambios en el estado de las reservas
+      if (reservas.length > 0) {
+        formattedBookings.forEach((newBooking) => {
+          const oldBooking = reservas.find((old) => old.id === newBooking.id);
+          if (oldBooking && oldBooking.estado !== newBooking.estado) {
+            // Notificar cambio de estado
+            const statusMessages = {
+              ACCEPTED: "Tu reserva ha sido aceptada por el cuidador",
+              REJECTED:
+                "Tu reserva ha sido rechazada. Puedes buscar otro cuidador",
+              COMPLETED:
+                "El servicio ha sido completado. ¡Puedes dejar una reseña!",
+            };
+
+            if (statusMessages[newBooking.estado]) {
+              showNotification(
+                "info",
+                "Estado de Reserva Actualizado",
+                statusMessages[newBooking.estado]
+              );
+            }
+          }
+        });
+      }
+
+      setPreviousReservas(reservas);
+      setReservas(formattedBookings);
+    } catch (error) {
+      console.error("Error cargando reservas:", error);
+      if (!silent) {
+        setError((prev) => ({ ...prev, reservas: error.message }));
+      }
+    } finally {
+      if (!silent) {
+        setLoading((prev) => ({ ...prev, reservas: false }));
+      }
+    }
+  };
+
+  // Formatear reserva para mostrar en el dashboard
+  const formatBookingForDisplay = (booking) => {
+    const formatDate = (dateString) => {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("es-ES", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    };
+
+    const formatTime = (startDate, endDate) => {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      return `${start.toLocaleTimeString("es-ES", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })} - ${end.toLocaleTimeString("es-ES", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })}`;
+    };
+
+    const getStatusColor = (status) => {
+      const statusColors = {
+        PENDING: "bg-yellow-100 text-yellow-800",
+        ACCEPTED: "bg-blue-100 text-blue-800",
+        COMPLETED: "bg-green-100 text-green-800",
+        CANCELLED: "bg-red-100 text-red-800",
+        REJECTED: "bg-red-100 text-red-800",
+      };
+      return statusColors[status] || "bg-gray-100 text-gray-800";
+    };
+
+    const getStatusText = (status) => {
+      const statusTexts = {
+        PENDING: "Pendiente",
+        ACCEPTED: "Confirmada",
+        COMPLETED: "Finalizada",
+        CANCELLED: "Cancelada",
+        REJECTED: "Rechazada",
+      };
+      return statusTexts[status] || status;
+    };
+
+    return {
+      id: booking.id,
+      cuidador: booking.sitterName || "Sin asignar",
+      avatar: `https://i.pravatar.cc/150?u=${booking.sitterId}`,
+      estado: getStatusText(booking.status),
+      estadoColor: getStatusColor(booking.status),
+      fecha: formatDate(booking.startDateTime),
+      hora: formatTime(booking.startDateTime, booking.endDateTime),
+      lugar: "Ubicación del servicio", // Placeholder hasta tener datos de ubicación
+      servicio: `${booking.serviceName} para ${booking.petName}`,
+      precio: `€${booking.totalPrice?.toFixed(2) || "0.00"}`,
+      puedeEvaluar: booking.status === "COMPLETED",
+      specialInstructions: booking.specialInstructions,
+      createdAt: booking.createdAt,
+      status: booking.status,
+      sitterId: booking.sitterId,
+    };
+  };
 
   // listen for navbar requests to open the reservation modal
   useEffect(() => {
     function onOpenReservation() {
-      setOpenReservationModal(true);
+      setActiveSection("reservar");
     }
     window.addEventListener("open:reservation-modal", onOpenReservation);
     return () =>
@@ -81,50 +233,65 @@ export default function OwnerDashboard() {
     return () => window.removeEventListener("owner:pet-delete", onPetDelete);
   }, []);
 
-  // Mock de reservas para mostrar 3 tarjetas
-  const reservas = [
-    {
-      id: "BK001",
-      cuidador: "María González",
-      avatar: `https://i.pravatar.cc/150?u=BK001`,
-      estado: "Confirmada",
-      estadoColor: "bg-blue-100 text-blue-800",
-      fecha: "domingo, 14 de enero de 2024",
-      hora: "09:00 - 10:00",
-      lugar: "Parque del Retiro, Madrid",
-      servicio: "Paseo Diario para Luna (Perro)",
-      precio: "25.20€",
-      puedeEvaluar: true,
-    },
-    {
-      id: "BK002",
-      cuidador: "Carlos Ruiz",
-      avatar: `https://i.pravatar.cc/150?u=BK002`,
-      estado: "Pendiente",
-      estadoColor: "bg-yellow-100 text-yellow-800",
-      fecha: "lunes, 18 de marzo de 2024",
-      hora: "16:00 - 18:00",
-      lugar: "Calle Mayor, Madrid",
-      servicio: "Guardería para Max (Perro)",
-      precio: "40.00€",
-      puedeEvaluar: false,
-    },
-    {
-      id: "BK003",
-      cuidador: "Ana López",
-      avatar: `https://i.pravatar.cc/150?u=BK003`,
-      estado: "Finalizada",
-      estadoColor: "bg-green-100 text-green-800",
-      fecha: "sábado, 6 de abril de 2024",
-      hora: "11:00 - 13:00",
-      lugar: "Plaza España, Madrid",
-      servicio: "Alojamiento para Luna (Gato)",
-      precio: "60.00€",
-      rating: 4,
-      comment: "Muy amable, dejó todo en orden",
-      puedeEvaluar: true,
-    },
-  ];
+  // Handlers para acciones de reservas
+  const handleCancelBooking = async (bookingId) => {
+    try {
+      setLoading((prev) => ({ ...prev, general: true }));
+      await BookingService.cancelBooking(bookingId);
+      await loadBookings(); // Recargar datos
+    } catch (error) {
+      console.error("Error cancelando reserva:", error);
+      alert("Error al cancelar la reserva: " + error.message);
+    } finally {
+      setLoading((prev) => ({ ...prev, general: false }));
+    }
+  };
+
+  const handleAddPet = async (petData) => {
+    try {
+      setLoading((prev) => ({ ...prev, general: true }));
+      const formattedPet = PetService.formatPetForBackend(petData);
+      await PetService.createPet(user.id, formattedPet);
+      await loadPets(); // Recargar mascotas
+      setOpenAddPet(false);
+    } catch (error) {
+      console.error("Error agregando mascota:", error);
+      throw error;
+    } finally {
+      setLoading((prev) => ({ ...prev, general: false }));
+    }
+  };
+
+  const handleUpdatePet = async (petData) => {
+    try {
+      setLoading((prev) => ({ ...prev, general: true }));
+      const formattedPet = PetService.formatPetForBackend(petData);
+      await PetService.updatePet(editingPet.id, formattedPet);
+      await loadPets(); // Recargar mascotas
+      setOpenEditPet(false);
+      setEditingPet(null);
+    } catch (error) {
+      console.error("Error actualizando mascota:", error);
+      throw error;
+    } finally {
+      setLoading((prev) => ({ ...prev, general: false }));
+    }
+  };
+
+  const handleDeletePet = async (petId) => {
+    try {
+      setLoading((prev) => ({ ...prev, general: true }));
+      await PetService.deletePet(petId);
+      await loadPets(); // Recargar mascotas
+      setOpenEditPet(false);
+      setEditingPet(null);
+    } catch (error) {
+      console.error("Error eliminando mascota:", error);
+      throw error;
+    } finally {
+      setLoading((prev) => ({ ...prev, general: false }));
+    }
+  };
 
   // Helper: calcula la cantidad de horas a partir del string "HH:MM - HH:MM"
   function getHoursFromRange(horaRange) {
@@ -149,121 +316,162 @@ export default function OwnerDashboard() {
         <div className="flex gap-2">
           <button
             className="bg-gray-900 text-white px-6 py-2 rounded-lg flex items-center gap-2 text-base font-medium shadow hover:bg-gray-800"
-            onClick={() => setOpenReservationModal(true)}
+            onClick={() => setActiveSection("reservar")}
           >
             <Plus className="w-5 h-5" /> Nueva Reserva
           </button>
         </div>
       </div>
-      <div className="flex flex-col gap-3">
-        {reservas.map((reserva) => (
-          <div
-            key={reserva.id}
-            className="bg-white border border-gray-200 rounded-xl shadow p-4 flex flex-col sm:flex-row gap-4 items-start"
-            style={{ minHeight: "140px" }}
+
+      {/* Loading State */}
+      {loading.reservas && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
+          <span className="ml-2 text-gray-600">Cargando reservas...</span>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error.reservas && (
+        <div className="flex items-center justify-center py-12 text-red-600">
+          <AlertCircle className="w-8 h-8 mr-2" />
+          <span>Error: {error.reservas}</span>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!loading.reservas && !error.reservas && reservas.length === 0 && (
+        <div className="text-center py-12">
+          <Calendar className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+          <h3 className="text-lg font-medium text-gray-600 mb-2">
+            No tienes reservas aún
+          </h3>
+          <p className="text-gray-500 mb-6">
+            Crea tu primera reserva para comenzar a usar nuestros servicios
+          </p>
+          <button
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+            onClick={() => setActiveSection("reservar")}
           >
-            <img
-              src={reserva.avatar}
-              alt={reserva.cuidador}
-              className="w-16 h-16 rounded-full object-cover border-2 border-gray-300 flex-shrink-0"
-            />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between mb-2 gap-4">
-                <div className="truncate">
-                  <h3 className="text-xl sm:text-2xl font-semibold text-gray-800">
-                    {reserva.cuidador}
-                  </h3>
-                  <p className="text-base text-gray-600">{reserva.servicio}</p>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <div className="text-lg sm:text-xl font-bold text-gray-900">
-                    {reserva.precio}
+            Crear Reserva
+          </button>
+        </div>
+      )}
+
+      {/* Reservas List */}
+      {!loading.reservas && !error.reservas && (
+        <div className="flex flex-col gap-3">
+          {reservas.map((reserva) => (
+            <div
+              key={reserva.id}
+              className="bg-white border border-gray-200 rounded-xl shadow p-4 flex flex-col sm:flex-row gap-4 items-start"
+              style={{ minHeight: "140px" }}
+            >
+              <img
+                src={reserva.avatar}
+                alt={reserva.cuidador}
+                className="w-16 h-16 rounded-full object-cover border-2 border-gray-300 flex-shrink-0"
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between mb-2 gap-4">
+                  <div className="truncate">
+                    <h3 className="text-xl sm:text-2xl font-semibold text-gray-800">
+                      {reserva.cuidador}
+                    </h3>
+                    <p className="text-base text-gray-600">
+                      {reserva.servicio}
+                    </p>
                   </div>
-                  <div className="text-sm text-gray-500 mt-1">
-                    {getHoursFromRange(reserva.hora)}
+                  <div className="text-right flex-shrink-0">
+                    <div className="text-lg sm:text-xl font-bold text-gray-900">
+                      {reserva.precio}
+                    </div>
+                    <div className="text-sm text-gray-500 mt-1">
+                      {getHoursFromRange(reserva.hora)}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-3 text-sm text-gray-600 mb-2">
-                <Calendar className="w-4 h-4" />
-                <span className="text-sm">{reserva.fecha}</span>
-                <span className="text-sm">{reserva.hora}</span>
-                <span className="text-sm">{reserva.lugar}</span>
-              </div>
-
-              {reserva.estado === "Finalizada" && (
-                <div className="bg-gray-100 p-3 rounded-lg mt-2">
-                  <div className="flex items-center gap-2">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-5 h-5 ${
-                          i < (reserva.rating || 0)
-                            ? "text-yellow-500"
-                            : "text-gray-300"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <p className="text-base text-gray-700 font-medium">
-                    Valoración: {reserva.rating}
-                  </p>
-                  <p className="text-sm text-gray-500 italic">
-                    "{reserva.comment}"
-                  </p>
-                </div>
-              )}
-
-              <div className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
-                <div className="flex gap-2 order-2 sm:order-1">
-                  <button
-                    className="px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600"
-                    onClick={() => {
-                      setSelectedReserva(reserva);
-                      setOpenCancelModal(true);
-                    }}
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-500 text-white hover:bg-blue-600"
-                    onClick={() => {
-                      setSelectedReserva(reserva);
-                      setOpenDetailsModal(true);
-                    }}
-                  >
-                    Detalles
-                  </button>
-                  <button
-                    className="px-4 py-2 rounded-lg text-sm font-medium bg-green-600 text-white hover:bg-green-700"
-                    onClick={() => {
-                      setSelectedReserva(reserva);
-                      setOpenReceiptModal(true);
-                    }}
-                  >
-                    Recibo
-                  </button>
+                <div className="flex items-center gap-3 text-sm text-gray-600 mb-2">
+                  <Calendar className="w-4 h-4" />
+                  <span className="text-sm">{reserva.fecha}</span>
+                  <span className="text-sm">{reserva.hora}</span>
+                  <span className="text-sm">{reserva.lugar}</span>
                 </div>
 
-                {reserva.puedeEvaluar && (
-                  <div className="order-1 sm:order-2">
-                    <button
-                      className="bg-yellow-500 text-black px-5 py-2 rounded-lg text-sm font-semibold hover:bg-yellow-600"
-                      onClick={() => {
-                        setSelectedReserva(reserva);
-                        setOpenRatingModal(true);
-                      }}
-                    >
-                      Evaluar Servicio
-                    </button>
+                {reserva.estado === "Finalizada" && (
+                  <div className="bg-gray-100 p-3 rounded-lg mt-2">
+                    <div className="flex items-center gap-2">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-5 h-5 ${
+                            i < (reserva.rating || 0)
+                              ? "text-yellow-500"
+                              : "text-gray-300"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-base text-gray-700 font-medium">
+                      Valoración: {reserva.rating}
+                    </p>
+                    <p className="text-sm text-gray-500 italic">
+                      "{reserva.comment}"
+                    </p>
                   </div>
                 )}
+
+                <div className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
+                  <div className="flex gap-2 order-2 sm:order-1">
+                    <button
+                      className="px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600"
+                      onClick={() => {
+                        setSelectedReserva(reserva);
+                        setOpenCancelModal(true);
+                      }}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-500 text-white hover:bg-blue-600"
+                      onClick={() => {
+                        setSelectedReserva(reserva);
+                        setOpenDetailsModal(true);
+                      }}
+                    >
+                      Detalles
+                    </button>
+                    <button
+                      className="px-4 py-2 rounded-lg text-sm font-medium bg-green-600 text-white hover:bg-green-700"
+                      onClick={() => {
+                        setSelectedReserva(reserva);
+                        setOpenReceiptModal(true);
+                      }}
+                    >
+                      Recibo
+                    </button>
+                  </div>
+
+                  {reserva.puedeEvaluar && (
+                    <div className="order-1 sm:order-2">
+                      <button
+                        className="bg-yellow-500 text-black px-5 py-2 rounded-lg text-sm font-semibold hover:bg-yellow-600"
+                        onClick={() => {
+                          setSelectedReserva(reserva);
+                          setOpenRatingModal(true);
+                        }}
+                      >
+                        Evaluar Servicio
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 
@@ -282,49 +490,111 @@ export default function OwnerDashboard() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {pets.map((pet, idx) => (
-          <div
-            key={pet.id}
-            className="bg-white rounded-lg shadow-lg overflow-hidden"
+      {/* Loading State */}
+      {loading.pets && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
+          <span className="ml-2 text-gray-600">Cargando mascotas...</span>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error.pets && (
+        <div className="flex items-center justify-center py-12 text-red-600">
+          <AlertCircle className="w-8 h-8 mr-2" />
+          <span>Error: {error.pets}</span>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!loading.pets && !error.pets && pets.length === 0 && (
+        <div className="text-center py-12">
+          <Users className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+          <h3 className="text-lg font-medium text-gray-600 mb-2">
+            No tienes mascotas registradas
+          </h3>
+          <p className="text-gray-500 mb-6">
+            Agrega tu primera mascota para comenzar a usar nuestros servicios
+          </p>
+          <button
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+            onClick={() => setOpenAddPet(true)}
           >
-            <div className="h-48 bg-gray-300 relative">
-              <img
-                src={
-                  pet.image ||
-                  `https://i.pravatar.cc/600?u=pet-${pet.id || idx}`
-                }
-                alt={pet.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-1">
-                    {pet.name}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {pet.type} · {pet.breed}
-                  </p>
+            Agregar Mascota
+          </button>
+        </div>
+      )}
+
+      {/* Pets Grid */}
+      {!loading.pets && !error.pets && pets.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {pets.map((pet, idx) => (
+            <div
+              key={pet.id}
+              className="bg-white rounded-lg shadow-lg overflow-hidden"
+            >
+              <div className="h-48 bg-gray-300 relative">
+                <img
+                  src={
+                    pet.image ||
+                    `https://i.pravatar.cc/600?u=pet-${pet.id || idx}`
+                  }
+                  alt={pet.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-800 mb-1">
+                      {pet.name}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {pet.type} · {pet.breed}
+                    </p>
+                  </div>
+                  <div className="text-sm text-gray-500">{pet.age}</div>
                 </div>
-                <div className="text-sm text-gray-500">{pet.age}</div>
-              </div>
-              <div className="mt-4 flex gap-2">
-                <button
-                  className="flex-1 bg-gray-900 text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
-                  onClick={() => {
-                    setEditingPet(pet);
-                    setOpenEditPet(true);
-                  }}
-                >
-                  Editar Perfil
-                </button>
+                <div className="mt-4 flex gap-2">
+                  <button
+                    className="flex-1 bg-gray-900 text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
+                    onClick={() => {
+                      setEditingPet(pet);
+                      setOpenEditPet(true);
+                    }}
+                  >
+                    Editar Perfil
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  // Renderizar formulario de reserva inline
+  const renderReservationForm = () => (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold text-black">Nueva Reserva</h2>
+        <button
+          className="text-gray-500 hover:text-gray-700"
+          onClick={() => setActiveSection("reservas")}
+        >
+          ← Volver a Mis Reservas
+        </button>
       </div>
+
+      <ReservationModal
+        open={true}
+        onClose={() => setActiveSection("reservas")}
+        onSubmit={() => {
+          setActiveSection("reservas");
+          loadBookings(); // Recargar reservas después de crear una nueva
+        }}
+      />
     </div>
   );
 
@@ -362,7 +632,8 @@ export default function OwnerDashboard() {
               Mi Dashboard
             </h1>
             <p className="text-gray-600">
-              Bienvenido, María García. Gestiona tus mascotas y reservas
+              Bienvenido, {user?.fullName || user?.name || "Usuario"}. Gestiona
+              tus mascotas y reservas
             </p>
           </div>
 
@@ -386,8 +657,12 @@ export default function OwnerDashboard() {
 
             {/* Reservar Servicio */}
             <button
-              onClick={() => setOpenReservationModal(true)}
-              className="p-6 rounded-lg border-2 border-gray-200 bg-white hover:border-gray-300 transition-all text-left"
+              onClick={() => setActiveSection("reservar")}
+              className={`p-6 rounded-lg border-2 transition-all text-left ${
+                activeSection === "reservar"
+                  ? "border-gray-900 bg-gray-50"
+                  : "border-gray-200 bg-white hover:border-gray-300"
+              }`}
             >
               <div className="flex flex-col items-center text-center">
                 <BookOpen className="w-12 h-12 text-gray-700 mb-3" />
@@ -465,32 +740,25 @@ export default function OwnerDashboard() {
               {activeSection === "reservas" && renderReservas()}
               {activeSection === "mascotas" && renderMascotas()}
               {activeSection === "favoritos" && renderFavoritos()}
+              {activeSection === "reservar" && renderReservationForm()}
             </div>
           </div>
 
           {/* Modales */}
-          <ReservationModal
-            open={openReservationModal}
-            onClose={() => setOpenReservationModal(false)}
-            onSubmit={() => setOpenReservationModal(false)}
-          />
           <AddPetModal
             open={openAddPet}
             onClose={() => setOpenAddPet(false)}
-            onSubmit={(newPet) => setPets((p) => [newPet, ...p])}
+            onSubmit={handleAddPet}
           />
           <EditPetModal
             open={openEditPet}
-            onClose={() => setOpenEditPet(false)}
+            onClose={() => {
+              setOpenEditPet(false);
+              setEditingPet(null);
+            }}
             petData={editingPet}
-            onSubmit={(updated) =>
-              setPets((list) =>
-                list.map((pt) => (pt.id === updated.id ? updated : pt))
-              )
-            }
-            onDelete={(id) =>
-              setPets((list) => list.filter((p) => p.id !== id))
-            }
+            onSubmit={handleUpdatePet}
+            onDelete={handleDeletePet}
           />
           <RatingModal
             open={openRatingModal}

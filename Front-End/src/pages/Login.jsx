@@ -1,37 +1,83 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import React, { useState } from "react";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 
 export default function PetCareLogin() {
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const { loginWithCredentials } = useAuth();
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
+
+    // Limpiar error al escribir
+    if (errorMessage) {
+      setErrorMessage("");
+    }
   };
 
-  const handleLogin = () => {
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
     if (!formData.email || !formData.password) {
-      alert('Por favor completa todos los campos');
+      setErrorMessage("Por favor completa todos los campos");
       return;
     }
-    
-    console.log('Datos de login:', formData);
-    // Aquí integrarías con tu API de autenticación
-    alert('Login exitoso!'); // Placeholder
+
+    if (!isValidEmail(formData.email)) {
+      setErrorMessage("Por favor ingresa un email válido");
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMessage("");
+
+    try {
+      const user = await loginWithCredentials(
+        formData.email,
+        formData.password
+      );
+
+      // Redirigir según el rol del usuario
+      if (user.role === "owner") {
+        navigate("/owner-dashboard");
+      } else if (user.role === "sitter") {
+        navigate("/sitter-dashboard");
+      } else if (user.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Error en login:", error);
+      setErrorMessage(
+        error.message || "Error al iniciar sesión. Por favor intenta de nuevo."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const isValidEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
-          
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">
@@ -72,7 +118,7 @@ export default function PetCareLogin() {
                 <Lock className="h-5 w-5 text-gray-400" />
               </div>
               <input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
@@ -93,13 +139,38 @@ export default function PetCareLogin() {
             </div>
           </div>
 
+          {/* Error Message */}
+          {errorMessage && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
+              {errorMessage}
+            </div>
+          )}
+
           {/* Login Button */}
           <button
             onClick={handleLogin}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-xl transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mb-6"
+            disabled={isLoading}
+            className={`w-full font-semibold py-4 px-6 rounded-xl transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mb-6 ${
+              isLoading
+                ? "bg-gray-400 cursor-not-allowed text-white"
+                : "bg-blue-600 hover:bg-blue-700 text-white"
+            }`}
           >
-            Iniciar Sesión
+            {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
           </button>
+
+          {/* Register Link */}
+          <div className="text-center mb-4">
+            <p className="text-gray-600 text-sm">
+              ¿No tienes cuenta?{" "}
+              <button
+                onClick={() => navigate("/Register")}
+                className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+              >
+                Regístrate aquí
+              </button>
+            </p>
+          </div>
 
           {/* Forgot Password Link */}
           <div className="text-center mb-4">

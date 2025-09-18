@@ -1,96 +1,183 @@
-import { useState, useRef } from "react";
-import { Calendar } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Calendar, Loader2, AlertCircle } from "lucide-react";
+import BookingService from "../../services/BookingService.js";
+import SitterService from "../../services/SitterService.js";
+import PetService from "../../services/PetService.js";
+import { useAuth } from "../../context/AuthContext.jsx";
+import { showNotification } from "../NotificationProvider.jsx";
 
-export default function ReservationModal({ open, onClose, onSubmit }) {
+export default function ReservationModal({
+  open,
+  onClose,
+  onSubmit,
+  selectedPet = null,
+}) {
+  const { user } = useAuth();
   const [serviceType, setServiceType] = useState("");
-  const [selectedCaretaker, setSelectedCaretaker] = useState(null);
-  const [caretakerQuery, setCaretakerQuery] = useState("");
-  const [showCaretakerDropdown, setShowCaretakerDropdown] = useState(false);
-  const [hoveredCaretaker, setHoveredCaretaker] = useState(null);
+  const [selectedSitter, setSelectedSitter] = useState(null);
+  const [sitterQuery, setSitterQuery] = useState("");
+  const [showSitterDropdown, setShowSitterDropdown] = useState(false);
+  const [hoveredSitter, setHoveredSitter] = useState(null);
   const [previewPos, setPreviewPos] = useState({ top: 0, left: 0 });
-  const [pet, setPet] = useState("");
+  const [selectedPetId, setSelectedPetId] = useState(selectedPet?.id || "");
   const [address, setAddress] = useState("");
-  const [instructions, setInstructions] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [startHour, setStartHour] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [endHour, setEndHour] = useState("");
+  const [notes, setNotes] = useState("");
+  const [scheduledDate, setScheduledDate] = useState("");
+  const [scheduledTime, setScheduledTime] = useState("");
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState({
+    sitters: false,
+    pets: false,
+    submit: false,
+  });
+
+  // Estados para datos
+  const [availableSitters, setAvailableSitters] = useState([]);
+  const [userPets, setUserPets] = useState([]);
 
   const modalRef = useRef(null);
-  const startDateRef = useRef(null);
-  const endDateRef = useRef(null);
 
-  // Mock de cuidadores - reemplazar por props o fetch si se desea
-  const cuidadores = [
-    {
-      id: "C1",
-      name: "María González",
-      avatar: "https://i.pravatar.cc/150?u=C1",
-      info: "Especialista en paseos. +200 reseñas",
-    },
-    {
-      id: "C2",
-      name: "Carlos Ruiz",
-      avatar: "https://i.pravatar.cc/150?u=C2",
-      info: "Cuidado a domicilio. Atención 24h",
-    },
-    {
-      id: "C3",
-      name: "Ana López",
-      avatar: "https://i.pravatar.cc/150?u=C3",
-      info: "Experta en gatos. Casa segura",
-    },
-  ];
+  // Cargar datos cuando se abre el modal
+  useEffect(() => {
+    if (open) {
+      loadSitters();
+      loadUserPets();
+    }
+  }, [open]);
 
-  // Genera opciones de hora en punto
-  const hourOptions = Array.from(
+  // Cargar sitters disponibles
+  const loadSitters = async () => {
+    try {
+      setLoading((prev) => ({ ...prev, sitters: true }));
+      const sitters = await SitterService.getAvailableSitters();
+      setAvailableSitters(sitters.content || []);
+    } catch (error) {
+      console.error("Error cargando sitters:", error);
+      setErrors((prev) => ({
+        ...prev,
+        sitters: "Error cargando cuidadores disponibles",
+      }));
+    } finally {
+      setLoading((prev) => ({ ...prev, sitters: false }));
+    }
+  };
+
+  // Cargar mascotas del usuario
+  const loadUserPets = async () => {
+    try {
+      setLoading((prev) => ({ ...prev, pets: true }));
+      const pets = await PetService.getPetsByOwner(user.id);
+      setUserPets(pets.content || []);
+    } catch (error) {
+      console.error("Error cargando mascotas:", error);
+      setErrors((prev) => ({ ...prev, pets: "Error cargando mascotas" }));
+    } finally {
+      setLoading((prev) => ({ ...prev, pets: false }));
+    }
+  };
+
+  // Filtrar sitters basado en búsqueda
+  const filteredSitters = availableSitters.filter(
+    (sitter) =>
+      sitter.user?.name?.toLowerCase().includes(sitterQuery.toLowerCase()) ||
+      sitter.description?.toLowerCase().includes(sitterQuery.toLowerCase())
+  );
+
+  // Genera opciones de hora
+  const timeOptions = Array.from(
     { length: 24 },
     (_, i) => `${i.toString().padStart(2, "0")}:00`
   );
 
-  // Calcula cantidad de horas
-  function getHourCount() {
-    if (!startDate || !startHour || !endDate || !endHour) return 0;
-    const start = new Date(`${startDate}T${startHour}`);
-    const end = new Date(`${endDate}T${endHour}`);
-    const diff = (end - start) / (1000 * 60 * 60);
-    return diff > 0 ? diff : 0;
-  }
+  // Obtener tipo de servicio formateado
+  const getServiceTypeDisplay = (type) => {
+    const typeMap = {
+      DOG_WALKING: "Paseo de Perros",
+      PET_SITTING: "Cuidado en Casa",
+      GROOMING: "Peluquería",
+      VETERINARY: "Veterinaria",
+      TRAINING: "Entrenamiento",
+      DAYCARE: "Guardería",
+    };
+    return typeMap[type] || type;
+  };
 
   function validate() {
     const newErrors = {};
     if (!serviceType)
       newErrors.serviceType = "El tipo de servicio es obligatorio.";
-    if (!selectedCaretaker) newErrors.cuidador = "Selecciona un cuidador.";
-    if (!pet) newErrors.pet = "La mascota es obligatoria.";
-    if (!startDate) newErrors.startDate = "La fecha de inicio es obligatoria.";
-    if (!startHour) newErrors.startHour = "La hora de inicio es obligatoria.";
-    if (!endDate) newErrors.endDate = "La fecha de fin es obligatoria.";
-    if (!endHour) newErrors.endHour = "La hora de fin es obligatoria.";
-    if (getHourCount() <= 0)
-      newErrors.hours =
-        "La fecha y hora de fin debe ser posterior a la de inicio.";
+    if (!selectedSitter) newErrors.sitter = "Selecciona un cuidador.";
+    if (!selectedPetId) newErrors.pet = "Selecciona una mascota.";
+    if (!scheduledDate) newErrors.scheduledDate = "La fecha es obligatoria.";
+    if (!scheduledTime) newErrors.scheduledTime = "La hora es obligatoria.";
+
+    // Validar que la fecha no sea en el pasado
+    const selectedDateTime = new Date(`${scheduledDate}T${scheduledTime}`);
+    const now = new Date();
+    if (selectedDateTime <= now) {
+      newErrors.datetime = "La fecha y hora debe ser en el futuro.";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (!validate()) return;
-    onSubmit({
-      serviceType,
-      caretaker: selectedCaretaker,
-      pet,
-      address,
-      instructions,
-      startDate,
-      startHour,
-      endDate,
-      endHour,
-      hours: getHourCount(),
-    });
-    onClose();
+
+    setLoading((prev) => ({ ...prev, submit: true }));
+    try {
+      // Crear datos de la reserva
+      const bookingData = {
+        userId: user.id,
+        petId: selectedPetId,
+        sitterId: selectedSitter.id,
+        serviceType,
+        scheduledDate,
+        scheduledTime,
+        notes: notes || null,
+        status: "PENDING",
+      };
+
+      // Crear la reserva
+      const newBooking = await BookingService.createBooking(bookingData);
+
+      // Mostrar notificación de éxito
+      showNotification(
+        "success",
+        "Reserva Creada",
+        `Tu reserva de ${getServiceTypeDisplay(
+          serviceType
+        )} ha sido enviada. El cuidador será notificado.`
+      );
+
+      // Notificar al componente padre
+      if (onSubmit) {
+        onSubmit(newBooking);
+      }
+
+      // Limpiar formulario
+      setServiceType("");
+      setSelectedSitter(null);
+      setSitterQuery("");
+      setSelectedPetId(selectedPet?.id || "");
+      setAddress("");
+      setNotes("");
+      setScheduledDate("");
+      setScheduledTime("");
+      setErrors({});
+
+      onClose();
+    } catch (error) {
+      console.error("Error creando reserva:", error);
+      setErrors({
+        general:
+          error.message || "Error al crear la reserva. Inténtalo de nuevo.",
+      });
+    } finally {
+      setLoading((prev) => ({ ...prev, submit: false }));
+    }
   }
 
   if (!open) return null;
@@ -108,6 +195,14 @@ export default function ReservationModal({ open, onClose, onSubmit }) {
             ×
           </button>
           <h2 className="text-xl font-bold mb-4 text-black">Nueva Reserva</h2>
+
+          {/* Error general */}
+          {errors.general && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-700 text-sm">{errors.general}</p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block font-medium mb-1 text-black">
@@ -124,12 +219,15 @@ export default function ReservationModal({ open, onClose, onSubmit }) {
                   });
                 }}
                 className="w-full border rounded px-3 py-2 bg-white text-black"
+                disabled={loading.submit}
               >
                 <option value="">Selecciona...</option>
-                <option value="Paseo Diario">Paseo Diario</option>
-                <option value="Cuidado en Casa">Cuidado en Casa</option>
-                <option value="Guardería">Guardería</option>
-                <option value="Otro">Otro</option>
+                <option value="DOG_WALKING">Paseo de Perros</option>
+                <option value="PET_SITTING">Cuidado en Casa</option>
+                <option value="DAYCARE">Guardería</option>
+                <option value="GROOMING">Peluquería</option>
+                <option value="TRAINING">Entrenamiento</option>
+                <option value="VETERINARY">Veterinaria</option>
               </select>
               {errors.serviceType && (
                 <p className="text-red-500 text-sm mt-1">
@@ -137,106 +235,132 @@ export default function ReservationModal({ open, onClose, onSubmit }) {
                 </p>
               )}
             </div>
-            {/* Selector inteligente de cuidadores */}
-            <div className="relative" ref={modalRef}>
-              <label className="block font-medium mb-2 text-black">
-                Cuidador *
-              </label>
-              <input
-                type="text"
-                value={caretakerQuery}
-                onChange={(e) => {
-                  setCaretakerQuery(e.target.value);
-                  setShowCaretakerDropdown(true);
-                  setErrors((prev) => {
-                    const c = { ...prev };
-                    delete c.cuidador;
-                    return c;
-                  });
-                }}
-                onFocus={() => setShowCaretakerDropdown(true)}
-                onBlur={() =>
-                  setTimeout(() => setShowCaretakerDropdown(false), 120)
-                }
-                placeholder="Buscar por nombre..."
-                className="w-full border rounded px-3 py-2 bg-white text-black"
-              />
-              {showCaretakerDropdown && (
-                <ul className="absolute z-40 left-0 right-0 bg-white border rounded mt-1 max-h-40 overflow-auto shadow">
-                  {cuidadores
-                    .filter((c) =>
-                      c.name
-                        .toLowerCase()
-                        .includes(caretakerQuery.toLowerCase())
-                    )
-                    .map((c) => (
-                      <li
-                        key={c.id}
-                        className="p-2 hover:bg-gray-50 cursor-pointer flex items-center gap-3"
-                        onMouseEnter={(e) => {
-                          setHoveredCaretaker(c);
-                          // calcular posicion aproximada del preview
-                          const rect = e.currentTarget.getBoundingClientRect();
-                          setPreviewPos({
-                            top: rect.top + rect.height / 2,
-                            left: rect.right + 10,
-                          });
-                        }}
-                        onMouseLeave={() => setHoveredCaretaker(null)}
-                        onClick={() => {
-                          setSelectedCaretaker(c.id);
-                          setCaretakerQuery(c.name);
-                          setShowCaretakerDropdown(false);
-                          setErrors((prev) => {
-                            const cpy = { ...prev };
-                            delete cpy.cuidador;
-                            return cpy;
-                          });
-                        }}
-                      >
-                        <div className="w-8 h-8 rounded-full overflow-hidden">
-                          <img
-                            src={c.avatar}
-                            alt={c.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <div className="text-sm font-medium text-gray-800">
-                            {c.name}
-                          </div>
-                          <div className="text-xs text-gray-500">{c.info}</div>
-                        </div>
-                      </li>
-                    ))}
-                </ul>
-              )}
-              {errors.cuidador && (
-                <p className="text-red-500 text-sm mt-1">{errors.cuidador}</p>
-              )}
-            </div>
+
+            {/* Selector de mascota */}
             <div>
               <label className="block font-medium mb-1 text-black">
                 Mascota *
               </label>
-              <input
-                type="text"
-                value={pet}
-                onChange={(e) => {
-                  setPet(e.target.value);
-                  setErrors((prev) => {
-                    const c = { ...prev };
-                    delete c.pet;
-                    return c;
-                  });
-                }}
-                placeholder="Ej. Luna (Gato) o Max (Perro)"
-                className="w-full border rounded px-3 py-2 bg-white text-black"
-              />
+              {loading.pets ? (
+                <div className="flex items-center gap-2 p-3 border rounded">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-gray-600">Cargando mascotas...</span>
+                </div>
+              ) : userPets.length > 0 ? (
+                <select
+                  value={selectedPetId}
+                  onChange={(e) => {
+                    setSelectedPetId(e.target.value);
+                    setErrors((prev) => {
+                      const c = { ...prev };
+                      delete c.pet;
+                      return c;
+                    });
+                  }}
+                  className="w-full border rounded px-3 py-2 bg-white text-black"
+                  disabled={loading.submit}
+                >
+                  <option value="">Selecciona una mascota...</option>
+                  {userPets.map((pet) => (
+                    <option key={pet.id} value={pet.id}>
+                      {pet.name} - {pet.species} ({pet.breed})
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div className="p-3 border rounded bg-gray-50">
+                  <p className="text-gray-600 text-sm">
+                    No tienes mascotas registradas
+                  </p>
+                </div>
+              )}
               {errors.pet && (
                 <p className="text-red-500 text-sm mt-1">{errors.pet}</p>
               )}
             </div>
+            {/* Selector inteligente de sitters */}
+            <div className="relative" ref={modalRef}>
+              <label className="block font-medium mb-2 text-black">
+                Cuidador *
+              </label>
+
+              {loading.sitters ? (
+                <div className="flex items-center gap-2 p-3 border rounded">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-gray-600">Cargando cuidadores...</span>
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  value={sitterQuery}
+                  onChange={(e) => {
+                    setSitterQuery(e.target.value);
+                    setShowSitterDropdown(true);
+                    setErrors((prev) => {
+                      const c = { ...prev };
+                      delete c.sitter;
+                      return c;
+                    });
+                  }}
+                  onFocus={() => setShowSitterDropdown(true)}
+                  onBlur={() =>
+                    setTimeout(() => setShowSitterDropdown(false), 120)
+                  }
+                  placeholder="Buscar por nombre..."
+                  className="w-full border rounded px-3 py-2 bg-white text-black"
+                  disabled={loading.submit}
+                />
+              )}
+              {showSitterDropdown && filteredSitters.length > 0 && (
+                <ul className="absolute z-40 left-0 right-0 bg-white border rounded mt-1 max-h-40 overflow-auto shadow">
+                  {filteredSitters.map((sitter) => (
+                    <li
+                      key={sitter.id}
+                      className="p-2 hover:bg-gray-50 cursor-pointer flex items-center gap-3"
+                      onMouseEnter={(e) => {
+                        setHoveredSitter(sitter);
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setPreviewPos({
+                          top: rect.top + rect.height / 2,
+                          left: rect.right + 10,
+                        });
+                      }}
+                      onMouseLeave={() => setHoveredSitter(null)}
+                      onClick={() => {
+                        setSelectedSitter(sitter);
+                        setSitterQuery(sitter.user?.name || "Sitter");
+                        setShowSitterDropdown(false);
+                        setErrors((prev) => {
+                          const cpy = { ...prev };
+                          delete cpy.sitter;
+                          return cpy;
+                        });
+                      }}
+                    >
+                      <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
+                        <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-sm font-medium">
+                          {sitter.user?.name?.charAt(0) || "S"}
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-gray-800">
+                          {sitter.user?.name || "Sitter"}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          €{sitter.hourlyRate || 20}/hora -{" "}
+                          {sitter.description?.substring(0, 30) ||
+                            "Cuidador disponible"}
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {errors.sitter && (
+                <p className="text-red-500 text-sm mt-1">{errors.sitter}</p>
+              )}
+            </div>
+
             <div>
               <label className="block font-medium mb-1 text-black">
                 Dirección
@@ -254,198 +378,122 @@ export default function ReservationModal({ open, onClose, onSubmit }) {
                 Instrucciones especiales
               </label>
               <textarea
-                value={instructions}
-                onChange={(e) => setInstructions(e.target.value)}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
                 placeholder="Indica alergias, preferencias o instrucciones (p. ej. dejar llave con vecino)"
                 rows={3}
                 className="w-full border rounded px-3 py-2 bg-white text-black"
+                disabled={loading.submit}
               />
             </div>
             <div className="flex gap-2">
               <div className="flex-1">
                 <label className="block font-medium mb-1 text-black">
-                  Fecha inicio *
+                  Fecha *
                 </label>
-                <div className="relative">
-                  <input
-                    ref={startDateRef}
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => {
-                      setStartDate(e.target.value);
-                      setErrors((prev) => {
-                        const c = { ...prev };
-                        delete c.startDate;
-                        delete c.hours;
-                        return c;
-                      });
-                    }}
-                    placeholder="aaaa-mm-dd"
-                    className="w-full border rounded px-3 py-2 pr-10 bg-white text-black"
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      startDateRef.current && startDateRef.current.showPicker
-                        ? startDateRef.current.showPicker()
-                        : startDateRef.current && startDateRef.current.focus()
-                    }
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
-                    aria-label="Abrir selector de fecha inicio"
-                  >
-                    <Calendar className="w-5 h-5 text-gray-500" />
-                  </button>
-                </div>
-                {errors.startDate && (
+                <input
+                  type="date"
+                  value={scheduledDate}
+                  min={new Date().toISOString().split("T")[0]} // No permitir fechas pasadas
+                  onChange={(e) => {
+                    setScheduledDate(e.target.value);
+                    setErrors((prev) => {
+                      const c = { ...prev };
+                      delete c.scheduledDate;
+                      delete c.datetime;
+                      return c;
+                    });
+                  }}
+                  className="w-full border rounded px-3 py-2 bg-white text-black"
+                  disabled={loading.submit}
+                />
+                {errors.scheduledDate && (
                   <p className="text-red-500 text-sm mt-1">
-                    {errors.startDate}
+                    {errors.scheduledDate}
                   </p>
                 )}
               </div>
               <div className="flex-1">
                 <label className="block font-medium mb-1 text-black">
-                  Hora inicio *
+                  Hora *
                 </label>
                 <select
-                  value={startHour}
+                  value={scheduledTime}
                   onChange={(e) => {
-                    setStartHour(e.target.value);
+                    setScheduledTime(e.target.value);
                     setErrors((prev) => {
                       const c = { ...prev };
-                      delete c.startHour;
-                      delete c.hours;
+                      delete c.scheduledTime;
+                      delete c.datetime;
                       return c;
                     });
                   }}
                   className="w-full border rounded px-3 py-2 bg-white text-black"
+                  disabled={loading.submit}
                 >
-                  <option value="">--</option>
-                  {hourOptions.map((h) => (
-                    <option key={h} value={h}>
-                      {h}
+                  <option value="">Selecciona hora</option>
+                  {timeOptions.map((time) => (
+                    <option key={time} value={time}>
+                      {time}
                     </option>
                   ))}
                 </select>
-                {errors.startHour && (
+                {errors.scheduledTime && (
                   <p className="text-red-500 text-sm mt-1">
-                    {errors.startHour}
+                    {errors.scheduledTime}
                   </p>
                 )}
               </div>
             </div>
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <label className="block font-medium mb-1 text-black">
-                  Fecha fin *
-                </label>
-                <div className="relative">
-                  <input
-                    ref={endDateRef}
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => {
-                      setEndDate(e.target.value);
-                      setErrors((prev) => {
-                        const c = { ...prev };
-                        delete c.endDate;
-                        delete c.hours;
-                        return c;
-                      });
-                    }}
-                    placeholder="aaaa-mm-dd"
-                    className="w-full border rounded px-3 py-2 pr-10 bg-white text-black"
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      endDateRef.current && endDateRef.current.showPicker
-                        ? endDateRef.current.showPicker()
-                        : endDateRef.current && endDateRef.current.focus()
-                    }
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
-                    aria-label="Abrir selector de fecha fin"
-                  >
-                    <Calendar className="w-5 h-5 text-gray-500" />
-                  </button>
-                </div>
-                {errors.endDate && (
-                  <p className="text-red-500 text-sm mt-1">{errors.endDate}</p>
-                )}
-              </div>
-              <div className="flex-1">
-                <label className="block font-medium mb-1 text-black">
-                  Hora fin *
-                </label>
-                <select
-                  value={endHour}
-                  onChange={(e) => {
-                    setEndHour(e.target.value);
-                    setErrors((prev) => {
-                      const c = { ...prev };
-                      delete c.endHour;
-                      delete c.hours;
-                      return c;
-                    });
-                  }}
-                  className="w-full border rounded px-3 py-2 bg-white text-black"
-                >
-                  <option value="">--</option>
-                  {hourOptions.map((h) => (
-                    <option key={h} value={h}>
-                      {h}
-                    </option>
-                  ))}
-                </select>
-                {errors.endHour && (
-                  <p className="text-red-500 text-sm mt-1">{errors.endHour}</p>
-                )}
-              </div>
-            </div>
-            <div>
-              <label className="block font-medium mb-1 text-black">
-                Cantidad de horas
-              </label>
-              <input
-                type="text"
-                value={getHourCount()}
-                readOnly
-                className="w-full border rounded px-3 py-2 bg-white text-black"
-              />
-              {errors.hours && (
-                <p className="text-red-500 text-sm mt-1">{errors.hours}</p>
-              )}
-            </div>
-            <div className="pt-2">
+
+            {/* Error de validación de fecha/hora */}
+            {errors.datetime && (
+              <div className="text-red-500 text-sm">{errors.datetime}</div>
+            )}
+
+            <div className="pt-2 flex gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded font-medium"
+                disabled={loading.submit}
+              >
+                Cancelar
+              </button>
               <button
                 type="submit"
-                className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition-colors"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-medium flex items-center justify-center gap-2"
+                disabled={loading.submit}
               >
-                Reservar
+                {loading.submit && <Loader2 className="w-4 h-4 animate-spin" />}
+                {loading.submit ? "Creando..." : "Crear Reserva"}
               </button>
             </div>
           </form>
         </div>
       </div>
-      {/* Preview flotante del cuidador (fuera del modal) */}
-      {hoveredCaretaker && (
+
+      {/* Preview flotante del sitter */}
+      {hoveredSitter && (
         <div
           className="fixed z-50 bg-white border rounded-lg p-3 shadow-lg w-56"
           style={{ top: previewPos.top - 80, left: previewPos.left }}
         >
           <div className="flex items-center gap-3">
-            <div className="w-16 h-16 rounded-full overflow-hidden">
-              <img
-                src={hoveredCaretaker.avatar}
-                alt={hoveredCaretaker.name}
-                className="w-full h-full object-cover"
-              />
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-medium">
+              {hoveredSitter.user?.name?.charAt(0) || "S"}
             </div>
             <div>
               <div className="font-semibold text-gray-800">
-                {hoveredCaretaker.name}
+                {hoveredSitter.user?.name || "Sitter"}
               </div>
               <div className="text-sm text-gray-500">
-                {hoveredCaretaker.info}
+                €{hoveredSitter.hourlyRate || 20}/hora
+              </div>
+              <div className="text-xs text-gray-400">
+                {hoveredSitter.description?.substring(0, 40) ||
+                  "Cuidador profesional"}
+                ...
               </div>
             </div>
           </div>
