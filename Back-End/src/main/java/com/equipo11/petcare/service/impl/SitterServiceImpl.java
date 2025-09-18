@@ -269,8 +269,6 @@ public class SitterServiceImpl implements SitterService {
         sitter.setDocumentNumber(sitterPatchRequestDTO.documentNumber());
         sitter.setExperience(sitterPatchRequestDTO.experience());
         sitter.setBio(sitterPatchRequestDTO.bio());
-        if (sitterPatchRequestDTO.profilePicture() != null)
-            sitter.setProfilePicture(sitterPatchRequestDTO.profilePicture());
         if (sitterPatchRequestDTO.idCard() != null)
             sitter.setIdCard(sitterPatchRequestDTO.idCard());
         if (sitterPatchRequestDTO.backgroundCheckDocument() != null)
