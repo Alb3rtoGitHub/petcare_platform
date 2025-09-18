@@ -13,6 +13,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 @RestController
 @RequestMapping("/api/v1/auth")
+@CrossOrigin(origins = "http://localhost:5173/register")
 public class AuthController {
 
     private final AuthService authService;

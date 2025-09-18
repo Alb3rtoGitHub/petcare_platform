@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function PetCareLogin() {
+  const { login, isLoading, error, clearError } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -16,15 +18,25 @@ export default function PetCareLogin() {
     }));
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    clearError();
     if (!formData.email || !formData.password) {
       alert('Por favor completa todos los campos');
       return;
     }
     
-    console.log('Datos de login:', formData);
-    // Aquí integrarías con tu API de autenticación
-    alert('Login exitoso!'); // Placeholder
+    try {
+      const result = await login(formData);
+      if (result.success) {
+        alert('Login exitoso!');
+        // Aquí podrías redirigir a otra página, por ejemplo:
+        // navigate('/dashboard');
+      } else {
+        alert(result.message);
+      }
+    } catch (error) {
+      alert('Error inesperado al iniciar sesión');
+    }
   };
 
   return (
@@ -96,9 +108,10 @@ export default function PetCareLogin() {
           {/* Login Button */}
           <button
             onClick={handleLogin}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-xl transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mb-6"
+            disabled={isLoading}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-4 px-6 rounded-xl transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mb-6"
           >
-            Iniciar Sesión
+            {isLoading ? 'Iniciando Sesión...' : 'Iniciar Sesión'}
           </button>
 
           {/* Forgot Password Link */}

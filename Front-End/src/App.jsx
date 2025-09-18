@@ -92,7 +92,7 @@ function SimpleRegisterRouter({ startStep = 1 }) {
   }, [searchParams, navigate]);
 
   // Decodificar token y determinar tipo
-  let userType = "caregiver";
+  let userType = "ROLE_SITTER";
   let tokenInfo = null;
 
   const token =
@@ -106,11 +106,11 @@ function SimpleRegisterRouter({ startStep = 1 }) {
 
       // MAPEO DIRECTO Y SIMPLE
       if (decoded.roles && decoded.roles[0] === "ROLE_OWNER") {
-        userType = "pet-owner";
-        console.log("✅ DETECTADO: pet-owner");
+        userType = "ROLE_OWNER";
+        console.log("✅ DETECTADO: ROLE_OWNER");
       } else if (decoded.roles && decoded.roles[0] === "ROLE_SITTER") {
-        userType = "caregiver";
-        console.log("✅ DETECTADO: caregiver");
+        userType = "ROLE_SITTER";
+        console.log("✅ DETECTADO: ROLE_SITTER");
       }
 
       tokenInfo = {
@@ -171,7 +171,7 @@ export default function App() {
               element={
                 <PetOwnerRegistration
                   startStep={1}
-                  initialUserType="pet-owner"
+                  initialUserType="ROLE_OWNER"
                 />
               }
             />
@@ -180,7 +180,7 @@ export default function App() {
               element={
                 <PetOwnerRegistration
                   startStep={1}
-                  initialUserType="caregiver"
+                  initialUserType="ROLE_SITTER"
                 />
               }
             />

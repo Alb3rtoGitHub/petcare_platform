@@ -43,9 +43,9 @@ const TokenRouterRegister = () => {
         const role = decoded.roles[0]; // Toma el primer rol
         
         if (role === 'ROLE_OWNER') {
-          return 'pet-owner';
+          return 'ROLE_OWNER';
         } else if (role === 'ROLE_SITTER') {
-          return 'caregiver';
+          return 'ROLE_SITTER';
         } else {
           setError(`Rol no reconocido: ${role}`);
           return null;
@@ -155,14 +155,14 @@ const TokenRouterRegister = () => {
           <div className="max-w-4xl mx-auto p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {userType === 'pet-owner' ? (
+                {userType === 'ROLE_OWNER' ? (
                   <User className="w-8 h-8 text-blue-600" />
                 ) : (
                   <UserCheck className="w-8 h-8 text-green-600" />
                 )}
                 <div>
                   <h1 className="text-xl font-semibold text-gray-800">
-                    {userType === 'pet-owner' ? 'Registro de Propietario' : 'Registro de Cuidador'}
+                    {userType === 'ROLE_OWNER' ? 'Registro de Propietario' : 'Registro de Cuidador'}
                   </h1>
                   {tokenInfo && (
                     <p className="text-sm text-gray-600">
@@ -229,7 +229,7 @@ const PetOwnerRegistrationWrapper = ({ userType, tokenInfo }) => {
           Formulario de Registro
         </h2>
         <p className="text-gray-600 mb-6">
-          {userType === 'pet-owner' 
+          {userType === 'ROLE_OWNER' 
             ? 'Aquí se mostraría el formulario para registrar un propietario de mascotas'
             : 'Aquí se mostraría el formulario para registrar un cuidador'
           }

@@ -9,7 +9,7 @@ const getUserTypeFromToken = (token) => {
   try {
     if (!token) {
       console.log('❌ No hay token')
-      return 'caregiver'
+      return 'ROLE_SITTER'
     }
     
     const decoded = jwtDecode(token)
@@ -21,7 +21,7 @@ const getUserTypeFromToken = (token) => {
     if (decoded.exp && decoded.exp < currentTime) {
       console.log('⏰ Token expirado')
       localStorage.removeItem('authToken')
-      return 'caregiver'
+      return 'ROLE_SITTER'
     }
 
     if (decoded.roles && Array.isArray(decoded.roles)) {
@@ -30,12 +30,12 @@ const getUserTypeFromToken = (token) => {
       
       // Mapeo de roles del token a userType del componente
       if (role === 'ROLE_OWNER') {
-        console.log('✅ Mapeado a: pet-owner')
-        return 'pet-owner'
+        console.log('✅ Mapeado a: ROLE_OWNER')
+        return 'ROLE_OWNER'
       }
       if (role === 'ROLE_SITTER') {
-        console.log('✅ Mapeado a: caregiver')
-        return 'caregiver'
+        console.log('✅ Mapeado a: ROLE_SITTER')
+        return 'ROLE_SITTER'
       }
       
       console.log('❌ Rol no reconocido:', role)
@@ -43,11 +43,11 @@ const getUserTypeFromToken = (token) => {
       console.log('❌ No se encontraron roles válidos')
     }
     
-    console.log('📄 Retornando valor por defecto: caregiver')
-    return 'caregiver'
+    console.log('📄 Retornando valor por defecto: ROLE_SITTER')
+    return 'ROLE_SITTER'
   } catch (error) {
     console.error('💥 Error decodificando token:', error)
-    return 'caregiver'
+    return 'ROLE_SITTER'
   }
 
   // Obtener información del token
@@ -105,7 +105,7 @@ const getUserTypeFromToken = (token) => {
   }, [searchParams, navigate])
 
   // Determinar userType y tokenInfo
-  let userType = 'caregiver'
+  let userType = 'ROLE_SITTER'
   let tokenInfo = null
 
   // Verificar primero el token de la URL
@@ -116,8 +116,8 @@ const getUserTypeFromToken = (token) => {
   } 
   // Luego verificar si hay usuario en el contexto
   else if (user) {
-    if (user.role === 'owner') userType = 'pet-owner'
-    if (user.role === 'sitter') userType = 'caregiver'
+    if (user.role === 'owner') userType = 'ROLE_OWNER'
+    if (user.role === 'sitter') userType = 'ROLE_SITTER'
     
     tokenInfo = {
       name: user.name,
