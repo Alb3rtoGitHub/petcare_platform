@@ -28,7 +28,8 @@ public record SitterFullResponseDTO(
         LocalDateTime createdAt,
         Set<AvailabilityResponseDTO> availabilities,
         Set<ReviewDTO> reviews,
-        Set<ERole> roles
+        Set<ERole> roles,
+        Set<BookingResponseDTO> bookings
 ) {
     public SitterFullResponseDTO {
         if (averageRating == null) {

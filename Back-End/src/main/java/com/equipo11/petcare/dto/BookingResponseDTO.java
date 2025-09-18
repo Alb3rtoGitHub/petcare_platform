@@ -7,10 +7,10 @@ import java.time.LocalDateTime;
 @Builder
 public record BookingResponseDTO(
         Long id,
-        Long ownerId,
+        String ownerName,
         Long sitterId,
-        Long petId,
-        Long serviceEntityId,
+        String petName,
+        String serviceName,
         LocalDateTime startDateTime,
         LocalDateTime endDateTime,
         Double totalPrice,

@@ -12,6 +12,7 @@ import com.equipo11.petcare.repository.*;
 import com.equipo11.petcare.security.SecurityService;
 import com.equipo11.petcare.security.email.EmailProperties;
 import com.equipo11.petcare.service.AddressService;
+import com.equipo11.petcare.service.BookingService;
 import com.equipo11.petcare.service.EmailService;
 import com.equipo11.petcare.service.SitterService;
 import org.springframework.transaction.annotation.Transactional;
@@ -333,10 +334,11 @@ public class SitterServiceImpl implements SitterService {
                     )
                             : null;
 
+                    assert availability.getServiceEntity() != null;
                     return new AvailabilityResponseDTO(
                             availability.getId(),
                             availability.getSitter() != null ? availability.getSitter().getId() : null,
-                            serviceDTO,
+                            availability.getServiceEntity().getServiceName().name(),
                             availability.getStartTime(),
                             availability.getEndTime(),
                             Boolean.TRUE.equals(availability.getActive())
@@ -373,6 +375,21 @@ public class SitterServiceImpl implements SitterService {
                 .availabilities(availabilityDTOs)
                 .reviews(reviewDTOs)
                 .roles(Set.of(ERole.ROLE_SITTER))
+                .bookings(sitter.getBookings().stream()
+                        .map(booking -> BookingResponseDTO.builder()
+                                .id(booking.getId())
+                                .ownerName(booking.getOwner().getFirstName())
+                                .sitterId(booking.getSitter().getId())
+                                .petName(booking.getPet().getName())
+                                .serviceName(booking.getServiceEntity().getServiceName().name())
+                                .startDateTime(booking.getStartDateTime())
+                                .endDateTime(booking.getEndDateTime())
+                                .totalPrice(booking.getTotalPrice())
+                                .specialInstructions(booking.getSpecialInstructions())
+                                .status(booking.getStatus())
+                                .createdAt(booking.getCreatedAt())
+                                .build())
+                        .collect(Collectors.toSet()))
                 .build();
     }
 
