@@ -5,6 +5,8 @@ import lombok.Builder;
 
 @Builder
 public record SitterPatchRequestDTO(
+        @NotNull(message = "Sitter ID is required")
+        Long sitterId,
 
         @NotBlank(message = "Document type is required")
         String documentType,
