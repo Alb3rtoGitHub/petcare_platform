@@ -18,7 +18,6 @@ public record SitterPatchRequestDTO(
 
         String bio,
 
-        @NotBlank(message = "ID card is required")
         String idCard,
 
         String backgroundCheckDocument
