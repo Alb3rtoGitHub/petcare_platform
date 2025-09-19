@@ -1,9 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Eye, EyeOff, Mail, AlertCircle, X, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const BASE_URL = 'http://localhost:8080/api/v1';
-const petTypes = ['Perro', 'Gato', 'Ave', 'Roedor', 'Reptil', 'Otro'];
+// Solo especies CAT y DOG para el backend
+const petTypeEnum = {
+  Perro: 'DOG',
+  Gato: 'CAT'
+};
+const petTypes = Object.keys(petTypeEnum);
 const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
+const documentTypes = [
+  { value: 'DNI_ARG', label: 'DNI Argentino' },
+  { value: 'DNI_ESP', label: 'DNI Español' },
+  { value: 'PASSPORT', label: 'Pasaporte' },
+  { value: 'ID_URUG', label: 'Cédula Uruguaya' },
+  { value: 'ID_CHILE', label: 'Cédula Chilena' },
+  // Agrega más tipos según necesidad
+];
+
+const sizeOptions = [
+  { value: 'SMALL', label: 'Pequeño' },
+  { value: 'MEDIUM', label: 'Mediano' },
+  { value: 'LARGE', label: 'Grande' }
+];
 
 // Función para decodificar el token y obtener datos
 function parseJwt(token) {
@@ -40,6 +61,8 @@ const UserRegistration = ({
   const [regions, setRegions] = useState([]);
   const [cities, setCities] = useState([]);
 
+  const navigate = useNavigate();
+
   // Campos para paso 2
   const [formData, setFormData] = useState({
     email: tokenInfo?.email || '',
@@ -60,27 +83,36 @@ const UserRegistration = ({
     // Paso 2 - Sitter
     experience: '',
     profileDescription: '',
-    services: { walks: false, homeCare: false },
+    documentType: '',
+    documentNumber: '',
     dniFile: null,
     criminalRecordFile: null,
-    profilePhoto: null,
     // Paso 2 - Owner
     pets: []
   });
 
   // Guardar userId y token en sessionStorage si llegan por URL
   useEffect(() => {
+    // Corregido: el parámetro es jwtToken, no jwtoken
     const params = new URLSearchParams(window.location.search);
     const userId = params.get('userId');
-    const jwtoken = params.get('jwtoken');
-    if (userId && jwtoken) {
+    const jwtToken = params.get('jwtToken');
+    if (userId && jwtToken) {
       sessionStorage.setItem('userId', userId);
-      sessionStorage.setItem('token', jwtoken);
-      const claims = parseJwt(jwtoken);
-      if (claims && claims.role) {
+      sessionStorage.setItem('token', jwtToken);
+      const claims = parseJwt(jwtToken);
+      setFormData(prev => ({
+        ...prev,
+        sitterId: userId,
+        role: claims?.role || prev.role
+      }));
+    } else {
+      // Si ya está en sessionStorage, cargarlo en formData
+      const storedId = sessionStorage.getItem('userId');
+      if (storedId) {
         setFormData(prev => ({
           ...prev,
-          role: claims.role
+          sitterId: storedId
         }));
       }
     }
@@ -214,7 +246,11 @@ const UserRegistration = ({
     setFormData(prev => ({
       ...prev,
       pets: prev.pets.map(pet =>
-        pet.id === petId ? { ...pet, [field]: value } : pet
+        pet.id === petId
+          ? field === 'type'
+            ? { ...pet, type: petTypeEnum[value] || value }
+            : { ...pet, [field]: value }
+          : pet
       )
     }));
   };
@@ -251,10 +287,10 @@ const UserRegistration = ({
       if (
         !formData.experience.trim() ||
         !formData.profileDescription.trim() ||
-        (!formData.services.walks && !formData.services.homeCare) ||
+        !formData.documentType ||
+        !formData.documentNumber ||
         !formData.dniFile ||
-        !formData.criminalRecordFile ||
-        !formData.profilePhoto
+        !formData.criminalRecordFile
       ) {
         setErrorMessage('Completa todos los campos obligatorios y sube los archivos requeridos.');
         return false;
@@ -316,32 +352,86 @@ const UserRegistration = ({
     setErrorMessage('');
     if (!validateStep2()) return;
 
-    // Aquí deberías armar el payload para el paso 2 y hacer el fetch correspondiente
-    // Ejemplo para cuidador:
     if (formData.role === 'ROLE_SITTER') {
+      const sitterId = sessionStorage.getItem('userId');
+      // Corregido: obtener el token como jwtToken
+      const jwtToken = sessionStorage.getItem('token');
+      if (!sitterId) {
+        setErrorMessage('No se encontró el ID del cuidador.');
+        return;
+      }
       const formDataToSend = new FormData();
-      formDataToSend.append('experience', formData.experience);
-      formDataToSend.append('profileDescription', formData.profileDescription);
-      formDataToSend.append('services', JSON.stringify(formData.services));
-      formDataToSend.append('dniFile', formData.dniFile);
-      formDataToSend.append('criminalRecordFile', formData.criminalRecordFile);
-      formDataToSend.append('profilePhoto', formData.profilePhoto);
-      // Aquí deberías agregar el userId desde sessionStorage si lo necesitas
-      // formDataToSend.append('userId', sessionStorage.getItem('userId'));
 
-      // fetch al endpoint correspondiente...
+      const sitterPatchRequest = {
+        sitterId: sitterId,
+        documentType: formData.documentType,
+        documentNumber: formData.documentNumber,
+        experience: formData.experience,
+        bio: formData.profileDescription,
+        idCard: '',
+        backgroundCheckDocument: ''
+      };
+
+      formDataToSend.append('data', new Blob([JSON.stringify(sitterPatchRequest)], { type: 'application/json' }));
+      if (formData.dniFile) formDataToSend.append('idCard', formData.dniFile);
+      if (formData.criminalRecordFile) formDataToSend.append('backgroundCheckDocument', formData.criminalRecordFile);
+
+      try {
+        const response = await fetch(`${BASE_URL}/sitters/${sitterId}/documents`, {
+          method: 'PATCH',
+          headers: {
+            // Enviar el token correctamente en la petición
+            'Authorization': `Bearer ${jwtToken}`
+          },
+          body: formDataToSend
+        });
+        console.log(jwtToken)
+        if (response.ok) {
+          navigate('/sitter-dashboard');
+        } else {
+          const error = await response.text();
+          setErrorMessage(error || 'Error al cargar documentos.');
+        }
+      } catch (error) {
+        setErrorMessage('Error de red: ' + error.message);
+      }
     } else {
       // Ejemplo para dueño de mascota:
+      const ownerId = sessionStorage.getItem('userId');
+      const jwtToken = sessionStorage.getItem('token');
+      if (!ownerId) {
+        setErrorMessage('No se encontró el ID del dueño.');
+        return;
+      }
+
+      // Mapear los datos del formulario al DTO esperado por el backend
       const petsPayload = formData.pets.map(pet => ({
         name: pet.name,
-        type: pet.type,
-        size: pet.size,
-        age: pet.age,
-        specialNeeds: pet.specialNeeds
+        age: pet.age ? parseInt(pet.age) : null,
+        species: pet.type || null, // CAT o DOG
+        sizeCategory: pet.size || null,
+        careNote: pet.specialNeeds || ''
       }));
-      // fetch al endpoint correspondiente...
+
+      try {
+        const response = await fetch(`${BASE_URL}/pet/${ownerId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`
+          },
+          body: JSON.stringify(petsPayload)
+        });
+        if (response.status === 201 || response.status === 200 || response.status === 204 || response.statusText.toLowerCase().includes('created')) {
+          navigate('/owner-dashboard');
+        } else {
+          const error = await response.text();
+          setErrorMessage(error || 'Error al registrar mascotas.');
+        }
+      } catch (error) {
+        setErrorMessage('Error de red: ' + error.message);
+      }
     }
-    // Si todo sale bien, podrías redirigir o mostrar mensaje de éxito
   };
 
   const nextStep = () => {
@@ -758,6 +848,36 @@ const UserRegistration = ({
               // Información Profesional para Cuidadores
               <div className="space-y-6">
                 <h2 className="text-xl font-medium text-gray-800 mb-6">Información Profesional</h2>
+                {/* Tipo de documento */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Tipo de documento *
+                  </label>
+                  <select
+                    value={formData.documentType || ''}
+                    onChange={e => handleInputChange('documentType', e.target.value)}
+                    className="w-full p-3 border rounded-lg"
+                    required
+                  >
+                    <option value="">Selecciona el tipo de documento</option>
+                    {documentTypes.map(dt => (
+                      <option key={dt.value} value={dt.value}>{dt.label}</option>
+                    ))}
+                  </select>
+                </div>
+                {/* Número de documento */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Número de documento *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.documentNumber || ''}
+                    onChange={e => handleInputChange('documentNumber', e.target.value)}
+                    className="w-full p-3 border rounded-lg"
+                    required
+                  />
+                </div>
                 {/* Experiencia */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -784,32 +904,6 @@ const UserRegistration = ({
                     required
                   />
                 </div>
-                {/* Servicios ofrecidos */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Servicios ofrecidos *
-                  </label>
-                  <div className="flex gap-4">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={formData.services.walks}
-                        onChange={(e) => handleServiceChange('walks', e.target.checked)}
-                        className="w-5 h-5 text-blue-600 border-2 rounded"
-                      />
-                      <span className="ml-2 text-gray-700">Paseos</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={formData.services.homeCare}
-                        onChange={(e) => handleServiceChange('homeCare', e.target.checked)}
-                        className="w-5 h-5 text-blue-600 border-2 rounded"
-                      />
-                      <span className="ml-2 text-gray-700">Cuidado en casa</span>
-                    </label>
-                  </div>
-                </div>
                 {/* Archivos requeridos */}
                 <div className="space-y-4">
                   <div>
@@ -833,18 +927,6 @@ const UserRegistration = ({
                       onChange={(e) => handleFileChange('criminalRecordFile', e.target.files[0])}
                       className="w-full p-3 border rounded-lg"
                       accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Foto de perfil *
-                    </label>
-                    <input
-                      type="file"
-                      onChange={(e) => handleFileChange('profilePhoto', e.target.files[0])}
-                      className="w-full p-3 border rounded-lg"
-                      accept=".jpg,.jpeg,.png"
                       required
                     />
                   </div>
@@ -879,7 +961,7 @@ const UserRegistration = ({
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Tipo *</label>
                         <select
-                          value={pet.type}
+                          value={Object.keys(petTypeEnum).find(label => petTypeEnum[label] === pet.type) || ''}
                           onChange={(e) => handlePetChange(pet.id, 'type', e.target.value)}
                           className="w-full p-3 border rounded-lg"
                           required
@@ -895,13 +977,18 @@ const UserRegistration = ({
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Tamaño</label>
-                        <input
-                          type="text"
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Tamaño *</label>
+                        <select
                           value={pet.size}
                           onChange={(e) => handlePetChange(pet.id, 'size', e.target.value)}
                           className="w-full p-3 border rounded-lg"
-                        />
+                          required
+                        >
+                          <option value="">Selecciona el tamaño</option>
+                          {sizeOptions.map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
+                        </select>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Edad</label>
@@ -941,7 +1028,7 @@ const UserRegistration = ({
                 onClick={handleSubmit}
                 className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
-                {formData.role === 'ROLE_SITTER' ? 'Registrar como Cuidador' : 'Registrar como Dueño'}
+                {formData.role === 'ROLE_SITTER' ? 'Cargar documentos' : 'Registrar mascota/s'}
               </button>
             </div>
           </div>

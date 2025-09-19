@@ -27,7 +27,7 @@ public class PetController {
     public ResponseEntity<?> createPets(@PathVariable Long ownerId,
                                         @RequestBody @Valid List<PetAddRequestDTO> petsList) {
         var response = petService.createPets(ownerId, petsList);
-        return null;
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping("/{petId}")

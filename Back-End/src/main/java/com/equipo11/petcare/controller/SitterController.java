@@ -20,6 +20,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/sitters")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class SitterController {
 
     private final SitterService sitterService;
