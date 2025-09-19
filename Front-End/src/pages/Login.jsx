@@ -1,12 +1,34 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+// Función para decodificar el token JWT y obtener los claims
+function parseJwt(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
+  }
+}
+
+
 
 export default function PetCareLogin() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -16,22 +38,70 @@ export default function PetCareLogin() {
     }));
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!formData.email || !formData.password) {
       alert('Por favor completa todos los campos');
       return;
     }
     
-    console.log('Datos de login:', formData);
-    // Aquí integrarías con tu API de autenticación
-    alert('Login exitoso!'); // Placeholder
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:8080/api/v1/auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Credenciales incorrectas');
+      }
+
+      const data = await response.json();
+      console.log('Respuesta del backend:', data);
+
+      // Guardar el token en sessionStorage
+      if (data.token) {
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('id', data.id);
+
+        // Decodificar el token para obtener los roles
+        const claims = parseJwt(data.token);
+        console.log('Claims decodificados:', claims);
+
+        // Verificar el rol y redirigir
+        if (claims && claims.roles) {
+          if (claims.roles.includes('ROLE_OWNER')) {
+            navigate('/owner-dashboard', { replace: true });
+          } else if (claims.roles.includes('ROLE_SITTER')) {
+            navigate('/sitter-dashboard', { replace: true });
+          } else if (claims.roles.includes('ROLE_ADMIN')) {
+            navigate('/admin-dashboard', { replace: true });
+          } else {
+            alert('Rol no reconocido');
+          }
+        } else {
+          alert('No se encontraron roles en el token');
+        }
+      } else {
+        alert('No se recibió el token');
+      }
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
-          
+
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">
@@ -58,6 +128,7 @@ export default function PetCareLogin() {
                 onChange={handleInputChange}
                 placeholder="tu@email.com"
                 className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                disabled={loading}
               />
             </div>
           </div>
@@ -78,11 +149,13 @@ export default function PetCareLogin() {
                 onChange={handleInputChange}
                 placeholder="••••••••"
                 className="w-full pl-12 pr-12 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                disabled={loading}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                tabIndex={-1}
               >
                 {showPassword ? (
                   <EyeOff className="h-5 w-5" />
@@ -97,8 +170,9 @@ export default function PetCareLogin() {
           <button
             onClick={handleLogin}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-xl transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mb-6"
+            disabled={loading}
           >
-            Iniciar Sesión
+            {loading ? 'Ingresando...' : 'Iniciar Sesión'}
           </button>
 
           {/* Forgot Password Link */}

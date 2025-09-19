@@ -48,11 +48,12 @@ function AppContent() {
 
           <Route path="/owner/book" element={<BookService />} />
           <Route path="/owner/bookings" element={<OwnerBookings />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
 
           <Route
             path="/sitter"
             element={
-              <ProtectedRoute roles={["sitter"]}>
+              <ProtectedRoute roles={["ROLE_SITTER"]}>
                 <SitterDashboard />
               </ProtectedRoute>
             }
@@ -61,7 +62,7 @@ function AppContent() {
           <Route
             path="/admin"
             element={
-              <ProtectedRoute roles={["admin"]}>
+              <ProtectedRoute roles={["ROLE_ADMIN"]}>
                 <AdminDashboard />
               </ProtectedRoute>
             }

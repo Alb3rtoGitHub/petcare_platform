@@ -1,10 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, Eye, EyeOff, Mail, AlertCircle, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, EyeOff, Mail, AlertCircle, X, Plus } from 'lucide-react';
 
 const BASE_URL = 'http://localhost:8080/api/v1';
-
-// Expresión regular para la contraseña segura
+const petTypes = ['Perro', 'Gato', 'Ave', 'Roedor', 'Reptil', 'Otro'];
 const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
+// Función para decodificar el token y obtener datos
+function parseJwt(token) {
+  try {
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    )
+    return JSON.parse(jsonPayload)
+  } catch (e) {
+    return null
+  }
+}
 
 const UserRegistration = ({
   startStep = 1,
@@ -24,6 +40,7 @@ const UserRegistration = ({
   const [regions, setRegions] = useState([]);
   const [cities, setCities] = useState([]);
 
+  // Campos para paso 2
   const [formData, setFormData] = useState({
     email: tokenInfo?.email || '',
     password: '',
@@ -39,8 +56,35 @@ const UserRegistration = ({
     },
     role: initialUserType === 'caregiver' ? 'ROLE_SITTER' : 'ROLE_OWNER',
     acceptTerms: false,
-    acceptMarketing: false
+    acceptMarketing: false,
+    // Paso 2 - Sitter
+    experience: '',
+    profileDescription: '',
+    services: { walks: false, homeCare: false },
+    dniFile: null,
+    criminalRecordFile: null,
+    profilePhoto: null,
+    // Paso 2 - Owner
+    pets: []
   });
+
+  // Guardar userId y token en sessionStorage si llegan por URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const userId = params.get('userId');
+    const jwtoken = params.get('jwtoken');
+    if (userId && jwtoken) {
+      sessionStorage.setItem('userId', userId);
+      sessionStorage.setItem('token', jwtoken);
+      const claims = parseJwt(jwtoken);
+      if (claims && claims.role) {
+        setFormData(prev => ({
+          ...prev,
+          role: claims.role
+        }));
+      }
+    }
+  }, []);
 
   // Cargar países al montar
   useEffect(() => {
@@ -50,7 +94,6 @@ const UserRegistration = ({
       .catch(() => setCountries([]));
   }, []);
 
-  // Cargar regiones cuando cambia el país
   useEffect(() => {
     if (countries.length === 0) return;
     if (formData.address.country) {
@@ -58,14 +101,13 @@ const UserRegistration = ({
         .then(res => res.json())
         .then(data => setRegions(data))
         .catch(() => setRegions([]));
-      setCities([]); // Limpiar ciudades al cambiar país
+      setCities([]);
     } else {
       setRegions([]);
       setCities([]);
     }
   }, [formData.address.country, countries]);
 
-  // Cargar ciudades cuando cambia la región
   useEffect(() => {
     if (formData.address.region) {
       fetch(`${BASE_URL}/addresses/${formData.address.region}/cities`)
@@ -83,7 +125,7 @@ const UserRegistration = ({
       ...prev,
       address: {
         ...prev.address,
-        country: e.target.value, // countryCode
+        country: e.target.value,
         region: '',
         city: '',
         streetAddress: ''
@@ -96,7 +138,7 @@ const UserRegistration = ({
       ...prev,
       address: {
         ...prev.address,
-        region: e.target.value, // id de la región
+        region: e.target.value,
         city: '',
         streetAddress: prev.address.streetAddress
       }
@@ -108,7 +150,7 @@ const UserRegistration = ({
       ...prev,
       address: {
         ...prev.address,
-        city: e.target.value, // id de la ciudad
+        city: e.target.value,
         streetAddress: prev.address.streetAddress
       }
     }));
@@ -128,6 +170,52 @@ const UserRegistration = ({
     setFormData(prev => ({
       ...prev,
       [field]: value
+    }));
+  };
+
+  // Servicios para cuidadores
+  const handleServiceChange = (service, checked) => {
+    setFormData(prev => ({
+      ...prev,
+      services: {
+        ...prev.services,
+        [service]: checked
+      }
+    }));
+  };
+
+  // Manejo de archivos
+  const handleFileChange = (field, file) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: file
+    }));
+  };
+
+  // Mascotas para dueños
+  const addPet = () => {
+    setFormData(prev => ({
+      ...prev,
+      pets: [
+        ...prev.pets,
+        {
+          id: Date.now(),
+          name: '',
+          type: '',
+          size: '',
+          age: '',
+          specialNeeds: ''
+        }
+      ]
+    }));
+  };
+
+  const handlePetChange = (petId, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      pets: prev.pets.map(pet =>
+        pet.id === petId ? { ...pet, [field]: value } : pet
+      )
     }));
   };
 
@@ -157,12 +245,34 @@ const UserRegistration = ({
     return true;
   };
 
+  // Validación paso 2
+  const validateStep2 = () => {
+    if (formData.role === 'ROLE_SITTER') {
+      if (
+        !formData.experience.trim() ||
+        !formData.profileDescription.trim() ||
+        (!formData.services.walks && !formData.services.homeCare) ||
+        !formData.dniFile ||
+        !formData.criminalRecordFile ||
+        !formData.profilePhoto
+      ) {
+        setErrorMessage('Completa todos los campos obligatorios y sube los archivos requeridos.');
+        return false;
+      }
+    } else {
+      if (formData.pets.length === 0 || formData.pets.some(pet => !pet.name || !pet.type)) {
+        setErrorMessage('Agrega al menos una mascota y completa los datos obligatorios.');
+        return false;
+      }
+    }
+    return true;
+  };
+
   // Envío del formulario paso 1
   const handleStep1Submit = async () => {
     setErrorMessage('');
     if (!validateStep1()) return;
 
-    // Buscar los nombres de región y ciudad según los ids seleccionados
     const selectedRegion = regions.find(r => String(r.id) === String(formData.address.region));
     const selectedCity = cities.find(c => String(c.id) === String(formData.address.city));
 
@@ -177,7 +287,7 @@ const UserRegistration = ({
         unit: "",
         city: selectedCity ? selectedCity.name : "",
         region: selectedRegion ? selectedRegion.name : "",
-        countryCode: formData.address.country // Código ISO-3166 alpha-2
+        countryCode: formData.address.country
       },
       role: formData.role
     };
@@ -191,6 +301,7 @@ const UserRegistration = ({
       if (response.status === 201) {
         setEmailVerificationSent(true);
         setErrorMessage('');
+        setCurrentStep(2);
       } else {
         const error = await response.text();
         setErrorMessage(error || 'Error al registrar usuario.');
@@ -198,6 +309,39 @@ const UserRegistration = ({
     } catch (error) {
       setErrorMessage('Error de red: ' + error.message);
     }
+  };
+
+  // Envío del formulario paso 2
+  const handleSubmit = async () => {
+    setErrorMessage('');
+    if (!validateStep2()) return;
+
+    // Aquí deberías armar el payload para el paso 2 y hacer el fetch correspondiente
+    // Ejemplo para cuidador:
+    if (formData.role === 'ROLE_SITTER') {
+      const formDataToSend = new FormData();
+      formDataToSend.append('experience', formData.experience);
+      formDataToSend.append('profileDescription', formData.profileDescription);
+      formDataToSend.append('services', JSON.stringify(formData.services));
+      formDataToSend.append('dniFile', formData.dniFile);
+      formDataToSend.append('criminalRecordFile', formData.criminalRecordFile);
+      formDataToSend.append('profilePhoto', formData.profilePhoto);
+      // Aquí deberías agregar el userId desde sessionStorage si lo necesitas
+      // formDataToSend.append('userId', sessionStorage.getItem('userId'));
+
+      // fetch al endpoint correspondiente...
+    } else {
+      // Ejemplo para dueño de mascota:
+      const petsPayload = formData.pets.map(pet => ({
+        name: pet.name,
+        type: pet.type,
+        size: pet.size,
+        age: pet.age,
+        specialNeeds: pet.specialNeeds
+      }));
+      // fetch al endpoint correspondiente...
+    }
+    // Si todo sale bien, podrías redirigir o mostrar mensaje de éxito
   };
 
   const nextStep = () => {
@@ -271,12 +415,12 @@ const UserRegistration = ({
 
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-gray-800 mb-2">
-          {formData.role === 'ROLE_SITTER' ? 'Registro como Cuidador' : 'Registro como Dueño'} - Paso {currentStep} de 1
+          {formData.role === 'ROLE_SITTER' ? 'Registro como Cuidador' : 'Registro como Dueño'} - Paso {currentStep} de 2
         </h1>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div
             className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-            style={{ width: `100%` }}
+            style={{ width: `${currentStep === 1 ? '50%' : '100%'}` }}
           ></div>
         </div>
       </div>
@@ -341,7 +485,7 @@ const UserRegistration = ({
         )}
 
         {/* Paso 1: Información Personal */}
-        {!emailVerificationSent && (
+        {!emailVerificationSent && currentStep === 1 && (
           <div className="space-y-6">
             <h2 className="text-xl font-medium text-gray-800 mb-6">Información Personal</h2>
             {/* Tipo de usuario */}
@@ -601,7 +745,203 @@ const UserRegistration = ({
                 onClick={nextStep}
                 className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
               >
-                Registrarse
+                Siguiente
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Paso 2: Información Específica según tipo de usuario */}
+        {currentStep === 2 && !emailVerificationSent && (
+          <div className="space-y-6">
+            {formData.role === 'ROLE_SITTER' ? (
+              // Información Profesional para Cuidadores
+              <div className="space-y-6">
+                <h2 className="text-xl font-medium text-gray-800 mb-6">Información Profesional</h2>
+                {/* Experiencia */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Experiencia como cuidador *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.experience}
+                    onChange={(e) => handleInputChange('experience', e.target.value)}
+                    className="w-full p-3 border rounded-lg"
+                    required
+                  />
+                </div>
+                {/* Descripción del perfil */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Descripción del perfil *
+                  </label>
+                  <textarea
+                    value={formData.profileDescription}
+                    onChange={(e) => handleInputChange('profileDescription', e.target.value)}
+                    className="w-full p-3 border rounded-lg"
+                    rows="4"
+                    required
+                  />
+                </div>
+                {/* Servicios ofrecidos */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Servicios ofrecidos *
+                  </label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.services.walks}
+                        onChange={(e) => handleServiceChange('walks', e.target.checked)}
+                        className="w-5 h-5 text-blue-600 border-2 rounded"
+                      />
+                      <span className="ml-2 text-gray-700">Paseos</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.services.homeCare}
+                        onChange={(e) => handleServiceChange('homeCare', e.target.checked)}
+                        className="w-5 h-5 text-blue-600 border-2 rounded"
+                      />
+                      <span className="ml-2 text-gray-700">Cuidado en casa</span>
+                    </label>
+                  </div>
+                </div>
+                {/* Archivos requeridos */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Archivo de DNI o documento de identidad *
+                    </label>
+                    <input
+                      type="file"
+                      onChange={(e) => handleFileChange('dniFile', e.target.files[0])}
+                      className="w-full p-3 border rounded-lg"
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Certificado de antecedentes penales *
+                    </label>
+                    <input
+                      type="file"
+                      onChange={(e) => handleFileChange('criminalRecordFile', e.target.files[0])}
+                      className="w-full p-3 border rounded-lg"
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Foto de perfil *
+                    </label>
+                    <input
+                      type="file"
+                      onChange={(e) => handleFileChange('profilePhoto', e.target.files[0])}
+                      className="w-full p-3 border rounded-lg"
+                      accept=".jpg,.jpeg,.png"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              // Información de Mascotas para Dueños
+              <div className="space-y-6 bg-white text-gray-900 rounded-lg">
+                <h2 className="text-xl font-medium text-gray-800 mb-6">Información de Mascotas</h2>
+                <div className="space-y-4">
+                  <button
+                    onClick={addPet}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
+                    <Plus className="w-5 h-5" />
+                    Agregar mascota
+                  </button>
+                </div>
+                {formData.pets.map((pet, idx) => (
+                  <div key={pet.id} className="p-4 bg-gray-50 rounded-lg border">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
+                        <input
+                          type="text"
+                          value={pet.name}
+                          onChange={(e) => handlePetChange(pet.id, 'name', e.target.value)}
+                          className="w-full p-3 border rounded-lg"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Tipo *</label>
+                        <select
+                          value={pet.type}
+                          onChange={(e) => handlePetChange(pet.id, 'type', e.target.value)}
+                          className="w-full p-3 border rounded-lg"
+                          required
+                        >
+                          <option value="">Selecciona el tipo de mascota</option>
+                          {petTypes.map((type) => (
+                            <option key={type} value={type}>
+                              {type}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Tamaño</label>
+                        <input
+                          type="text"
+                          value={pet.size}
+                          onChange={(e) => handlePetChange(pet.id, 'size', e.target.value)}
+                          className="w-full p-3 border rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Edad</label>
+                        <input
+                          type="text"
+                          value={pet.age}
+                          onChange={(e) => handlePetChange(pet.id, 'age', e.target.value)}
+                          className="w-full p-3 border rounded-lg"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Necesidades especiales</label>
+                      <input
+                        type="text"
+                        value={pet.specialNeeds}
+                        onChange={(e) => handlePetChange(pet.id, 'specialNeeds', e.target.value)}
+                        className="w-full p-3 border rounded-lg"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {/* Botones de navegación */}
+            <div className="flex justify-between pt-4">
+              <button
+                type="button"
+                onClick={prevStep}
+                className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Atrás
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmit}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                {formData.role === 'ROLE_SITTER' ? 'Registrar como Cuidador' : 'Registrar como Dueño'}
               </button>
             </div>
           </div>

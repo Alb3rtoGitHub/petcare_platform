@@ -1,9 +1,56 @@
 import { Link } from 'react-router-dom'
 import React, { useEffect, useState } from 'react'
+import OwnerNavbar from '../components/OwnerNavbar.jsx'
+import SitterNavbar from '../components/SitterNavbar.jsx'
+import DefaultNavbar from '../components/NewNavbar.jsx'
+
+// Función para decodificar el token y obtener datos
+function parseJwt(token) {
+  try {
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    )
+    return JSON.parse(jsonPayload)
+  } catch (e) {
+    return null
+  }
+}
+
+// Verifica si el token está expirado
+function isTokenExpired(token) {
+  const claims = parseJwt(token)
+  if (!claims || !claims.exp) return true
+  const now = Math.floor(Date.now() / 1000)
+  return claims.exp < now
+}
 
 export default function Home() {
   const [sitters, setSitters] = useState([]);
   const [loadingSitters, setLoadingSitters] = useState(true);
+  const [navbar, setNavbar] = useState(<DefaultNavbar />);
+
+
+  useEffect(() => {
+    // Revisar token y rol
+    const token = sessionStorage.getItem('token')
+    if (token && !isTokenExpired(token)) {
+      const claims = parseJwt(token)
+      if (claims && claims.roles) {
+        if (claims.roles.includes('ROLE_OWNER')) {
+          setNavbar(<OwnerNavbar />)
+        } else if (claims.roles.includes('ROLE_SITTER')) {
+          setNavbar(<SitterNavbar />)
+        }
+      } else {
+        setNavbar(<DefaultNavbar />)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     fetch('http://localhost:8080/api/v1/sitters?page=0&size=3&sortBy=averageRating&sortDir=desc')
