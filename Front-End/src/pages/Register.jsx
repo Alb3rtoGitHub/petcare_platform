@@ -592,7 +592,7 @@ const UserRegistration = ({
                     role: value
                   }));
                 }}
-                className="w-full p-3 border border-gray-300 rounded-lg bg-white"
+                className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                 required
               >
                 <option value="ROLE_SITTER">👨‍⚕️ Soy Cuidador</option>
@@ -607,7 +607,8 @@ const UserRegistration = ({
                   type="text"
                   value={formData.firstName}
                   onChange={(e) => handleInputChange('firstName', e.target.value)}
-                  className="w-full p-3 border rounded-lg"
+                  className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
+                  placeholder="Escribe tu nombre"
                   required
                 />
               </div>
@@ -617,7 +618,8 @@ const UserRegistration = ({
                   type="text"
                   value={formData.lastName}
                   onChange={(e) => handleInputChange('lastName', e.target.value)}
-                  className="w-full p-3 border rounded-lg"
+                  className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
+                  placeholder="Escribe tu apellido"
                   required
                 />
               </div>
@@ -625,12 +627,13 @@ const UserRegistration = ({
             {/* Email y Teléfono */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Correo *</label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="w-full p-3 border rounded-lg"
+                  className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
+                  placeholder="Escribe tu Correo"
                   required
                 />
               </div>
@@ -640,7 +643,8 @@ const UserRegistration = ({
                   type="tel"
                   value={formData.phoneNumber}
                   onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                  className="w-full p-3 border rounded-lg"
+                  className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
+                  placeholder="Escribe tu telefono"
                   required
                 />
               </div>
@@ -656,7 +660,8 @@ const UserRegistration = ({
                     onChange={(e) => handleInputChange('password', e.target.value)}
                     onFocus={() => setShowPasswordInfo(true)}
                     onBlur={() => setShowPasswordInfo(false)}
-                    className={`w-full p-3 border rounded-lg pr-12 ${formData.password && !passwordRegex.test(formData.password) ? 'border-red-500' : ''}`}
+                    className={`w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500 ${formData.password && !passwordRegex.test(formData.password) ? 'border-red-500' : ''}`}
+                    placeholder="Escribe tu Contraseña"
                     required
                   />
                   <button
@@ -692,7 +697,8 @@ const UserRegistration = ({
                     type={showConfirmPassword ? "text" : "password"}
                     value={formData.confirmPassword}
                     onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                    className="w-full p-3 border rounded-lg pr-12"
+                    className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
+                    placeholder="Confirma tu Contraseña"
                     required
                   />
                   <button
@@ -717,7 +723,7 @@ const UserRegistration = ({
                 <select
                   value={formData.address.country}
                   onChange={handleCountryChange}
-                  className="w-full p-3 border rounded-lg"
+                  className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                   required
                 >
                   <option value="">Selecciona tu país</option>
@@ -733,7 +739,7 @@ const UserRegistration = ({
                 <select
                   value={formData.address.region}
                   onChange={handleRegionChange}
-                  className="w-full p-3 border rounded-lg"
+                  className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                   required
                   disabled={!formData.address.country}
                 >
@@ -752,7 +758,7 @@ const UserRegistration = ({
                 <select
                   value={formData.address.city}
                   onChange={handleCityChange}
-                  className="w-full p-3 border rounded-lg"
+                  className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                   required
                   disabled={!formData.address.region}
                 >
@@ -771,7 +777,7 @@ const UserRegistration = ({
                   value={formData.address.streetAddress}
                   onChange={handleStreetAddressChange}
                   placeholder="Calle, número, código postal"
-                  className="w-full p-3 border rounded-lg"
+                  className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                   required
                 />
               </div>
@@ -856,7 +862,7 @@ const UserRegistration = ({
                   <select
                     value={formData.documentType || ''}
                     onChange={e => handleInputChange('documentType', e.target.value)}
-                    className="w-full p-3 border rounded-lg"
+                    className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                     required
                   >
                     <option value="">Selecciona el tipo de documento</option>
@@ -868,13 +874,14 @@ const UserRegistration = ({
                 {/* Número de documento */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Número de documento *
+                    Número de Identidad *
                   </label>
                   <input
                     type="text"
                     value={formData.documentNumber || ''}
                     onChange={e => handleInputChange('documentNumber', e.target.value)}
-                    className="w-full p-3 border rounded-lg"
+                    className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
+                    placeholder="Cedula o DNI"
                     required
                   />
                 </div>
@@ -887,7 +894,8 @@ const UserRegistration = ({
                     type="text"
                     value={formData.experience}
                     onChange={(e) => handleInputChange('experience', e.target.value)}
-                    className="w-full p-3 border rounded-lg"
+                    className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
+                    placeholder="Escribe tu experiencia"
                     required
                   />
                 </div>
@@ -899,7 +907,8 @@ const UserRegistration = ({
                   <textarea
                     value={formData.profileDescription}
                     onChange={(e) => handleInputChange('profileDescription', e.target.value)}
-                    className="w-full p-3 border rounded-lg"
+                    className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
+                    placeholder="Describete"
                     rows="4"
                     required
                   />
@@ -913,7 +922,7 @@ const UserRegistration = ({
                     <input
                       type="file"
                       onChange={(e) => handleFileChange('dniFile', e.target.files[0])}
-                      className="w-full p-3 border rounded-lg"
+                      className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                       accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                       required
                     />
@@ -925,7 +934,7 @@ const UserRegistration = ({
                     <input
                       type="file"
                       onChange={(e) => handleFileChange('criminalRecordFile', e.target.files[0])}
-                      className="w-full p-3 border rounded-lg"
+                      className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                       accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                       required
                     />
@@ -954,7 +963,8 @@ const UserRegistration = ({
                           type="text"
                           value={pet.name}
                           onChange={(e) => handlePetChange(pet.id, 'name', e.target.value)}
-                          className="w-full p-3 border rounded-lg"
+                          className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
+                          placeholder="Nombre de Mascota"
                           required
                         />
                       </div>
@@ -963,7 +973,7 @@ const UserRegistration = ({
                         <select
                           value={Object.keys(petTypeEnum).find(label => petTypeEnum[label] === pet.type) || ''}
                           onChange={(e) => handlePetChange(pet.id, 'type', e.target.value)}
-                          className="w-full p-3 border rounded-lg"
+                          className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                           required
                         >
                           <option value="">Selecciona el tipo de mascota</option>
@@ -981,7 +991,7 @@ const UserRegistration = ({
                         <select
                           value={pet.size}
                           onChange={(e) => handlePetChange(pet.id, 'size', e.target.value)}
-                          className="w-full p-3 border rounded-lg"
+                          className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                           required
                         >
                           <option value="">Selecciona el tamaño</option>
@@ -996,7 +1006,8 @@ const UserRegistration = ({
                           type="text"
                           value={pet.age}
                           onChange={(e) => handlePetChange(pet.id, 'age', e.target.value)}
-                          className="w-full p-3 border rounded-lg"
+                          className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
+                          placeholder="Edad de la mascota"
                         />
                       </div>
                     </div>
@@ -1006,7 +1017,8 @@ const UserRegistration = ({
                         type="text"
                         value={pet.specialNeeds}
                         onChange={(e) => handlePetChange(pet.id, 'specialNeeds', e.target.value)}
-                        className="w-full p-3 border rounded-lg"
+                        className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
+                        placeholder="Medicamentos, costumbres..."
                       />
                     </div>
                   </div>

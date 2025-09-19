@@ -202,7 +202,7 @@ export default function SitterDashboard() {
                     name="serviceName"
                     value={form.serviceName}
                     onChange={handleFormChange}
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                     required
                   >
                     <option value="">Selecciona un servicio</option>
@@ -219,7 +219,7 @@ export default function SitterDashboard() {
                     min={new Date().toISOString().split('T')[0]}
                     value={form.startDate}
                     onChange={handleFormChange}
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                     required
                   />
                 </div>
@@ -232,7 +232,7 @@ export default function SitterDashboard() {
                     max="23"
                     value={form.startHour}
                     onChange={handleFormChange}
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                     required
                   />
                 </div>
@@ -244,7 +244,7 @@ export default function SitterDashboard() {
                     min={form.startDate || new Date().toISOString().split('T')[0]}
                     value={form.endDate}
                     onChange={handleFormChange}
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                     required
                   />
                 </div>
@@ -257,7 +257,7 @@ export default function SitterDashboard() {
                     max="23"
                     value={form.endHour}
                     onChange={handleFormChange}
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full p-3 border rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
                     required
                   />
                 </div>
