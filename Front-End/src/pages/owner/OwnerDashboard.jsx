@@ -35,6 +35,7 @@ export default function OwnerDashboard() {
   // Info para modales
   const [selectedReserva, setSelectedReserva] = useState(null);
   const [selectedCuidador, setSelectedCuidador] = useState(null);
+  const [reservas, setReservas] = useState([]);
 
   // Mock data para mascotas favoritas
   const myPets = [
@@ -60,6 +61,72 @@ export default function OwnerDashboard() {
     setPets(myPets);
   }, []);
 
+  useEffect(() => {
+    // Corregido: obtener el id desde sessionStorage con la clave 'id'
+    const userId = sessionStorage.getItem("id");
+    const token = sessionStorage.getItem("token");
+    console.log("OwnerDashboard userId:", userId, "token:", token); // Verifica valores
+    if (!userId || !token) return;
+
+    fetch(
+      `http://localhost:8080/api/v1/bookings/user/${userId}?page=0&size=3&sortBy=startDateTime`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        const reservasAdaptadas = (data.content || []).map((b) => ({
+          id: b.id,
+          cuidador: b.ownerName,
+          avatar: `https://i.pravatar.cc/150?u=${b.id}`,
+          estado:
+            b.status === "CONFIRMADA"
+              ? "Confirmada"
+              : b.status === "PENDIENTE"
+              ? "Pendiente"
+              : b.status === "FINALIZADA"
+              ? "Finalizada"
+              : b.status,
+          estadoColor:
+            b.status === "CONFIRMADA"
+              ? "bg-blue-100 text-blue-800"
+              : b.status === "PENDIENTE"
+              ? "bg-yellow-100 text-yellow-800"
+              : b.status === "FINALIZADA"
+              ? "bg-green-100 text-green-800"
+              : "bg-gray-100 text-gray-800",
+          fecha:
+            b.startDateTime &&
+            new Date(b.startDateTime).toLocaleDateString("es-ES", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            }),
+          hora:
+            b.startDateTime && b.endDateTime
+              ? `${new Date(b.startDateTime).toLocaleTimeString("es-ES", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })} - ${new Date(b.endDateTime).toLocaleTimeString("es-ES", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}`
+              : "",
+          lugar: b.specialInstructions || "",
+          servicio: b.serviceName
+            ? `${b.serviceName} para ${b.petName}`
+            : `Servicio para ${b.petName}`,
+          precio: b.totalPrice ? `${b.totalPrice.toFixed(2)}€` : "",
+          puedeEvaluar: b.status === "FINALIZADA",
+        }));
+        setReservas(reservasAdaptadas);
+      });
+  }, []);
+
   // listen for navbar requests to open the reservation modal
   useEffect(() => {
     function onOpenReservation() {
@@ -80,51 +147,6 @@ export default function OwnerDashboard() {
     window.addEventListener("owner:pet-delete", onPetDelete);
     return () => window.removeEventListener("owner:pet-delete", onPetDelete);
   }, []);
-
-  // Mock de reservas para mostrar 3 tarjetas
-  const reservas = [
-    {
-      id: "BK001",
-      cuidador: "María González",
-      avatar: `https://i.pravatar.cc/150?u=BK001`,
-      estado: "Confirmada",
-      estadoColor: "bg-blue-100 text-blue-800",
-      fecha: "domingo, 14 de enero de 2024",
-      hora: "09:00 - 10:00",
-      lugar: "Parque del Retiro, Madrid",
-      servicio: "Paseo Diario para Luna (Perro)",
-      precio: "25.20€",
-      puedeEvaluar: true,
-    },
-    {
-      id: "BK002",
-      cuidador: "Carlos Ruiz",
-      avatar: `https://i.pravatar.cc/150?u=BK002`,
-      estado: "Pendiente",
-      estadoColor: "bg-yellow-100 text-yellow-800",
-      fecha: "lunes, 18 de marzo de 2024",
-      hora: "16:00 - 18:00",
-      lugar: "Calle Mayor, Madrid",
-      servicio: "Guardería para Max (Perro)",
-      precio: "40.00€",
-      puedeEvaluar: false,
-    },
-    {
-      id: "BK003",
-      cuidador: "Ana López",
-      avatar: `https://i.pravatar.cc/150?u=BK003`,
-      estado: "Finalizada",
-      estadoColor: "bg-green-100 text-green-800",
-      fecha: "sábado, 6 de abril de 2024",
-      hora: "11:00 - 13:00",
-      lugar: "Plaza España, Madrid",
-      servicio: "Alojamiento para Luna (Gato)",
-      precio: "60.00€",
-      rating: 4,
-      comment: "Muy amable, dejó todo en orden",
-      puedeEvaluar: true,
-    },
-  ];
 
   // Helper: calcula la cantidad de horas a partir del string "HH:MM - HH:MM"
   function getHoursFromRange(horaRange) {
