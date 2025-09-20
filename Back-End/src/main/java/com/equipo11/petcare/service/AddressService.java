@@ -1,10 +1,12 @@
 package com.equipo11.petcare.service;
 
+import com.equipo11.petcare.config.CacheConfig;
 import com.equipo11.petcare.dto.AddressDTO;
 import com.equipo11.petcare.dto.CityResponseDTO;
 import com.equipo11.petcare.dto.CountryResponseDTO;
 import com.equipo11.petcare.dto.RegionResponseDTO;
 import com.equipo11.petcare.model.address.Address;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.util.List;
 
@@ -14,9 +16,12 @@ public interface AddressService {
     Address updateAddress(Long userId, AddressDTO dto);
     Address createAddress(Address address);
 
+    @Cacheable(value = CacheConfig.USERS_INFO_CACHE, unless = "#result==null")
     List<CountryResponseDTO> getAllCountries();
 
+    @Cacheable(value = CacheConfig.USERS_INFO_CACHE, unless = "#result==null")
     List<RegionResponseDTO> getAllRegionsByCountry(String countryId);
 
+    @Cacheable(value = CacheConfig.USERS_INFO_CACHE, unless = "#result==null")
     List<CityResponseDTO> getAllCitiesByRegion(Long regionId);
 }
