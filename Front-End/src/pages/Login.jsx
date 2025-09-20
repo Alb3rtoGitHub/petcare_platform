@@ -46,7 +46,7 @@ export default function PetCareLogin() {
     
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/v1/auth', {
+      const response = await fetch('https://petcare-platform.onrender.com/api/v1/auth', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

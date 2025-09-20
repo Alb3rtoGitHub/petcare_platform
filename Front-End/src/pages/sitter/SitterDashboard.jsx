@@ -40,7 +40,7 @@ export default function SitterDashboard() {
   // Fetch datos del cuidador
   const fetchSitterData = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/api/v1/sitters/${sitterId}`, {
+      const response = await fetch(`https://petcare-platform.onrender.com/api/v1/sitters/${sitterId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -58,7 +58,7 @@ export default function SitterDashboard() {
   // Fetch servicios disponibles
   const fetchServiceEntities = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/v1/service-entities', {
+      const response = await fetch('https://petcare-platform.onrender.com/api/v1/service-entities', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (!response.ok)
@@ -97,7 +97,7 @@ export default function SitterDashboard() {
     }
     setLoading(true)
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/availabilities/sitters/${sitterId}`, {
+      const res = await fetch(`https://petcare-platform.onrender.com/api/v1/availabilities/sitters/${sitterId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -131,7 +131,7 @@ export default function SitterDashboard() {
     if (!window.confirm('¿Seguro que deseas eliminar esta disponibilidad?')) return
     setLoading(true)
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/availabilities/${availabilityId}`, {
+      const res = await fetch(`https://petcare-platform.onrender.com/api/v1/availabilities/${availabilityId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -281,7 +281,7 @@ export default function SitterDashboard() {
     if (!window.confirm('¿Seguro que deseas cancelar esta solicitud?')) return
     setLoading(true)
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/bookings/${bookingId}`, {
+      const res = await fetch(`https://petcare-platform.onrender.com/api/v1/bookings/${bookingId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

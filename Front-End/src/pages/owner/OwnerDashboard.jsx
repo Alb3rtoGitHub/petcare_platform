@@ -69,7 +69,7 @@ export default function OwnerDashboard() {
     if (!userId || !token) return;
 
     fetch(
-      `http://localhost:8080/api/v1/bookings/user/${userId}?page=0&size=3&sortBy=startDateTime`,
+      `https://petcare-platform.onrender.com/api/v1/bookings/user/${userId}?page=0&size=3&sortBy=startDateTime`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

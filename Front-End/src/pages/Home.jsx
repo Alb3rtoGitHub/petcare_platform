@@ -53,7 +53,7 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/v1/sitters?page=0&size=3&sortBy=averageRating&sortDir=desc')
+    fetch('https://petcare-platform.onrender.com/api/v1/sitters?page=0&size=3&sortBy=averageRating&sortDir=desc')
       .then(res => res.json())
       .then(data => {
         setSitters(data.content || []);
