@@ -15,9 +15,10 @@ export default function BookService() {
   }
 
   return (
-    <div className="max-w-xl mx-auto card">
-      <h1 className="text-2xl font-bold mb-4">Reservar servicio</h1>
-      <form onSubmit={submit} className="space-y-3">
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-xl mx-auto card bg-white shadow-lg">
+        <h1 className="text-2xl font-bold mb-4 text-gray-800">Reservar servicio</h1>
+        <form onSubmit={submit} className="space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <label className="block col-span-2 md:col-span-1">
             <span className="text-sm">Nombre de la mascota</span>
@@ -47,6 +48,7 @@ export default function BookService() {
         <button className="btn btn-primary w-full">Crear reserva</button>
       </form>
       {ok && <p className="mt-3 text-green-600">{ok}</p>}
+      </div>
     </div>
   )
 }
