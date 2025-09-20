@@ -1,10 +1,12 @@
 package com.equipo11.petcare.service;
 
+import com.equipo11.petcare.config.CacheConfig;
 import com.equipo11.petcare.dto.AddressDTO;
 import com.equipo11.petcare.dto.CityResponseDTO;
 import com.equipo11.petcare.dto.CountryResponseDTO;
 import com.equipo11.petcare.dto.RegionResponseDTO;
 import com.equipo11.petcare.model.address.Address;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.util.List;
 
