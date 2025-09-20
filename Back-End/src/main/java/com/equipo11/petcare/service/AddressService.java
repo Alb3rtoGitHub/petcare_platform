@@ -14,9 +14,12 @@ public interface AddressService {
     Address updateAddress(Long userId, AddressDTO dto);
     Address createAddress(Address address);
 
+    @Cacheable(value = CacheConfig.USERS_INFO_CACHE, unless = "#result==null")
     List<CountryResponseDTO> getAllCountries();
 
+    @Cacheable(value = CacheConfig.USERS_INFO_CACHE, unless = "#result==null")
     List<RegionResponseDTO> getAllRegionsByCountry(String countryId);
 
+    @Cacheable(value = CacheConfig.USERS_INFO_CACHE, unless = "#result==null")
     List<CityResponseDTO> getAllCitiesByRegion(Long regionId);
 }
