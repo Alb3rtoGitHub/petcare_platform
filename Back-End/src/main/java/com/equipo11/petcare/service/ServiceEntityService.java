@@ -1,8 +1,10 @@
 package com.equipo11.petcare.service;
 
+import com.equipo11.petcare.config.CacheConfig;
 import com.equipo11.petcare.dto.ServiceEntityRequestDTO;
 import com.equipo11.petcare.dto.ServiceEntityResponseDTO;
 import com.equipo11.petcare.model.serviceentity.enums.ServiceName;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.util.List;
 
