@@ -1,6 +1,9 @@
 package com.equipo11.petcare.service.impl;
 
 import com.equipo11.petcare.dto.AddressDTO;
+import com.equipo11.petcare.dto.CityResponseDTO;
+import com.equipo11.petcare.dto.CountryResponseDTO;
+import com.equipo11.petcare.dto.RegionResponseDTO;
 import com.equipo11.petcare.exception.enums.ApiError;
 import com.equipo11.petcare.exception.PetcareException;
 import com.equipo11.petcare.model.address.Address;
@@ -13,6 +16,9 @@ import com.equipo11.petcare.repository.CountryRepository;
 import com.equipo11.petcare.repository.RegionRepository;
 import com.equipo11.petcare.service.AddressService;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class AddressServiceImpl implements AddressService {
@@ -69,5 +75,33 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public Address createAddress(Address address) {
         return addressRepo.save(address);
+    }
+
+    @Override
+    public List<CountryResponseDTO> getAllCountries() {
+        var countries = countryRepo.findAll();
+        return countries.stream()
+                .map(country -> new CountryResponseDTO(country.getName(), country.getCountryCode()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<RegionResponseDTO> getAllRegionsByCountry(String countryCode) {
+        Country country = countryRepo.findById(countryCode)
+                .orElseThrow(() -> new PetcareException(ApiError.COUNTRY_NOT_FOUND));
+        List<Region> regions = regionRepo.findAllByCountryCountryCode(country.getCountryCode());
+        return regions.stream()
+                .map(region -> new RegionResponseDTO(region.getId(), region.getName()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CityResponseDTO> getAllCitiesByRegion(Long regionId) {
+        Region region = regionRepo.findById(regionId)
+                .orElseThrow(() -> new PetcareException(ApiError.REGION_NOT_FOUND));
+        List<City> cities = cityRepo.findAllByRegion(region);
+        return cities.stream()
+                .map(city -> new CityResponseDTO(city.getId(), city.getName()))
+                .collect(Collectors.toList());
     }
 }

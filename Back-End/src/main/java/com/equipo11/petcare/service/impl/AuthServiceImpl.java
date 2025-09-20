@@ -157,7 +157,7 @@ public class AuthServiceImpl implements AuthService {
         response = UriComponentsBuilder
                 .fromUriString("http://localhost:5173/Register/pets")
                 .queryParam("userId",   user.getId())
-                .queryParam("jwtToken", token)
+                .queryParam("jwtToken", jwt)
                 .build().toUriString();
         return response;
     }

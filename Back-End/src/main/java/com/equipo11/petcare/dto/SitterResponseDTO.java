@@ -7,7 +7,9 @@ public record SitterResponseDTO(
         Long id,
         String firstName,
         String lastName,
-        Double rating,
-        Long cityId
+        Double averageRating,
+        String cityName,
+        String profilePicture,
+        String bio
 ) {
 }

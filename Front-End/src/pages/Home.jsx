@@ -1,6 +1,67 @@
 import { Link } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import OwnerNavbar from '../components/OwnerNavbar.jsx'
+import SitterNavbar from '../components/SitterNavbar.jsx'
+import DefaultNavbar from '../components/NewNavbar.jsx'
+
+// Función para decodificar el token y obtener datos
+function parseJwt(token) {
+  try {
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    )
+    return JSON.parse(jsonPayload)
+  } catch (e) {
+    return null
+  }
+}
+
+// Verifica si el token está expirado
+function isTokenExpired(token) {
+  const claims = parseJwt(token)
+  if (!claims || !claims.exp) return true
+  const now = Math.floor(Date.now() / 1000)
+  return claims.exp < now
+}
 
 export default function Home() {
+  const [sitters, setSitters] = useState([]);
+  const [loadingSitters, setLoadingSitters] = useState(true);
+  const [navbar, setNavbar] = useState(<DefaultNavbar />);
+
+
+  useEffect(() => {
+    // Revisar token y rol
+    const token = sessionStorage.getItem('token')
+    if (token && !isTokenExpired(token)) {
+      const claims = parseJwt(token)
+      if (claims && claims.roles) {
+        if (claims.roles.includes('ROLE_OWNER')) {
+          setNavbar(<OwnerNavbar />)
+        } else if (claims.roles.includes('ROLE_SITTER')) {
+          setNavbar(<SitterNavbar />)
+        }
+      } else {
+        setNavbar(<DefaultNavbar />)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    fetch('http://localhost:8080/api/v1/sitters?page=0&size=3&sortBy=averageRating&sortDir=desc')
+      .then(res => res.json())
+      .then(data => {
+        setSitters(data.content || []);
+        setLoadingSitters(false);
+      })
+      .catch(() => setLoadingSitters(false));
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
@@ -120,107 +181,53 @@ export default function Home() {
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 px-4">
-            {/* María González */}
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-sm mx-auto sm:max-w-none">
-              <div className="h-48 sm:h-52 bg-gray-300 relative">
-                <img 
-                  src="/api/placeholder/300/200" 
-                  alt="María cuidando perros" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="p-4 sm:p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-800">María González</h3>
-                  <div className="flex items-center">
-                    <span className="text-yellow-400">⭐</span>
-                    <span className="text-gray-600 ml-1 text-sm">4.9</span>
+            {loadingSitters ? (
+              <div className="col-span-3 text-center text-gray-500">Cargando cuidadores...</div>
+            ) : sitters.length === 0 ? (
+              <div className="col-span-3 text-center text-gray-500">No hay cuidadores destacados.</div>
+            ) : (
+              sitters.map(sitter => (
+                <div key={sitter.id} className="bg-white rounded-lg shadow-lg overflow-hidden max-w-sm mx-auto sm:max-w-none">
+                  <div className="h-48 sm:h-52 bg-gray-300 relative">
+                    <img 
+                      src={sitter.profilePicture || "/api/placeholder/300/200"} 
+                      alt={sitter.firstName} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="p-4 sm:p-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-lg sm:text-xl font-semibold text-gray-800">
+                        {sitter.firstName}
+                      </h3>
+                      <div className="flex items-center">
+                        <span className="text-yellow-400">⭐</span>
+                        <span className="text-gray-600 ml-1 text-sm">{sitter.averageRating?.toFixed(1) ?? 'N/A'}</span>
+                      </div>
+                    </div>
+                    <p className="text-gray-600 text-xs sm:text-sm mb-2 flex items-center">
+                      <span className="mr-2">📍</span>
+                      {sitter.cityName ? sitter.cityName : 'Ciudad desconocida'}
+                    </p>
+                    {sitter.bio && (
+                      <p className="text-gray-500 text-xs mb-4">{sitter.bio}</p>
+                    )}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {/* Puedes agregar tags si el backend los provee */}
+                      <span className="bg-gray-100 text-gray-700 px-2 sm:px-3 py-1 rounded-full text-xs">Paseos</span>
+                    </div>
+                    <div className="text-center">
+                      <Link
+                        to={`/sitters/${sitter.id}`}
+                        className="bg-gray-800 text-white px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-700 transition-colors w-full block"
+                      >
+                        Ver Perfil
+                      </Link>
+                    </div>
                   </div>
                 </div>
-                <p className="text-gray-600 text-xs sm:text-sm mb-4 flex items-center">
-                  <span className="mr-2">📍</span>
-                  Barcelona
-                </p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <span className="bg-gray-100 text-gray-700 px-2 sm:px-3 py-1 rounded-full text-xs">Paseos</span>
-                  <span className="bg-gray-100 text-gray-700 px-2 sm:px-3 py-1 rounded-full text-xs">Entrenamiento</span>
-                  <span className="bg-gray-100 text-gray-700 px-2 sm:px-3 py-1 rounded-full text-xs">Grooming</span>
-                </div>
-                <div className="text-center">
-                  <button className="bg-gray-800 text-white px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-700 transition-colors w-full">
-                    Ver Perfil
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Carlos Rodríguez */}
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-sm mx-auto sm:max-w-none">
-              <div className="h-48 sm:h-52 bg-gray-300 relative">
-                <img 
-                  src="/api/placeholder/300/200" 
-                  alt="Carlos paseando perros" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="p-4 sm:p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-800">Carlos Rodríguez</h3>
-                  <div className="flex items-center">
-                    <span className="text-yellow-400">⭐</span>
-                    <span className="text-gray-600 ml-1 text-sm">4.8</span>
-                  </div>
-                </div>
-                <p className="text-gray-600 text-xs sm:text-sm mb-4 flex items-center">
-                  <span className="mr-2">📍</span>
-                  Barcelona
-                </p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <span className="bg-gray-100 text-gray-700 px-2 sm:px-3 py-1 rounded-full text-xs">Paseos</span>
-                  <span className="bg-gray-100 text-gray-700 px-2 sm:px-3 py-1 rounded-full text-xs">Entrenamiento</span>
-                  <span className="bg-gray-100 text-gray-700 px-2 sm:px-3 py-1 rounded-full text-xs">Grooming</span>
-                </div>
-                <div className="text-center">
-                  <button className="bg-gray-800 text-white px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-700 transition-colors w-full">
-                    Ver Perfil
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Ana Martín */}
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-sm mx-auto sm:max-w-none sm:col-span-2 lg:col-span-1">
-              <div className="h-48 sm:h-52 bg-gray-300 relative">
-                <img 
-                  src="/api/placeholder/300/200" 
-                  alt="Ana con gatos" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="p-4 sm:p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-800">Ana Martín</h3>
-                  <div className="flex items-center">
-                    <span className="text-yellow-400">⭐</span>
-                    <span className="text-gray-600 ml-1 text-sm">5.0</span>
-                  </div>
-                </div>
-                <p className="text-gray-600 text-xs sm:text-sm mb-4 flex items-center">
-                  <span className="mr-2">📍</span>
-                  Barcelona
-                </p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <span className="bg-gray-100 text-gray-700 px-2 sm:px-3 py-1 rounded-full text-xs">Paseos</span>
-                  <span className="bg-gray-100 text-gray-700 px-2 sm:px-3 py-1 rounded-full text-xs">Entrenamiento</span>
-                  <span className="bg-gray-100 text-gray-700 px-2 sm:px-3 py-1 rounded-full text-xs">Grooming</span>
-                </div>
-                <div className="text-center">
-                  <button className="bg-gray-800 text-white px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-700 transition-colors w-full">
-                    Ver Perfil
-                  </button>
-                </div>
-              </div>
-            </div>
+              ))
+            )}
           </div>
 
           <div className="text-center mt-6 sm:mt-8 px-4">
@@ -297,7 +304,7 @@ export default function Home() {
               </ul>
             </div>
 
-            {/* Empresa - Se mueve abajo en móvil pero queda en grid para no crear nueva fila */}
+            {/* Empresa */}
             <div className="col-span-2 lg:col-span-1">
               <h3 className="text-base font-semibold mb-2">Empresa</h3>
               <div className="grid grid-cols-2 lg:block gap-x-4">

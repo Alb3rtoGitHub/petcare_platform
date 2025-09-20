@@ -142,10 +142,11 @@ public class AvailabilityServiceImpl implements AvailabilityService {
                 Boolean.TRUE.equals(serviceEntity.getActive())
         ) : null;
 
+        assert availability.getServiceEntity() != null;
         return new AvailabilityResponseDTO(
                 availability.getId(),
                 availability.getSitter() != null ? availability.getSitter().getId() : null,
-                serviceEntityResponseDTO,
+                availability.getServiceEntity().getServiceName().name(),
                 availability.getStartTime(),
                 availability.getEndTime(),
                 Boolean.TRUE.equals(availability.getActive())

@@ -20,26 +20,28 @@ public class SitterDocumentsServiceImpl implements SitterDocumentsService {
         this.storageService = storageService;
         this.sitterService = sitterService;
     }
+
     @Override
     @Transactional
-    public SitterFullResponseDTO loadCredentials(SitterPatchRequestDTO request,
-                                                 MultipartFile profilePicture,
-                                                 MultipartFile idCard,
-                                                 MultipartFile backgroundCheckDocument) {
+    public SitterFullResponseDTO loadCredentials(
+            Long sitterId,
+            SitterPatchRequestDTO request,
+            MultipartFile idCard,
+            MultipartFile backgroundCheckDocument) {
 
-        String urlProfilePicture = uploadIfPresent(profilePicture, "users");
-        String urlIdCard = uploadIfPresent(idCard, "sitters");
-        String urlBackgroundCheckDocument = uploadIfPresent(backgroundCheckDocument, "sitters");
+        String urlIdCard = uploadIfPresent(idCard, "sitters/id-card");
+        String urlBackgroundCheckDocument = uploadIfPresent(backgroundCheckDocument, "sitters/background-check");
 
-        var newRequest =  new SitterPatchRequestDTO(
-                request.documentType(),
-                request.documentNumber(),
-                request.experience(),
-                request.bio(),
-                urlProfilePicture,
-                urlIdCard,
-                urlBackgroundCheckDocument
-                );
+        var newRequest = SitterPatchRequestDTO.builder()
+                .sitterId(request.sitterId())
+                .documentType(request.documentType())
+                .documentNumber(request.documentNumber())
+                .experience(request.experience())
+                .bio(request.bio())
+                .idCard(urlIdCard != null ? urlIdCard : request.idCard())
+                .backgroundCheckDocument(urlBackgroundCheckDocument != null ? urlBackgroundCheckDocument : request.backgroundCheckDocument())
+                .build();
+
         return sitterService.saveSitterDocuments(newRequest);
     }
 

@@ -5,8 +5,9 @@ import com.equipo11.petcare.dto.SitterPatchRequestDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface SitterDocumentsService {
-    SitterFullResponseDTO loadCredentials(SitterPatchRequestDTO request,
-                                          MultipartFile profilePicture,
-                                          MultipartFile idCard,
-                                          MultipartFile loadCredentials);
+    SitterFullResponseDTO loadCredentials(
+            Long sitterId,
+            SitterPatchRequestDTO request,
+            MultipartFile idCard,
+            MultipartFile loadCredentials);
 }
