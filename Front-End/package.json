@@ -3,13 +3,13 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
-  "homepage": "https://github.com/Alb3rtoGitHub/petcare_platform.git/Front-End",
+  "homepage": "https://alb3rtogithub.github.io/petcare_platform/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "jwt-decode": "^4.0.0",
