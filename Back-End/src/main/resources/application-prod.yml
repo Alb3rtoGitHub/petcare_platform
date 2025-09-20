@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: petcare
+
+  # Database Configuration
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # JPA Configuration
+  jpa:
+    properties:
+      hibernate:
+        dialect:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+flayway:
+  baseline-on-migrate: true
+  # Mail Configuration
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: noreply.app.petcare@gmail.com
+    password: tjopzvpjhxpqjpvp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+    default-encoding: UTF-8
+    from: noreply.app.petcare@gmail.com
+
+  # File Upload Configuration
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:123456}
+  expiration-ms: 10800000
+
+# Security Configuration
+security:
+  public-routes: /api/v1/auth,/api/v1/user/register
