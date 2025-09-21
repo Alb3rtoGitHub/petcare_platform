@@ -1,9 +1,6 @@
 package com.equipo11.petcare.dto;
 
 import com.equipo11.petcare.model.user.User;
-import com.equipo11.petcare.service.AddressService;
-
-import java.time.LocalDate;
 
 public record UserResponseDTO(
         String email,

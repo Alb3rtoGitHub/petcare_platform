@@ -1,10 +1,12 @@
 package com.equipo11.petcare.model.user;
 
 import com.equipo11.petcare.model.claim.Claim;
-import com.equipo11.petcare.model.review.Review;
 import com.equipo11.petcare.model.pet.Pet;
+import com.equipo11.petcare.model.review.Review;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;

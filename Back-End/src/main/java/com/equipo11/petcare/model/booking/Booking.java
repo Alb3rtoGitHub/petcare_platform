@@ -8,7 +8,6 @@ import com.equipo11.petcare.model.user.Sitter;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @NoArgsConstructor

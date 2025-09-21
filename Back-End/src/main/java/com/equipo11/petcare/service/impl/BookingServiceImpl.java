@@ -161,10 +161,10 @@ public class BookingServiceImpl implements BookingService {
     private BookingResponseDTO toResponse(Booking booking) {
         return BookingResponseDTO.builder()
                 .id(booking.getId())
-                .ownerId(booking.getOwner().getId())
+                .ownerName(booking.getOwner().getFirstName())
                 .sitterId(booking.getSitter().getId())
-                .petId(booking.getPet().getId())
-                .serviceEntityId(booking.getServiceEntity().getId())
+                .petName(booking.getPet().getName())
+                .serviceName(booking.getServiceEntity().getServiceName().name())
                 .startDateTime(booking.getStartDateTime())
                 .endDateTime(booking.getEndDateTime())
                 .totalPrice(booking.getTotalPrice())

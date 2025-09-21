@@ -4,7 +4,6 @@ import com.equipo11.petcare.dto.AuthRequestDTO;
 import com.equipo11.petcare.dto.AuthResponseDTO;
 import com.equipo11.petcare.dto.RegisterRequestDTO;
 import com.equipo11.petcare.service.AuthService;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

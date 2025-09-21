@@ -1,10 +1,10 @@
 package com.equipo11.petcare.service.impl;
 
-import com.equipo11.petcare.dto.AuthResponseDTO;
 import com.equipo11.petcare.dto.AuthRequestDTO;
+import com.equipo11.petcare.dto.AuthResponseDTO;
 import com.equipo11.petcare.dto.RegisterRequestDTO;
-import com.equipo11.petcare.exception.enums.ApiError;
 import com.equipo11.petcare.exception.PetcareException;
+import com.equipo11.petcare.exception.enums.ApiError;
 import com.equipo11.petcare.model.address.Address;
 import com.equipo11.petcare.model.user.Owner;
 import com.equipo11.petcare.model.user.Role;
@@ -157,7 +157,7 @@ public class AuthServiceImpl implements AuthService {
         response = UriComponentsBuilder
                 .fromUriString("http://localhost:5173/Register/pets")
                 .queryParam("userId",   user.getId())
-                .queryParam("jwtToken", token)
+                .queryParam("jwtToken", jwt)
                 .build().toUriString();
         return response;
     }

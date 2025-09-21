@@ -125,7 +125,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
 
     private long calculateNights(LocalDateTime start, LocalDateTime end) {
         // Calcula la diferencia en días completos (noches)
-        return java.time.Duration.between(
+        return Duration.between(
                 start.toLocalDate().atStartOfDay(),
                 end.toLocalDate().atStartOfDay()
         ).toDays();
@@ -142,10 +142,11 @@ public class AvailabilityServiceImpl implements AvailabilityService {
                 Boolean.TRUE.equals(serviceEntity.getActive())
         ) : null;
 
+        assert availability.getServiceEntity() != null;
         return new AvailabilityResponseDTO(
                 availability.getId(),
                 availability.getSitter() != null ? availability.getSitter().getId() : null,
-                serviceEntityResponseDTO,
+                availability.getServiceEntity().getServiceName().name(),
                 availability.getStartTime(),
                 availability.getEndTime(),
                 Boolean.TRUE.equals(availability.getActive())

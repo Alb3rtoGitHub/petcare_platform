@@ -3,7 +3,6 @@ package com.equipo11.petcare.controller;
 import com.equipo11.petcare.dto.SitterFullRequestDTO;
 import com.equipo11.petcare.dto.SitterFullResponseDTO;
 import com.equipo11.petcare.dto.SitterPatchRequestDTO;
-import com.equipo11.petcare.dto.SitterResponseDTO;
 import com.equipo11.petcare.service.SitterDocumentsService;
 import com.equipo11.petcare.service.SitterService;
 import jakarta.validation.Valid;
@@ -14,11 +13,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/sitters")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class SitterController {
 
     private final SitterService sitterService;
@@ -31,7 +32,7 @@ public class SitterController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<SitterResponseDTO>> getSitters(
+    public ResponseEntity<Page<SitterFullResponseDTO>> getSitters(
             @RequestParam(required = false) Long cityId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -73,16 +74,19 @@ public class SitterController {
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PatchMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value ="/{sitterId}/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SitterFullResponseDTO> loadSitterDocuments(
+            @PathVariable Long sitterId,
             @RequestPart("data") @Valid SitterPatchRequestDTO sitterPatchRequestDTO,
-            @RequestPart(value = "profilePicture", required = false)MultipartFile profilePicture,
             @RequestPart(value = "idCard", required = false)MultipartFile idCard,
             @RequestPart(value = "backgroundCheckDocument", required = false)MultipartFile backgroundCheckDocument
             ) {
+        if (!sitterId.equals(sitterPatchRequestDTO.sitterId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sitter ID in path does not match the request body");
+        }
         SitterFullResponseDTO response = sitterDocumentsService.loadCredentials(
+                sitterId,
                 sitterPatchRequestDTO,
-                profilePicture,
                 idCard,
                 backgroundCheckDocument);
         return new ResponseEntity<>(response, HttpStatus.OK);

@@ -1,14 +1,13 @@
 package com.equipo11.petcare.security;
 
-import com.equipo11.petcare.exception.enums.ApiError;
 import com.equipo11.petcare.exception.PetcareException;
+import com.equipo11.petcare.exception.enums.ApiError;
 import com.equipo11.petcare.model.user.Role;
 import com.equipo11.petcare.model.user.User;
 import com.equipo11.petcare.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

@@ -1,10 +1,8 @@
 package com.equipo11.petcare.dto;
 
-import com.equipo11.petcare.model.user.Role;
 import com.equipo11.petcare.model.user.enums.ERole;
 import lombok.Builder;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -28,7 +26,8 @@ public record SitterFullResponseDTO(
         LocalDateTime createdAt,
         Set<AvailabilityResponseDTO> availabilities,
         Set<ReviewDTO> reviews,
-        Set<ERole> roles
+        Set<ERole> roles,
+        Set<BookingResponseDTO> bookings
 ) {
     public SitterFullResponseDTO {
         if (averageRating == null) {

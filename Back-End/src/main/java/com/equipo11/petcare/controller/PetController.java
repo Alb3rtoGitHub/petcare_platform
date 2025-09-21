@@ -4,7 +4,6 @@ import com.equipo11.petcare.dto.PetAddRequestDTO;
 import com.equipo11.petcare.dto.PetResponseDTO;
 import com.equipo11.petcare.dto.PetUpdateRequestDTO;
 import com.equipo11.petcare.service.PetService;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +26,7 @@ public class PetController {
     public ResponseEntity<?> createPets(@PathVariable Long ownerId,
                                         @RequestBody @Valid List<PetAddRequestDTO> petsList) {
         var response = petService.createPets(ownerId, petsList);
-        return null;
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping("/{petId}")

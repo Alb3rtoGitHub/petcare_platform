@@ -8,18 +8,20 @@ import com.equipo11.petcare.model.serviceentity.ServiceEntity;
 import com.equipo11.petcare.model.user.Sitter;
 import com.equipo11.petcare.model.user.User;
 import com.equipo11.petcare.model.user.enums.ERole;
-import com.equipo11.petcare.repository.*;
+import com.equipo11.petcare.repository.AvailabilityRepository;
+import com.equipo11.petcare.repository.ServiceEntityRepository;
+import com.equipo11.petcare.repository.SitterRepository;
 import com.equipo11.petcare.security.SecurityService;
 import com.equipo11.petcare.security.email.EmailProperties;
 import com.equipo11.petcare.service.AddressService;
 import com.equipo11.petcare.service.EmailService;
 import com.equipo11.petcare.service.SitterService;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -61,7 +63,7 @@ public class SitterServiceImpl implements SitterService {
     }
 
     @Override
-    public Page<SitterResponseDTO> getSitters(
+    public Page<SitterFullResponseDTO> getSitters(
             Long cityId,
             int page,
             int size,
@@ -79,7 +81,7 @@ public class SitterServiceImpl implements SitterService {
                 ? sitterRepository.findByAddressCityIdAndEnabledTrue(cityId, pageable)
                 : sitterRepository.findAllByEnabledTrue(pageable);
 
-        return sitterPage.map(this::toResponseDto);
+        return sitterPage.map(this::toFullResponseDto);
     }
 
     @Override
@@ -268,8 +270,6 @@ public class SitterServiceImpl implements SitterService {
         sitter.setDocumentNumber(sitterPatchRequestDTO.documentNumber());
         sitter.setExperience(sitterPatchRequestDTO.experience());
         sitter.setBio(sitterPatchRequestDTO.bio());
-        if (sitterPatchRequestDTO.profilePicture() != null)
-            sitter.setProfilePicture(sitterPatchRequestDTO.profilePicture());
         if (sitterPatchRequestDTO.idCard() != null)
             sitter.setIdCard(sitterPatchRequestDTO.idCard());
         if (sitterPatchRequestDTO.backgroundCheckDocument() != null)
@@ -293,10 +293,11 @@ public class SitterServiceImpl implements SitterService {
                 .id(sitter.getId())
                 .firstName(sitter.getFirstName())
                 .lastName(sitter.getLastName())
-                .rating(sitter.getAverageRating())
-                .cityId(sitter.getAddress() != null && sitter.getAddress().getCity() != null
-                        ? sitter.getAddress().getCity().getId()
+                .averageRating(sitter.getAverageRating())
+                .cityName(sitter.getAddress() != null && sitter.getAddress().getCity() != null
+                        ? sitter.getAddress().getCity().getName()
                         : null)
+                .profilePicture(sitter.getProfilePicture())
                 .build();
     }
 
@@ -332,10 +333,11 @@ public class SitterServiceImpl implements SitterService {
                     )
                             : null;
 
+                    assert availability.getServiceEntity() != null;
                     return new AvailabilityResponseDTO(
                             availability.getId(),
                             availability.getSitter() != null ? availability.getSitter().getId() : null,
-                            serviceDTO,
+                            availability.getServiceEntity().getServiceName().name(),
                             availability.getStartTime(),
                             availability.getEndTime(),
                             Boolean.TRUE.equals(availability.getActive())
@@ -372,6 +374,21 @@ public class SitterServiceImpl implements SitterService {
                 .availabilities(availabilityDTOs)
                 .reviews(reviewDTOs)
                 .roles(Set.of(ERole.ROLE_SITTER))
+                .bookings(sitter.getBookings().stream()
+                        .map(booking -> BookingResponseDTO.builder()
+                                .id(booking.getId())
+                                .ownerName(booking.getOwner().getFirstName())
+                                .sitterId(booking.getSitter().getId())
+                                .petName(booking.getPet().getName())
+                                .serviceName(booking.getServiceEntity().getServiceName().name())
+                                .startDateTime(booking.getStartDateTime())
+                                .endDateTime(booking.getEndDateTime())
+                                .totalPrice(booking.getTotalPrice())
+                                .specialInstructions(booking.getSpecialInstructions())
+                                .status(booking.getStatus())
+                                .createdAt(booking.getCreatedAt())
+                                .build())
+                        .collect(Collectors.toSet()))
                 .build();
     }
 

@@ -1,8 +1,7 @@
 package com.equipo11.petcare.exception;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.equipo11.petcare.dto.ErrorDTO;
+import com.equipo11.petcare.exception.enums.ApiError;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +12,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import com.equipo11.petcare.dto.ErrorDTO;
-import com.equipo11.petcare.exception.enums.ApiError;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Manejador global de excepciones para la aplicación PetCare.

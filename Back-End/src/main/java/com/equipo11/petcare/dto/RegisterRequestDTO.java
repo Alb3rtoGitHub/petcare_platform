@@ -1,11 +1,8 @@
 package com.equipo11.petcare.dto;
 
 import com.equipo11.petcare.model.user.enums.ERole;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
-
-import java.time.LocalDate;
 
 public record RegisterRequestDTO(
         @NotBlank(message = "El correo no puede estar vació")

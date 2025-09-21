@@ -1,16 +1,18 @@
 package com.equipo11.petcare.model.user;
 
-import com.equipo11.petcare.model.review.Review;
-import jakarta.persistence.*;
 import com.equipo11.petcare.model.availability.Availability;
+import com.equipo11.petcare.model.booking.Booking;
+import com.equipo11.petcare.model.review.Review;
 import com.equipo11.petcare.model.serviceentity.ServiceEntity;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-import java.util.List;
-
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -54,6 +56,12 @@ public class Sitter extends User {
     @OneToMany(mappedBy = "sitter", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Availability> availabilities = new HashSet<>();
 
+    @OneToMany(mappedBy = "sitter", cascade = CascadeType.ALL)
+    private List<Booking> bookings = new ArrayList<>();
+
+    @PostLoad
+    @PrePersist
+    @PreUpdate
     public void updateAverageRating() {
         if (this.reviews == null || this.reviews.isEmpty()) {
             this.averageRating = 0.0;

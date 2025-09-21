@@ -4,7 +4,6 @@ import com.equipo11.petcare.dto.BookingRequestDTO;
 import com.equipo11.petcare.dto.BookingResponseDTO;
 import com.equipo11.petcare.model.booking.BookingStatus;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 public interface BookingService {
     BookingResponseDTO createBooking(BookingRequestDTO bookingRequestDTO);
