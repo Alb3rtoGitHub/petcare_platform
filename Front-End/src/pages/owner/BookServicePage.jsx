@@ -78,10 +78,35 @@ export default function BookServicePage() {
   }, [cityId]);
 
   useEffect(() => {
-    fetch(`${BASE_URL}/service-entities`)
-      .then((res) => res.json())
+    const token = sessionStorage.getItem('token');
+
+    fetch(`${BASE_URL}/service-entities`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('Error al obtener servicios');
+        }
+        return res.json();
+      })
       .then((data) => setServices(data))
       .catch((error) => console.error('Error al obtener servicios:', error));
+  }, []);
+
+  useEffect(() => {
+    // Fetch para obtener los países al montar el componente
+    fetch(`${BASE_URL}/addresses`)
+      .then((res) => {
+        if (!res.ok) {
+          console.error(`Error al obtener países: ${res.status} ${res.statusText}`);
+          throw new Error('Error al obtener países');
+        }
+        return res.json();
+      })
+      .then((data) => setCountries(data))
+      .catch((error) => console.error('Error al obtener países:', error));
   }, []);
 
   const handleCountryChange = (e) => {
