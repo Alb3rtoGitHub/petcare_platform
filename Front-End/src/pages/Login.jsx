@@ -71,9 +71,14 @@ export default function PetCareLogin() {
         sessionStorage.setItem('token', data.token);
         sessionStorage.setItem('id', data.id);
 
-        // Decodificar el token para obtener los roles
+        // Decodificar el token para obtener los roles y cityId
         const claims = parseJwt(data.token);
         console.log('Claims decodificados:', claims);
+
+        if (claims.cityId) {
+          sessionStorage.setItem('cityId', claims.cityId);
+          console.log('cityId almacenado en sessionStorage:', claims.cityId);
+        }
 
         // Verificar el rol y redirigir
         if (claims && claims.roles) {

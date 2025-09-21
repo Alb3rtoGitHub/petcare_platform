@@ -12,30 +12,28 @@ export default function DetailsModal({ open, onClose, data }) {
         <h2 className="text-xl font-bold mb-4 text-black">
           Detalles de la Reserva
         </h2>
-        {/* Aquí puedes mostrar los datos detallados de la reserva */}
+        {/* Mostrar todos los datos relevantes de la reserva */}
         <div className="space-y-2 text-black">
           <div>
             <span className="font-medium">Cuidador:</span> {data?.cuidador}
           </div>
           <div>
-            <span className="font-medium">Servicio:</span> {data?.serviceType}
+            <span className="font-medium">Servicio:</span> {data?.servicio}
           </div>
           <div>
-            <span className="font-medium">Mascota:</span> {data?.pet}
+            <span className="font-medium">Estado:</span> {data?.estado}
           </div>
           <div>
-            <span className="font-medium">Dirección:</span> {data?.address}
+            <span className="font-medium">Fecha:</span> {data?.fecha}
           </div>
           <div>
-            <span className="font-medium">Instrucciones:</span>{" "}
-            {data?.instructions}
+            <span className="font-medium">Hora:</span> {data?.hora}
           </div>
           <div>
-            <span className="font-medium">Fecha:</span> {data?.startDate}{" "}
-            {data?.startHour} - {data?.endDate} {data?.endHour}
+            <span className="font-medium">Lugar:</span> {data?.lugar}
           </div>
           <div>
-            <span className="font-medium">Total:</span> {data?.price} €
+            <span className="font-medium">Precio:</span> {data?.precio}
           </div>
         </div>
       </div>

@@ -222,14 +222,6 @@ export default function OwnerDashboard() {
                 <span className="text-sm">{reserva.lugar}</span>
               </div>
 
-              {reserva.estado === "Finalizada" && (
-                <ReviewCard review={{
-                  ownerName: reserva.cuidador,
-                  comment: reserva.comment,
-                  rating: reserva.rating
-                }} />
-              )}
-
               <div className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
                 <div className="flex gap-2 order-2 sm:order-1">
                   <button
@@ -245,6 +237,7 @@ export default function OwnerDashboard() {
                     className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-500 text-white hover:bg-blue-600"
                     onClick={() => {
                       setSelectedReserva(reserva);
+                      console.log("Reserva seleccionada:", reserva); // Debugging log
                       setOpenDetailsModal(true);
                     }}
                   >
@@ -261,24 +254,48 @@ export default function OwnerDashboard() {
                   </button>
                 </div>
 
-                {reserva.puedeEvaluar && (
+                {reserva.estado === "FINALIZADA" && (
                   <div className="order-1 sm:order-2">
-                    <button
-                      className="bg-yellow-500 text-black px-5 py-2 rounded-lg text-sm font-semibold hover:bg-yellow-600"
-                      onClick={() => {
-                        setSelectedReserva(reserva);
-                        setOpenRatingModal(true);
-                      }}
-                    >
-                      Evaluar Servicio
-                    </button>
+                    {reserva.review !== undefined && reserva.review !== null ? (
+                      <button
+                        className="bg-blue-500 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-blue-600"
+                        onClick={() => {
+                          setSelectedReserva(reserva);
+                          setOpenRatingModal(true); // Modal para ver detalles de la reseña
+                        }}
+                      >
+                        Ver Reseña
+                      </button>
+                    ) : (
+                      <button
+                        className="bg-yellow-500 text-black px-5 py-2 rounded-lg text-sm font-semibold hover:bg-yellow-600"
+                        onClick={() => {
+                          setSelectedReserva(reserva);
+                          setOpenRatingModal(true); // Modal para crear una reseña
+                        }}
+                      >
+                        Crear Reseña
+                      </button>
+                    )}
                   </div>
                 )}
+              </div>
+
+              {/* Estado de la reserva */}
+              <div className={`mt-4 px-4 py-2 rounded-lg text-sm font-medium ${reserva.estadoColor}`}>
+                Estado: {reserva.estado}
               </div>
             </div>
           </div>
         ))}
       </div>
+
+      {/* Modal for Reservation Details */}
+      <DetailsModal
+        open={openDetailsModal}
+        onClose={() => setOpenDetailsModal(false)}
+        data={selectedReserva}
+      />
     </div>
   );
 
@@ -436,7 +453,7 @@ export default function OwnerDashboard() {
 
             {/* Mis Reservas */}
             <button
-              onClick={() => window.location.href = '/owner/book-service'}
+              onClick={() => setActiveSection('reservas')} // Change to render services
               className={`p-6 rounded-lg border-2 transition-all text-left ${activeSection === 'reservas'
                   ? 'border-gray-900 bg-gray-50'
                   : 'border-gray-200 bg-white hover:border-gray-300'

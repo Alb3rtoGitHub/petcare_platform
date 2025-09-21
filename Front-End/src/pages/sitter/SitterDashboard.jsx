@@ -60,21 +60,24 @@ export default function SitterDashboard() {
   // Fetch servicios disponibles
   const fetchServiceEntities = async () => {
     try {
-      const response = await fetch('${BASE_URL}/service-entities', {
+      const response = await fetch(`${BASE_URL}/service-entities`, {
         headers: { 'Authorization': `Bearer ${token}` }
-      })
-      if (!response.ok)
-        throw new Error('Error al obtener servicios')
-      const data = await response.json()
-      setServiceEntities(data)
+      });
+      if (!response.ok) {
+        throw new Error('Error al obtener servicios');
+      }
+      const data = await response.json();
+      setServiceEntities(data);
     } catch (error) {
-      console.error(error)
+      console.error('Error al obtener servicios:', error);
     }
-  }
+  };
 
   useEffect(() => { fetchSitterData() }, [])
   useEffect(() => {
-    if (showModal) fetchServiceEntities()
+    if (showModal) {
+      fetchServiceEntities();
+    }
   }, [showModal])
 
   // Modal para agregar availability

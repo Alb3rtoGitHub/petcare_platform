@@ -102,6 +102,12 @@ const UserRegistration = ({
       sessionStorage.setItem('userId', userId);
       sessionStorage.setItem('token', jwtToken);
       const claims = parseJwt(jwtToken);
+
+      if (claims.cityId) {
+        sessionStorage.setItem('cityId', claims.cityId);
+        console.log('cityId almacenado en sessionStorage:', claims.cityId);
+      }
+
       setFormData(prev => ({
         ...prev,
         sitterId: userId,
