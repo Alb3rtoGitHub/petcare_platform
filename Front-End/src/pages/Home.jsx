@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import OwnerNavbar from '../components/OwnerNavbar.jsx'
 import SitterNavbar from '../components/SitterNavbar.jsx'
 import DefaultNavbar from '../components/NewNavbar.jsx'
+import { BASE_URL } from '../config/constants';
 
 // Función para decodificar el token y obtener datos
 function parseJwt(token) {
@@ -36,24 +37,56 @@ export default function Home() {
 
 
   useEffect(() => {
-    // Revisar token y rol
-    const token = sessionStorage.getItem('token')
-    if (token && !isTokenExpired(token)) {
-      const claims = parseJwt(token)
-      if (claims && claims.roles) {
-        if (claims.roles.includes('ROLE_OWNER')) {
-          setNavbar(<OwnerNavbar />)
-        } else if (claims.roles.includes('ROLE_SITTER')) {
-          setNavbar(<SitterNavbar />)
+    const checkTokenAndSetNavbar = () => {
+      const token = sessionStorage.getItem('token');
+      console.log('Token obtenido de sessionStorage:', token);
+
+      if (token && !isTokenExpired(token)) {
+        const claims = parseJwt(token);
+        console.log('Claims decodificados:', claims);
+
+        if (claims && claims.roles) {
+          console.log('Roles encontrados en el token:', claims.roles);
+
+          if (claims.roles.includes('ROLE_OWNER')) {
+            console.log('Renderizando OwnerNavbar');
+            setNavbar(<OwnerNavbar />);
+          } else if (claims.roles.includes('ROLE_SITTER')) {
+            console.log('Renderizando SitterNavbar');
+            setNavbar(<SitterNavbar />);
+          }
+        } else {
+          console.log('No se encontraron roles en el token. Renderizando DefaultNavbar.');
+          setNavbar(<DefaultNavbar />);
         }
       } else {
-        setNavbar(<DefaultNavbar />)
+        console.log('Token inválido o expirado. Renderizando DefaultNavbar.');
+        setNavbar(<DefaultNavbar />);
       }
-    }
-  }, [])
+    };
+
+    // Ejecutar la función al montar el componente
+    checkTokenAndSetNavbar();
+
+    // Configurar un listener para cambios en sessionStorage
+    const handleStorageChange = () => {
+      console.log('Cambio detectado en sessionStorage. Re-evaluando navbar.');
+      checkTokenAndSetNavbar();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   useEffect(() => {
-    fetch('https://petcare-platform.onrender.com/api/v1/sitters?page=0&size=3&sortBy=averageRating&sortDir=desc')
+    console.log('Estado actual de la navbar:', navbar);
+  }, [navbar]);
+
+  useEffect(() => {
+    fetch(`${BASE_URL}/sitters?page=0&size=3&sortBy=averageRating&sortDir=desc`)
       .then(res => res.json())
       .then(data => {
         setSitters(data.content || []);
@@ -363,5 +396,5 @@ export default function Home() {
         </div>
       </footer>
     </div>
-  )
+  );
 }

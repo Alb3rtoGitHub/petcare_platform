@@ -33,7 +33,7 @@ public class SitterController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<SitterResponseDTO>> getSitters(
+    public ResponseEntity<Page<SitterFullResponseDTO>> getSitters(
             @RequestParam(required = false) Long cityId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,

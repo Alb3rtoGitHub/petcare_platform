@@ -1,8 +1,22 @@
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 export default function OwnerNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [ownerName, setOwnerName] = useState("Usuario");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = sessionStorage.getItem("token");
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        setOwnerName(payload.name || "Usuario");
+      } catch (error) {
+        console.error("Error al decodificar el token:", error);
+      }
+    }
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -32,31 +46,32 @@ export default function OwnerNavbar() {
             Mi Dashboard
           </Link>
           <Link
-            to="/buscar"
+            to="/owner/book-service"
             className="text-gray-600 hover:text-gray-800 transition-colors"
-          >
-            Buscar Cuidadores
-          </Link>
-          <Link
-            to="/owner/book"
-            className="text-gray-600 hover:text-gray-800 transition-colors"
-            onClick={(e) => {
-              // dispatch a global event so OwnerDashboard can open the modal if mounted
-              const ev = new CustomEvent("open:reservation-modal");
-              window.dispatchEvent(ev);
-            }}
           >
             Reservar Servicio
           </Link>
           <Link
-            to="/owner/bookings"
+            to="#"
             className="text-gray-600 hover:text-gray-800 transition-colors"
+            onClick={() => {
+              const event = new CustomEvent("navigate-to-section", {
+                detail: "reservas",
+              });
+              window.dispatchEvent(event);
+            }}
           >
             Mis Reservas
           </Link>
           <Link
-            to="/owner/pets"
+            to="#"
             className="text-gray-600 hover:text-gray-800 transition-colors"
+            onClick={() => {
+              const event = new CustomEvent("navigate-to-section", {
+                detail: "mascotas",
+              });
+              window.dispatchEvent(event);
+            }}
           >
             Mis Mascotas
           </Link>
@@ -94,12 +109,17 @@ export default function OwnerNavbar() {
                 <path fill="none" d="M0 0h24v24H0V0z"></path>
                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-3.31 0-6 2.69-6 6v1h12v-1c0-3.31-2.69-6-6-6z"></path>
               </svg>
-              <span className="text-gray-800 font-medium">Maria Garcia</span>
+              <span className="text-gray-800 font-medium">{ownerName}</span>
             </Link>
           </div>
           <button
             className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 border border-gray-200 hover:border-gray-300 transition-colors font-medium px-3 py-2 rounded-lg"
             title="Cerrar Sesión"
+            onClick={() => {
+              sessionStorage.removeItem("id");
+              sessionStorage.removeItem("token");
+              navigate("/");
+            }}
           >
             Cerrar Sesión
           </button>
@@ -183,34 +203,35 @@ export default function OwnerNavbar() {
               Mi Dashboard
             </Link>
             <Link
-              to="/buscar"
+              to="/owner/book-service"
               className="block text-gray-800 hover:bg-gray-50 px-4 py-3 rounded-lg font-medium transition-colors"
               onClick={closeMenu}
-            >
-              Buscar Cuidadores
-            </Link>
-            <Link
-              to="/owner/book"
-              className="block text-gray-800 hover:bg-gray-50 px-4 py-3 rounded-lg font-medium transition-colors"
-              onClick={(e) => {
-                const ev = new CustomEvent("open:reservation-modal");
-                window.dispatchEvent(ev);
-                closeMenu();
-              }}
             >
               Reservar Servicio
             </Link>
             <Link
-              to="/owner/bookings"
+              to="#"
               className="block text-gray-800 hover:bg-gray-50 px-4 py-3 rounded-lg font-medium transition-colors"
-              onClick={closeMenu}
+              onClick={() => {
+                const event = new CustomEvent("navigate-to-section", {
+                  detail: "reservas",
+                });
+                window.dispatchEvent(event);
+                closeMenu();
+              }}
             >
               Mis Reservas
             </Link>
             <Link
-              to="/owner/pets"
+              to="#"
               className="block text-gray-800 hover:bg-gray-50 px-4 py-3 rounded-lg font-medium transition-colors"
-              onClick={closeMenu}
+              onClick={() => {
+                const event = new CustomEvent("navigate-to-section", {
+                  detail: "mascotas",
+                });
+                window.dispatchEvent(event);
+                closeMenu();
+              }}
             >
               Mis Mascotas
             </Link>
@@ -219,7 +240,7 @@ export default function OwnerNavbar() {
           {/* Mobile Auth Buttons */}
           <div className="space-y-3 border-t border-gray-200 pt-6">
             <div className="text-center text-gray-800 font-medium">
-              Maria Garcia
+              {ownerName}
             </div>
             <button
               className="w-full text-center bg-gray-800 text-white px-4 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors"

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Eye, EyeOff, Mail, AlertCircle, X, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { BASE_URL } from '../config/constants';
 
-const BASE_URL = 'https://petcare-platform.onrender.com/api/v1';
+
 // Solo especies CAT y DOG para el backend
 const petTypeEnum = {
   Perro: 'DOG',

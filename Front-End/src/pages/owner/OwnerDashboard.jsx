@@ -19,9 +19,12 @@ import ReceiptModal from "../../components/modals/ReceiptModal.jsx";
 import DetailsModal from "../../components/modals/DetailsModal.jsx";
 import AddPetModal from "../../components/modals/AddPetModal.jsx";
 import EditPetModal from "../../components/modals/EditPetModal.jsx";
+import ReviewCard from '../../components/ReviewCard';
+import { BASE_URL } from '../../config/constants';
+import { fetchUserPets } from '../../services/apiService';
 
 export default function OwnerDashboard() {
-  const [activeSection, setActiveSection] = useState("reservas");
+  const [activeSection, setActiveSection] = useState("mascotas");
   // Estados para modales
   const [openReservationModal, setOpenReservationModal] = useState(false);
   const [openRatingModal, setOpenRatingModal] = useState(false);
@@ -36,30 +39,7 @@ export default function OwnerDashboard() {
   const [selectedReserva, setSelectedReserva] = useState(null);
   const [selectedCuidador, setSelectedCuidador] = useState(null);
   const [reservas, setReservas] = useState([]);
-
-  // Mock data para mascotas favoritas
-  const myPets = [
-    {
-      id: 1,
-      name: "Max",
-      type: "Perro",
-      breed: "Golden Retriever",
-      age: "3 años",
-      image: "/api/placeholder/300/200",
-    },
-    {
-      id: 2,
-      name: "Luna",
-      type: "Gato",
-      breed: "Siamés",
-      age: "2 años",
-      image: "/api/placeholder/300/200",
-    },
-  ];
-
-  useEffect(() => {
-    setPets(myPets);
-  }, []);
+  const [ownerName, setOwnerName] = useState('Usuario');
 
   useEffect(() => {
     // Corregido: obtener el id desde sessionStorage con la clave 'id'
@@ -69,7 +49,7 @@ export default function OwnerDashboard() {
     if (!userId || !token) return;
 
     fetch(
-      `https://petcare-platform.onrender.com/api/v1/bookings/user/${userId}?page=0&size=3&sortBy=startDateTime`,
+      `${BASE_URL}/bookings/user/${userId}?page=0&size=3&sortBy=startDateTime`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -127,6 +107,34 @@ export default function OwnerDashboard() {
       });
   }, []);
 
+  useEffect(() => {
+    const ownerId = sessionStorage.getItem('id');
+    const token = sessionStorage.getItem('token');
+    console.log('Owner ID:', ownerId);
+    console.log('Token:', token);
+
+    if (!ownerId) return;
+
+    fetchUserPets(ownerId)
+      .then((data) => {
+        console.log('Fetched pets:', data);
+        setPets(data);
+      })
+      .catch((error) => console.error('Error al obtener las mascotas:', error));
+  }, []);
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('token');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        setOwnerName(payload.name || 'Usuario');
+      } catch (error) {
+        console.error('Error al decodificar el token:', error);
+      }
+    }
+  }, []);
+
   // listen for navbar requests to open the reservation modal
   useEffect(() => {
     function onOpenReservation() {
@@ -171,7 +179,7 @@ export default function OwnerDashboard() {
         <div className="flex gap-2">
           <button
             className="bg-gray-900 text-white px-6 py-2 rounded-lg flex items-center gap-2 text-base font-medium shadow hover:bg-gray-800"
-            onClick={() => setOpenReservationModal(true)}
+            onClick={() => window.location.href = '/owner/book-service'}
           >
             <Plus className="w-5 h-5" /> Nueva Reserva
           </button>
@@ -215,26 +223,11 @@ export default function OwnerDashboard() {
               </div>
 
               {reserva.estado === "Finalizada" && (
-                <div className="bg-gray-100 p-3 rounded-lg mt-2">
-                  <div className="flex items-center gap-2">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-5 h-5 ${
-                          i < (reserva.rating || 0)
-                            ? "text-yellow-500"
-                            : "text-gray-300"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <p className="text-base text-gray-700 font-medium">
-                    Valoración: {reserva.rating}
-                  </p>
-                  <p className="text-sm text-gray-500 italic">
-                    "{reserva.comment}"
-                  </p>
-                </div>
+                <ReviewCard review={{
+                  ownerName: reserva.cuidador,
+                  comment: reserva.comment,
+                  rating: reserva.rating
+                }} />
               )}
 
               <div className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
@@ -305,73 +298,108 @@ export default function OwnerDashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {pets.map((pet, idx) => (
-          <div
-            key={pet.id}
-            className="bg-white rounded-lg shadow-lg overflow-hidden"
-          >
-            <div className="h-48 bg-gray-300 relative">
-              <img
-                src={
-                  pet.image ||
-                  `https://i.pravatar.cc/600?u=pet-${pet.id || idx}`
-                }
-                alt={pet.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-1">
-                    {pet.name}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {pet.type} · {pet.breed}
-                  </p>
-                </div>
-                <div className="text-sm text-gray-500">{pet.age}</div>
+        {pets.map((pet, idx) => {
+          const speciesMap = { DOG: 'Perro', CAT: 'Gato' };
+          const sizeMap = { SMALL: 'Pequeño', MEDIUM: 'Mediano', LARGE: 'Grande' };
+
+          const defaultImages = {
+            DOG: {
+              SMALL: 'https://example.com/dog-small.jpg',
+              MEDIUM: 'https://example.com/dog-medium.jpg',
+              LARGE: 'https://example.com/dog-large.jpg',
+            },
+            CAT: {
+              SMALL: 'https://example.com/cat-small.jpg',
+              MEDIUM: 'https://example.com/cat-medium.jpg',
+              LARGE: 'https://example.com/cat-large.jpg',
+            },
+          };
+
+          const petImage =
+            (pet && pet.petPhotography) ||
+            (defaultImages[pet?.species]?.[pet?.sizeCategory]) ||
+            `https://i.pravatar.cc/600?u=pet-${pet?.id || idx}`;
+
+          return (
+            <div
+              key={pet.id}
+              className="bg-white rounded-lg shadow-lg overflow-hidden"
+              onClick={() => {
+                setEditingPet(pet);
+                setOpenEditPet(true);
+              }}
+            >
+              <div className="h-48 bg-gray-300 relative">
+                <img
+                  src={petImage}
+                  alt={pet.name}
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <div className="mt-4 flex gap-2">
-                <button
-                  className="flex-1 bg-gray-900 text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
-                  onClick={() => {
-                    setEditingPet(pet);
-                    setOpenEditPet(true);
-                  }}
-                >
-                  Editar Perfil
-                </button>
+              <div className="p-4">
+                <h3 className="text-lg font-semibold text-gray-800">
+                  {pet.name}
+                </h3>
+                <p className="text-gray-600">Edad: {pet.age} años</p>
+                <p className="text-gray-600">Especie: {speciesMap[pet.species]}</p>
+                <p className="text-gray-600">Tamaño: {sizeMap[pet.sizeCategory]}</p>
+                <p className="text-gray-600">Notas de cuidado: {pet.careNote || 'Ninguna'}</p>
               </div>
             </div>
-          </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const renderFavoritos = () => {
+    const reviews = reservas?.map(reserva => ({
+      id: reserva.id,
+      ownerName: reserva.cuidador,
+      comment: reserva.comment,
+      rating: reserva.rating
+    })).filter(review => review.rating > 0) ?? [];
+
+    if (reviews.length === 0) {
+      return <p className="text-gray-500">No tienes favoritos aún.</p>;
+    }
+
+    return (
+      <div className="space-y-4">
+        {reviews.map(review => (
+          <ReviewCard key={review.id} review={review} />
         ))}
       </div>
-    </div>
-  );
+    );
+  };
 
-  const renderFavoritos = () => (
-    <div className="space-y-6">
-      <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
-        Cuidadores Favoritos
-      </h2>
+  const handleEditPet = (pet) => {
+    setEditingPet(pet);
+    setOpenEditPet(true);
+  };
 
-      <div className="flex flex-col items-center justify-center py-12">
-        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-          <Heart className="w-8 h-8 text-gray-400" />
-        </div>
-        <h3 className="text-lg font-medium text-gray-600 mb-2">
-          No tienes favoritos aún
-        </h3>
-        <p className="text-gray-500 text-center mb-6 max-w-md">
-          Agrega cuidadores a favoritos para encontrarlos fácilmente
-        </p>
-        <button className="bg-gray-900 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors">
-          Buscar Cuidadores
-        </button>
-      </div>
-    </div>
-  );
+  function handleDeletePet(petId) {
+    deletePet(petId)
+      .then(() => {
+        console.log(`Mascota con ID ${petId} eliminada exitosamente.`);
+        setPets((list) => list.filter((p) => p.id !== petId));
+      })
+      .catch((error) => console.error('Error al eliminar la mascota:', error));
+  }
+
+  useEffect(() => {
+    function handleNavigation(event) {
+      const section = event.detail;
+      if (section === 'reservas' || section === 'mascotas') {
+        setActiveSection(section);
+      }
+    }
+
+    window.addEventListener('navigate-to-section', handleNavigation);
+    return () => {
+      window.removeEventListener('navigate-to-section', handleNavigation);
+    };
+  }, []);
 
   return (
     <>
@@ -384,31 +412,15 @@ export default function OwnerDashboard() {
               Mi Dashboard
             </h1>
             <p className="text-gray-600">
-              Bienvenido, María García. Gestiona tus mascotas y reservas
+              Bienvenido, {ownerName}. Gestiona tus mascotas y reservas
             </p>
           </div>
 
           {/* Navigation Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 mb-8">
-            {/* Buscar Cuidadores */}
-            <Link
-              to="/buscar"
-              className="p-6 rounded-lg border-2 border-gray-200 bg-white hover:border-gray-300 transition-all text-left"
-            >
-              <div className="flex flex-col items-center text-center">
-                <Search className="w-12 h-12 text-gray-700 mb-3" />
-                <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                  Buscar Cuidadores
-                </h3>
-                <p className="text-sm text-gray-600">
-                  Encuentra el cuidador perfecto
-                </p>
-              </div>
-            </Link>
-
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 sm:gap-6 mb-8 justify-center">
             {/* Reservar Servicio */}
             <button
-              onClick={() => setOpenReservationModal(true)}
+              onClick={() => window.location.href = '/owner/book-service'}
               className="p-6 rounded-lg border-2 border-gray-200 bg-white hover:border-gray-300 transition-all text-left"
             >
               <div className="flex flex-col items-center text-center">
@@ -424,59 +436,46 @@ export default function OwnerDashboard() {
 
             {/* Mis Reservas */}
             <button
-              onClick={() => setActiveSection("reservas")}
-              className={`p-6 rounded-lg border-2 transition-all text-left ${
-                activeSection === "reservas"
-                  ? "border-gray-900 bg-gray-50"
-                  : "border-gray-200 bg-white hover:border-gray-300"
-              }`}
+              onClick={() => window.location.href = '/owner/book-service'}
+              className={`p-6 rounded-lg border-2 transition-all text-left ${activeSection === 'reservas'
+                  ? 'border-gray-900 bg-gray-50'
+                  : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
             >
               <div className="flex flex-col items-center text-center">
                 <Calendar className="w-12 h-12 text-gray-700 mb-3" />
-                <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                  Mis Reservas
-                </h3>
-                <p className="text-sm text-gray-600">
-                  Gestiona todas tus reservas
-                </p>
+                <h3 className="text-lg font-semibold text-gray-800 mb-1">Mis Reservas</h3>
+                <p className="text-sm text-gray-600">Gestiona tus reservas</p>
               </div>
             </button>
 
             {/* Mis Mascotas */}
             <button
-              onClick={() => setActiveSection("mascotas")}
-              className={`p-6 rounded-lg border-2 transition-all text-left ${
-                activeSection === "mascotas"
-                  ? "border-gray-900 bg-gray-50"
-                  : "border-gray-200 bg-white hover:border-gray-300"
-              }`}
+              onClick={() => setActiveSection('mascotas')}
+              className={`p-6 rounded-lg border-2 transition-all text-left ${activeSection === 'mascotas'
+                  ? 'border-gray-900 bg-gray-50'
+                  : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
             >
               <div className="flex flex-col items-center text-center">
                 <Users className="w-12 h-12 text-gray-700 mb-3" />
-                <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                  Mis Mascotas
-                </h3>
+                <h3 className="text-lg font-semibold text-gray-800 mb-1">Mis Mascotas</h3>
                 <p className="text-sm text-gray-600">Gestiona tus mascotas</p>
               </div>
             </button>
 
             {/* Favoritos */}
             <button
-              onClick={() => setActiveSection("favoritos")}
-              className={`p-6 rounded-lg border-2 transition-all text-left ${
-                activeSection === "favoritos"
-                  ? "border-gray-900 bg-gray-50"
-                  : "border-gray-200 bg-white hover:border-gray-300"
-              }`}
+              onClick={() => setActiveSection('favoritos')}
+              className={`p-6 rounded-lg border-2 transition-all text-left ${activeSection === 'favoritos'
+                  ? 'border-gray-900 bg-gray-50'
+                  : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
             >
               <div className="flex flex-col items-center text-center">
                 <Heart className="w-12 h-12 text-gray-700 mb-3" />
-                <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                  Favoritos
-                </h3>
-                <p className="text-sm text-gray-600">
-                  Tus cuidadores favoritos
-                </p>
+                <h3 className="text-lg font-semibold text-gray-800 mb-1">Favoritos</h3>
+                <p className="text-sm text-gray-600">Clientes favoritos</p>
               </div>
             </button>
           </div>
@@ -484,9 +483,12 @@ export default function OwnerDashboard() {
           {/* Content Section */}
           <div className="bg-white rounded-lg shadow-sm">
             <div className="p-6">
-              {activeSection === "reservas" && renderReservas()}
-              {activeSection === "mascotas" && renderMascotas()}
-              {activeSection === "favoritos" && renderFavoritos()}
+              {activeSection === 'mascotas'
+                ? renderMascotas()
+                : activeSection === 'reservas'
+                ? renderReservas()
+                : renderFavoritos()
+              }
             </div>
           </div>
 
@@ -502,9 +504,9 @@ export default function OwnerDashboard() {
             onSubmit={(newPet) => setPets((p) => [newPet, ...p])}
           />
           <EditPetModal
+            petData={editingPet} // Cambiado de pet a petData
             open={openEditPet}
             onClose={() => setOpenEditPet(false)}
-            petData={editingPet}
             onSubmit={(updated) =>
               setPets((list) =>
                 list.map((pt) => (pt.id === updated.id ? updated : pt))

@@ -28,7 +28,7 @@ export default function NewNavbar() {
         {/* Desktop Navigation Links */}
         <div className="hidden lg:flex items-center space-x-8">
           <Link
-            to="/buscar"
+            to="/owner/book-service"
             className="text-gray-600 hover:text-gray-800 transition-colors"
           >
             Buscar Cuidadores
@@ -186,7 +186,7 @@ export default function NewNavbar() {
           {/* Mobile Navigation Links */}
           <div className="space-y-4 mb-8">
             <Link
-              to="/buscar"
+              to="/owner/book-service"
               className="block text-gray-800 hover:bg-gray-50 px-4 py-3 rounded-lg font-medium transition-colors"
               onClick={closeMenu}
             >

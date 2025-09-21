@@ -11,7 +11,7 @@ import {
 import NewNavbar from "./components/NewNavbar.jsx";
 import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
-import BookService from "./pages/owner/BookService.jsx";
+import BookService from "./pages/owner/BookServicePage.jsx";
 import OwnerBookings from "./pages/owner/OwnerBookings.jsx";
 import OwnerDashboard from "./pages/owner/OwnerDashboard.jsx";
 import SitterDashboard from "./pages/sitter/SitterDashboard.jsx";
@@ -188,6 +188,7 @@ export default function App() {
 
             <Route path="/owner/book" element={<BookService />} />
             <Route path="/owner/bookings" element={<OwnerBookings />} />
+            <Route path="/owner/book-service" element={<BookService />} />
 
             {/* Nuevas rutas agregadas para owner-dashboard y sitter-dashboard */}
             <Route path="/owner-dashboard" element={<OwnerDashboard />} />

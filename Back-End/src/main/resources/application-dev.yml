@@ -40,6 +40,11 @@ flayway:
       max-file-size: 5MB
       max-request-size: 5MB
 
+cloudinary:
+  cloud-name: dyfzc9ft2
+  api-key: 721383863769776
+  api-secret: V32Jb2CQzU5Nq4Uz2K9FGRuQ3LU
+
 # JWT Configuration
 jwt:
   secret: ${JWT_SECRET:123456}

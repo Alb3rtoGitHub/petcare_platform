@@ -63,4 +63,8 @@ public class UserDetailsImpl implements UserDetails {
     public String getUserFirstName() {
         return user.getFirstName();
     }
+
+    public Long getCityId() {
+        return user.getAddress().getCity().getId();
+    }
 }

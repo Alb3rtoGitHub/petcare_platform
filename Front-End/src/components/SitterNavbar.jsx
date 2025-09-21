@@ -1,8 +1,22 @@
-import { Link } from 'react-router-dom'
-import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 
 export default function SitterNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [sitterName, setSitterName] = useState('Usuario');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('token');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        setSitterName(payload.name || 'Usuario');
+      } catch (error) {
+        console.error('Error al decodificar el token:', error);
+      }
+    }
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
@@ -44,14 +58,14 @@ export default function SitterNavbar() {
 
         {/* Desktop Auth Buttons */}
         <div className="hidden lg:flex items-center space-x-4">
-          <Link 
-            to="/owner-dashboard" 
-            className="text-gray-600 hover:text-gray-800 font-medium transition-colors hover:bg-blue-50 px-3 py-2 rounded-lg"
-          >
-            Vista Dueño
-          </Link>
+          <span className="text-gray-800 font-medium">{sitterName}</span>
           <button 
             className="bg-gray-800 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-700 transition-colors"
+            onClick={() => {
+              sessionStorage.removeItem('id');
+              sessionStorage.removeItem('token');
+              navigate('/');
+            }}
           >
             Cerrar Sesión
           </button>
@@ -173,7 +187,11 @@ export default function SitterNavbar() {
             </Link>
             <button 
               className="w-full text-center bg-gray-800 text-white px-4 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors"
-              onClick={closeMenu}
+              onClick={() => {
+                sessionStorage.removeItem('id');
+                sessionStorage.removeItem('token');
+                navigate('/');
+              }}
             >
               Cerrar Sesión
             </button>

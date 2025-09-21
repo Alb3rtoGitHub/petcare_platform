@@ -1,14 +1,18 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { updatePet } from "../../services/apiService";
 
 export default function EditPetModal({ open, onClose, petData, onSubmit }) {
   const [name, setName] = useState("");
-  const [type, setType] = useState("");
-  const [breed, setBreed] = useState("");
   const [age, setAge] = useState("");
+  const [species, setSpecies] = useState("");
+  const [sizeCategory, setSizeCategory] = useState("");
+  const [careNote, setCareNote] = useState("");
   const [image, setImage] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [errors, setErrors] = useState({});
+
+  const ownerId = sessionStorage.getItem("id");
 
   const defaultPreview = `https://i.pravatar.cc/300?u=edit-${Date.now()}`;
   // preview init in useEffect instead of render
@@ -17,11 +21,14 @@ export default function EditPetModal({ open, onClose, petData, onSubmit }) {
   }, [previewUrl, image]);
 
   useEffect(() => {
+    console.log("Ejecutando useEffect en EditPetModal. petData:", petData);
     if (petData) {
+      console.log("Cargando datos en el modal:", petData); // Registro para depuración
       setName(petData.name || "");
-      setType(petData.type || "");
-      setBreed(petData.breed || "");
       setAge(petData.age || "");
+      setSpecies(petData.species || "");
+      setSizeCategory(petData.sizeCategory || "");
+      setCareNote(petData.careNote || "");
       setImage(petData.image || "");
       setPreviewUrl(petData.image || "");
     }
@@ -44,9 +51,9 @@ export default function EditPetModal({ open, onClose, petData, onSubmit }) {
   function validate() {
     const newErrors = {};
     if (!name) newErrors.name = "El nombre es obligatorio.";
-    if (!type) newErrors.type = "El tipo de mascota es obligatorio.";
-    if (!breed) newErrors.breed = "La raza es obligatoria.";
     if (!age) newErrors.age = "La edad es obligatoria.";
+    if (!species) newErrors.species = "La especie es obligatoria.";
+    if (!sizeCategory) newErrors.sizeCategory = "El tamaño es obligatorio.";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
@@ -55,7 +62,27 @@ export default function EditPetModal({ open, onClose, petData, onSubmit }) {
     e.preventDefault();
     if (!validate()) return;
     const finalImage = image || defaultPreview;
-    onSubmit({ ...petData, name, type, breed, age, image: finalImage });
+
+    const updatedPet = {
+      id: petData.id,
+      ownerId: Number(ownerId),
+      name,
+      age,
+      species,
+      sizeCategory,
+      careNote,
+      image: finalImage,
+    };
+
+    updatePet(petData.id, updatedPet)
+      .then((response) => {
+        console.log("Mascota actualizada exitosamente:", response);
+        onSubmit(response);
+      })
+      .catch((error) => {
+        console.error("Error al actualizar la mascota:", error);
+      });
+
     onClose();
   }
 
@@ -94,45 +121,6 @@ export default function EditPetModal({ open, onClose, petData, onSubmit }) {
             </div>
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-800">
-                Tipo
-              </label>
-              <input
-                className="w-full border rounded px-3 py-2 bg-white text-gray-800"
-                value={type}
-                onChange={(e) => {
-                  setType(e.target.value);
-                  setErrors((prev) => {
-                    const copy = { ...prev };
-                    delete copy.type;
-                    return copy;
-                  });
-                }}
-                placeholder="Perro / Gato"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-800">
-                Raza
-              </label>
-              <input
-                className="w-full border rounded px-3 py-2 bg-white text-gray-800"
-                value={breed}
-                onChange={(e) => {
-                  setBreed(e.target.value);
-                  setErrors((prev) => {
-                    const c = { ...prev };
-                    delete c.breed;
-                    return c;
-                  });
-                }}
-                placeholder="Ej. Golden Retriever"
-              />
-              {errors.breed && (
-                <p className="text-red-500 text-sm mt-1">{errors.breed}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-800">
                 Edad
               </label>
               <input
@@ -151,6 +139,74 @@ export default function EditPetModal({ open, onClose, petData, onSubmit }) {
               {errors.age && (
                 <p className="text-red-500 text-sm mt-1">{errors.age}</p>
               )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1 text-gray-800">
+                Especie
+              </label>
+              <select
+                name="species"
+                value={species}
+                onChange={(e) => {
+                  setSpecies(e.target.value);
+                  setErrors((prev) => {
+                    const copy = { ...prev };
+                    delete copy.species;
+                    return copy;
+                  });
+                }}
+                className="w-full border rounded px-3 py-2 bg-white text-gray-800"
+              >
+                <option value="DOG">Perro</option>
+                <option value="CAT">Gato</option>
+              </select>
+              {errors.species && (
+                <p className="text-red-500 text-sm mt-1">{errors.species}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1 text-gray-800">
+                Tamaño
+              </label>
+              <select
+                name="sizeCategory"
+                value={sizeCategory}
+                onChange={(e) => {
+                  setSizeCategory(e.target.value);
+                  setErrors((prev) => {
+                    const copy = { ...prev };
+                    delete copy.sizeCategory;
+                    return copy;
+                  });
+                }}
+                className="w-full border rounded px-3 py-2 bg-white text-gray-800"
+              >
+                <option value="SMALL">Pequeño</option>
+                <option value="MEDIUM">Mediano</option>
+                <option value="LARGE">Grande</option>
+              </select>
+              {errors.sizeCategory && (
+                <p className="text-red-500 text-sm mt-1">{errors.sizeCategory}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1 text-gray-800">
+                Notas de cuidado
+              </label>
+              <textarea
+                name="careNote"
+                value={careNote}
+                onChange={(e) => {
+                  setCareNote(e.target.value);
+                  setErrors((prev) => {
+                    const c = { ...prev };
+                    delete c.careNote;
+                    return c;
+                  });
+                }}
+                className="w-full border rounded px-3 py-2 bg-white text-gray-800"
+                placeholder="Ej. Necesita baño cada semana"
+              />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-800">

@@ -49,6 +49,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authRequest ->
                         authRequest
                                 .requestMatchers(HttpMethod.POST, API_V1 + "/auth/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, API_V1 + "/service-entities/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, API_V1 + "/addresses/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, API_V1 + "/auth/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, API_V1 + "/sitters/**").permitAll()

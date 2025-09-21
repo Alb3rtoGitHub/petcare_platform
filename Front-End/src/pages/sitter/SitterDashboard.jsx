@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Calendar, Users, Heart, Star, Plus, Trash2 } from 'lucide-react'
 import SitterNavbar from '../../components/SitterNavbar.jsx'
+import ReviewCard from '../../components/ReviewCard';
+import { BASE_URL } from '../../config/constants';
 
 // Función para formatear fecha y hora como dd/mm/YYYY HH
 function formatDateTimeCustom(dateStr) {
@@ -40,7 +42,7 @@ export default function SitterDashboard() {
   // Fetch datos del cuidador
   const fetchSitterData = async () => {
     try {
-      const response = await fetch(`https://petcare-platform.onrender.com/api/v1/sitters/${sitterId}`, {
+      const response = await fetch(`${BASE_URL}/sitters/${sitterId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -58,7 +60,7 @@ export default function SitterDashboard() {
   // Fetch servicios disponibles
   const fetchServiceEntities = async () => {
     try {
-      const response = await fetch('https://petcare-platform.onrender.com/api/v1/service-entities', {
+      const response = await fetch('${BASE_URL}/service-entities', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (!response.ok)
@@ -97,7 +99,7 @@ export default function SitterDashboard() {
     }
     setLoading(true)
     try {
-      const res = await fetch(`https://petcare-platform.onrender.com/api/v1/availabilities/sitters/${sitterId}`, {
+      const res = await fetch(`${BASE_URL}/availabilities/sitters/${sitterId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -131,7 +133,7 @@ export default function SitterDashboard() {
     if (!window.confirm('¿Seguro que deseas eliminar esta disponibilidad?')) return
     setLoading(true)
     try {
-      const res = await fetch(`https://petcare-platform.onrender.com/api/v1/availabilities/${availabilityId}`, {
+      const res = await fetch(`${BASE_URL}/availabilities/${availabilityId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -281,7 +283,7 @@ export default function SitterDashboard() {
     if (!window.confirm('¿Seguro que deseas cancelar esta solicitud?')) return
     setLoading(true)
     try {
-      const res = await fetch(`https://petcare-platform.onrender.com/api/v1/bookings/${bookingId}`, {
+      const res = await fetch(`${BASE_URL}/bookings/${bookingId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -400,26 +402,17 @@ export default function SitterDashboard() {
 
   // Renderiza los clientes favoritos usando los datos de reviews
   const renderMisClientes = () => {
-    const reviews = sitterData?.reviews ?? []
+    const reviews = sitterData?.reviews ?? [];
     if (reviews.length === 0) {
-      return <p className="text-gray-500">No tienes clientes favoritos aún.</p>
+      return <p className="text-gray-500">No tienes clientes favoritos aún.</p>;
     }
     return (
       <div className="space-y-4">
         {reviews.map(review => (
-          <div key={review.id} className="border rounded-lg p-4 shadow-sm bg-white flex items-center">
-            <div className="flex-1">
-              <h4 className="text-lg font-semibold text-gray-800">{review.ownerName || 'Cliente'}</h4>
-              <p className="text-sm text-gray-700">Comentario: {review.comment || 'Sin comentario'}</p>
-              <div className="flex items-center gap-2 mt-1">
-                <Star className="w-4 h-4 text-yellow-400" />
-                <span className="font-semibold text-gray-700">{review.rating}</span>
-              </div>
-            </div>
-          </div>
+          <ReviewCard key={review.id} review={review} />
         ))}
       </div>
-    )
+    );
   }
 
   return (

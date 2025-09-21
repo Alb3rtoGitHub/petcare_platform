@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { BASE_URL } from '../config/constants';
+
 
 // Función para decodificar el token JWT y obtener los claims
 function parseJwt(token) {
@@ -46,7 +48,7 @@ export default function PetCareLogin() {
     
     setLoading(true);
     try {
-      const response = await fetch('https://petcare-platform.onrender.com/api/v1/auth', {
+      const response = await fetch(`${BASE_URL}/auth`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

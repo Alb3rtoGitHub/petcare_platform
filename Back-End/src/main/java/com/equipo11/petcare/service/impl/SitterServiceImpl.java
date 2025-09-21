@@ -62,7 +62,7 @@ public class SitterServiceImpl implements SitterService {
     }
 
     @Override
-    public Page<SitterResponseDTO> getSitters(
+    public Page<SitterFullResponseDTO> getSitters(
             Long cityId,
             int page,
             int size,
@@ -80,7 +80,7 @@ public class SitterServiceImpl implements SitterService {
                 ? sitterRepository.findByAddressCityIdAndEnabledTrue(cityId, pageable)
                 : sitterRepository.findAllByEnabledTrue(pageable);
 
-        return sitterPage.map(this::toResponseDto);
+        return sitterPage.map(this::toFullResponseDto);
     }
 
     @Override

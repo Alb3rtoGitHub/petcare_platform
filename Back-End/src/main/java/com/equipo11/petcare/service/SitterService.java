@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface SitterService {
     Optional<Sitter> findSitterById(Long id);
 
-    Page<SitterResponseDTO> getSitters(Long cityId,
+    Page<SitterFullResponseDTO> getSitters(Long cityId,
                                        int page,
                                        int size,
                                        String sortBy,

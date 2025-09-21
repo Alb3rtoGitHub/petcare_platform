@@ -1,10 +1,23 @@
 import { useState, useEffect } from "react";
+import { createPets } from "../../services/apiService";
+
+const speciesOptions = [
+  { value: "DOG", label: "Perro" },
+  { value: "CAT", label: "Gato" },
+];
+const sizeOptions = [
+  { value: "SMALL", label: "Pequeño" },
+  { value: "MEDIUM", label: "Mediano" },
+  { value: "LARGE", label: "Grande" },
+];
 
 export default function AddPetModal({ open, onClose, onSubmit }) {
+  const [pets, setPets] = useState([]);
   const [name, setName] = useState("");
-  const [type, setType] = useState("");
-  const [breed, setBreed] = useState("");
+  const [species, setSpecies] = useState("");
+  const [sizeCategory, setSizeCategory] = useState("");
   const [age, setAge] = useState("");
+  const [careNote, setCareNote] = useState("");
   const [image, setImage] = useState(""); // stores dataURL or url
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
@@ -34,31 +47,60 @@ export default function AddPetModal({ open, onClose, onSubmit }) {
   function validate() {
     const newErrors = {};
     if (!name) newErrors.name = "El nombre es obligatorio.";
-    if (!type) newErrors.type = "El tipo de mascota es obligatorio.";
-    if (!breed) newErrors.breed = "La raza es obligatoria.";
+    if (!species) newErrors.species = "La especie es obligatoria.";
+    if (!sizeCategory) newErrors.sizeCategory = "El tamaño es obligatorio.";
     if (!age) newErrors.age = "La edad es obligatoria.";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
 
+  function addPet() {
+    if (!validate()) return;
+    const newPet = {
+      name,
+      species,
+      sizeCategory,
+      age: parseInt(age, 10),
+      careNote,
+      image: image || defaultPreview,
+    };
+    setPets((prev) => [...prev, newPet]);
+    setName("");
+    setSpecies("");
+    setSizeCategory("");
+    setAge("");
+    setCareNote("");
+    setImage("");
+    setPreviewUrl("");
+  }
+
   function handleSubmit(e) {
     e.preventDefault();
     if (!validate()) return;
-    const finalImage = image || defaultPreview;
-    onSubmit({
-      id: `P${Date.now()}`,
-      name,
-      type,
-      breed,
-      age,
-      image: finalImage,
-    });
-    onClose();
+
+    const ownerId = sessionStorage.getItem("id");
+    const petData = [
+      {
+        name,
+        species,
+        sizeCategory,
+        age: parseInt(age, 10),
+        careNote,
+        image: image || defaultPreview,
+      },
+    ];
+
+    createPets(ownerId, petData)
+      .then(() => {
+        console.log("Mascota agregada exitosamente.");
+        onSubmit(); // Actualiza el OwnerDashboard sin esperar datos
+        onClose();
+      })
+      .catch((error) => console.error("Error al agregar la mascota:", error));
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <style>{`.hide-scrollbar::-webkit-scrollbar{display:none} .hide-scrollbar{-ms-overflow-style:none; scrollbar-width:none;}`}</style>
       <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-0 relative overflow-hidden max-h-[90vh]">
         <div className="p-6 overflow-auto max-h-[90vh] hide-scrollbar">
           <button
@@ -67,9 +109,7 @@ export default function AddPetModal({ open, onClose, onSubmit }) {
           >
             ×
           </button>
-          <h2 className="text-xl font-bold mb-4 text-gray-800">
-            Agregar Mascota
-          </h2>
+          <h2 className="text-xl font-bold mb-4 text-gray-800">Agregar Mascota</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-800">
@@ -78,61 +118,43 @@ export default function AddPetModal({ open, onClose, onSubmit }) {
               <input
                 className="w-full border rounded px-3 py-2 bg-white text-gray-800"
                 value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  setErrors((prev) => {
-                    const copy = { ...prev };
-                    delete copy.name;
-                    return copy;
-                  });
-                }}
+                onChange={(e) => setName(e.target.value)}
                 placeholder="Ej. Luna"
               />
-              {errors.name && (
-                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-              )}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-800">
-                Tipo
+                Especie
               </label>
-              <input
+              <select
                 className="w-full border rounded px-3 py-2 bg-white text-gray-800"
-                value={type}
-                onChange={(e) => {
-                  setType(e.target.value);
-                  setErrors((prev) => {
-                    const copy = { ...prev };
-                    delete copy.type;
-                    return copy;
-                  });
-                }}
-                placeholder="Perro / Gato"
-              />
-              {errors.type && (
-                <p className="text-red-500 text-sm mt-1">{errors.type}</p>
-              )}
+                value={species}
+                onChange={(e) => setSpecies(e.target.value)}
+              >
+                <option value="">Seleccione una especie</option>
+                {speciesOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-800">
-                Raza
+                Tamaño
               </label>
-              <input
+              <select
                 className="w-full border rounded px-3 py-2 bg-white text-gray-800"
-                value={breed}
-                onChange={(e) => {
-                  setBreed(e.target.value);
-                  setErrors((prev) => {
-                    const c = { ...prev };
-                    delete c.breed;
-                    return c;
-                  });
-                }}
-                placeholder="Ej. Golden Retriever"
-              />
-              {errors.breed && (
-                <p className="text-red-500 text-sm mt-1">{errors.breed}</p>
-              )}
+                value={sizeCategory}
+                onChange={(e) => setSizeCategory(e.target.value)}
+              >
+                <option value="">Seleccione un tamaño</option>
+                {sizeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-800">
@@ -141,69 +163,44 @@ export default function AddPetModal({ open, onClose, onSubmit }) {
               <input
                 className="w-full border rounded px-3 py-2 bg-white text-gray-800"
                 value={age}
-                onChange={(e) => {
-                  setAge(e.target.value);
-                  setErrors((prev) => {
-                    const c = { ...prev };
-                    delete c.age;
-                    return c;
-                  });
-                }}
-                placeholder="Ej. 3 años"
+                onChange={(e) => setAge(e.target.value)}
+                placeholder="Ej. 3"
               />
-              {errors.age && (
-                <p className="text-red-500 text-sm mt-1">{errors.age}</p>
-              )}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-800">
-                Imagen (archivo)
+                Nota de cuidado
+              </label>
+              <textarea
+                className="w-full border rounded px-3 py-2 bg-white text-gray-800"
+                value={careNote}
+                onChange={(e) => setCareNote(e.target.value)}
+                placeholder="Ej. Alimentar dos veces al día"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1 text-gray-800">
+                Imagen
               </label>
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleFileChange}
-                className="w-full border rounded px-3 py-2 bg-white text-gray-800"
               />
-              {previewUrl ? (
-                <div className="mt-3 flex items-center gap-3">
-                  <img
-                    src={previewUrl}
-                    alt="preview"
-                    className="w-32 h-32 object-cover rounded"
-                  />
-                  <div className="flex flex-col">
-                    <button
-                      type="button"
-                      className="text-sm text-red-600 hover:underline"
-                      onClick={() => {
-                        setImageFile(null);
-                        // restore fallback preview
-                        setPreviewUrl(defaultPreview);
-                        setImage("");
-                      }}
-                    >
-                      Quitar imagen
-                    </button>
-                    <span className="text-xs text-gray-500 mt-2">
-                      Puedes subir otra imagen si quieres
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <p className="mt-2 text-sm text-gray-500">
-                  Si no subes una imagen se usará una imagen temporal.
-                </p>
+              {previewUrl && (
+                <img
+                  src={previewUrl}
+                  alt="Vista previa"
+                  className="mt-2 w-32 h-32 object-cover rounded"
+                />
               )}
             </div>
-            <div className="pt-2">
-              <button
-                type="submit"
-                className="w-full bg-green-600 text-white py-2 rounded"
-              >
-                Agregar
-              </button>
-            </div>
+            <button
+              type="submit"
+              className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+            >
+              Agregar
+            </button>
           </form>
         </div>
       </div>

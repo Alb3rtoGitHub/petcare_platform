@@ -11,6 +11,7 @@ public record PetResponseDTO(
         Integer age,
         ESpecies species,
         ESize sizeCategory,
-        String careNote
+        String careNote,
+        String petPhotography
 ) {
 }

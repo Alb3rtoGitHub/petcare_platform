@@ -30,6 +30,7 @@ public class JwtTokenGenerator implements TokenGenerator {
                 .withExpiresAt(now.plusSeconds(expirationMs))
                 .withSubject(user.getUsername())
                 .withClaim("name", user.getUserFirstName())
+                .withClaim("cityId", user.getCityId())
                 .withClaim("roles", user.getAuthorities()
                         .stream()
                         .map(GrantedAuthority::getAuthority)
