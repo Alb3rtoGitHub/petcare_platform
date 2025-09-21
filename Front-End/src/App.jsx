@@ -33,6 +33,7 @@ function AppContent() {
   const hideMainNavbar =
     location.pathname.includes("/owner-dashboard") ||
     location.pathname.includes("/sitter-dashboard") ||
+    location.pathname.includes("/owner") ||
     location.pathname.includes("/sitter");
 
   return (
